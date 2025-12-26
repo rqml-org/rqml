@@ -1,0 +1,646 @@
+<!-- rqml-2.0.1.xsd -->
+<xs:schema
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="https://rqml.org/schema/2.0.1"
+  xmlns="https://rqml.org/schema/2.0.1"
+  elementFormDefault="qualified"
+  attributeFormDefault="unqualified"
+  version="2.0.1">
+
+  <!-- =========================
+       Simple types
+       ========================= -->
+
+  <xs:simpleType name="IdType">
+    <xs:restriction base="xs:token">
+      <!-- Human-friendly IDs like REQ-LOGIN-001, GOAL_AUTH_01, TC-001 -->
+      <xs:pattern value="[A-Za-z][A-Za-z0-9._-]*"/>
+      <xs:minLength value="2"/>
+      <xs:maxLength value="80"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="StatusType">
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="draft"/>
+      <xs:enumeration value="review"/>
+      <xs:enumeration value="approved"/>
+      <xs:enumeration value="deprecated"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="PriorityType">
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="must"/>
+      <xs:enumeration value="should"/>
+      <xs:enumeration value="may"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ReqType">
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="FR"/>
+      <xs:enumeration value="NFR"/>
+      <xs:enumeration value="IR"/>
+      <xs:enumeration value="DR"/>
+      <xs:enumeration value="SR"/>
+      <xs:enumeration value="CR"/>
+      <xs:enumeration value="PR"/>
+      <xs:enumeration value="UXR"/>
+      <xs:enumeration value="OR"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="TraceType">
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="refines"/>
+      <xs:enumeration value="satisfies"/>
+      <xs:enumeration value="dependsOn"/>
+      <xs:enumeration value="conflictsWith"/>
+      <xs:enumeration value="threatens"/>
+      <xs:enumeration value="mitigates"/>
+      <xs:enumeration value="verifiedBy"/>
+      <xs:enumeration value="covers"/>
+      <!-- reserved for downstream tooling -->
+      <xs:enumeration value="implements"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="TestType">
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="acceptance"/>
+      <xs:enumeration value="integration"/>
+      <xs:enumeration value="unit"/>
+      <xs:enumeration value="security"/>
+      <xs:enumeration value="performance"/>
+      <xs:enumeration value="inspection"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ConfidenceType">
+    <xs:restriction base="xs:decimal">
+      <xs:minInclusive value="0.0"/>
+      <xs:maxInclusive value="1.0"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- =========================
+       Reusable complex types
+       ========================= -->
+
+  <xs:complexType name="TextBlockType" mixed="true">
+    <xs:sequence>
+      <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="RefType">
+    <xs:attribute name="ref" type="IdType" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="RefsType">
+    <xs:sequence>
+      <xs:element name="ref" type="RefType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- =========================
+       Root
+       ========================= -->
+
+  <xs:element name="rqml" type="RqmlDocumentType"/>
+
+  <xs:complexType name="RqmlDocumentType">
+    <xs:sequence>
+      <xs:element name="meta" type="MetaType"/>
+      <xs:element name="catalogs" type="CatalogsType" minOccurs="0"/>
+      <xs:element name="domain" type="DomainType" minOccurs="0"/>
+      <xs:element name="goals" type="GoalsType" minOccurs="0"/>
+      <xs:element name="scenarios" type="ScenariosType" minOccurs="0"/>
+      <xs:element name="requirements" type="RequirementsType"/>
+      <xs:element name="interfaces" type="InterfacesType" minOccurs="0"/>
+      <xs:element name="verification" type="VerificationType" minOccurs="0"/>
+      <xs:element name="trace" type="TraceTypeContainer" minOccurs="0"/>
+      <xs:element name="governance" type="GovernanceType" minOccurs="0"/>
+    </xs:sequence>
+
+    <xs:attribute name="version" type="xs:token" use="required" fixed="2.0.1"/>
+    <xs:attribute name="docId" type="IdType" use="required"/>
+    <xs:attribute name="status" type="StatusType" use="required"/>
+  </xs:complexType>
+
+  <!-- Ensure IDs are unique across the document -->
+  <xs:key name="allIds">
+    <xs:selector xpath=".//*[@id]"/>
+    <xs:field xpath="@id"/>
+  </xs:key>
+
+  <!-- Trace edges must point to declared ids -->
+  <xs:keyref name="traceFromRef" refer="allIds">
+    <xs:selector xpath=".//traceEdge"/>
+    <xs:field xpath="@from"/>
+  </xs:keyref>
+  <xs:keyref name="traceToRef" refer="allIds">
+    <xs:selector xpath=".//traceEdge"/>
+    <xs:field xpath="@to"/>
+  </xs:keyref>
+
+  <!-- =========================
+       Meta
+       ========================= -->
+
+  <xs:complexType name="MetaType">
+    <xs:sequence>
+      <xs:element name="title" type="xs:string"/>
+      <xs:element name="system" type="xs:string"/>
+      <xs:element name="summary" type="TextBlockType" minOccurs="0"/>
+      <xs:element name="authors" type="AuthorsType" minOccurs="0"/>
+      <xs:element name="dates" type="DatesType" minOccurs="0"/>
+      <xs:element name="conventions" type="ConventionsType" minOccurs="0"/>
+      <xs:element name="profiles" type="ProfilesType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AuthorsType">
+    <xs:sequence>
+      <xs:element name="author" type="AuthorType" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AuthorType">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string"/>
+      <xs:element name="role" type="xs:string" minOccurs="0"/>
+      <xs:element name="org" type="xs:string" minOccurs="0"/>
+      <xs:element name="contact" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="DatesType">
+    <xs:sequence>
+      <xs:element name="created" type="xs:date" minOccurs="0"/>
+      <xs:element name="updated" type="xs:date" minOccurs="0"/>
+      <xs:element name="targetRelease" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ConventionsType">
+    <xs:sequence>
+      <xs:element name="normativeKeywords" type="TextBlockType" minOccurs="0"/>
+      <xs:element name="idConventions" type="TextBlockType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ProfilesType">
+    <xs:sequence>
+      <xs:element name="profile" type="ProfileType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ProfileType">
+    <xs:sequence>
+      <xs:element name="description" type="TextBlockType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="IdType" use="required"/>
+    <xs:attribute name="type" type="xs:token" use="required"/>
+  </xs:complexType>
+
+  <!-- =========================
+       Catalogs
+       ========================= -->
+
+  <xs:complexType name="CatalogsType">
+    <xs:sequence>
+      <xs:element name="glossary" type="GlossaryType" minOccurs="0"/>
+      <xs:element name="actors" type="ActorsType" minOccurs="0"/>
+      <xs:element name="stakeholders" type="StakeholdersType" minOccurs="0"/>
+      <xs:element name="constraints" type="ConstraintsType" minOccurs="0"/>
+      <xs:element name="policies" type="PoliciesType" minOccurs="0"/>
+      <xs:element name="decisions" type="DecisionsType" minOccurs="0"/>
+      <xs:element name="risks" type="RisksType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="GlossaryType">
+    <xs:sequence>
+      <xs:element name="term" type="TermType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="TermType">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string"/>
+      <xs:element name="definition" type="TextBlockType"/>
+      <xs:element name="synonyms" type="SynonymsType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="IdType" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="SynonymsType">
+    <xs:sequence>
+      <xs:element name="synonym" type="xs:string" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ActorsType">
+    <xs:sequence>
+      <xs:element name="actor" type="ActorType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ActorType">
+    <xs:sequence>
+      <xs:element name="description" type="TextBlockType" minOccurs="0"/>
+      <xs:element name="goals" type="RefsType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="IdType" use="required"/>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="type" type="xs:token" use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="StakeholdersType">
+    <xs:sequence>
+      <xs:element name="stakeholder" type="StakeholderType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="StakeholderType">
+    <xs:sequence>
+      <xs:element name="concerns" type="TextBlockType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="IdType" use="required"/>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="org" type="xs:string" use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="ConstraintsType">
+    <xs:sequence>
+      <xs:element name="constraint" type="ConstraintType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ConstraintType">
+    <xs:sequence>
+      <xs:element name="statement" type="TextBlockType"/>
+      <xs:element name="source" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="IdType" use="required"/>
+    <xs:attribute name="severity" type="xs:token" use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="PoliciesType">
+    <xs:sequence>
+      <xs:element name="policy" type="PolicyType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="PolicyType">
+    <xs:sequence>
+      <xs:element name="obligation" type="TextBlockType"/>
+      <xs:element name="evidence" type="TextBlockType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="IdType" use="required"/>
+    <xs:attribute name="source" type="xs:string" use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="DecisionsType">
+    <xs:sequence>
+      <xs:element name="decision" type="DecisionType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="DecisionType">
+    <xs:sequence>
+      <xs:element name="context" type="TextBlockType"/>
+      <xs:element name="decision" type="TextBlockType"/>
+      <xs:element name="alternatives" type="TextBlockType" minOccurs="0"/>
+      <xs:element name="consequences" type="TextBlockType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="IdType" use="required"/>
+    <xs:attribute name="status" type="StatusType" use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="RisksType">
+    <xs:sequence>
+      <xs:element name="risk" type="RiskType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="RiskType">
+    <xs:sequence>
+      <xs:element name="statement" type="TextBlockType"/>
+      <xs:element name="mitigation" type="TextBlockType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="IdType" use="required"/>
+    <xs:attribute name="severity" type="xs:token" use="optional"/>
+  </xs:complexType>
+
+  <!-- =========================
+       Domain (minimal)
+       ========================= -->
+
+  <xs:complexType name="DomainType">
+    <xs:sequence>
+      <xs:element name="overview" type="TextBlockType" minOccurs="0"/>
+      <xs:element name="entities" type="EntitiesType" minOccurs="0"/>
+      <xs:element name="businessRules" type="BusinessRulesType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="EntitiesType">
+    <xs:sequence>
+      <xs:element name="entity" type="EntityType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="EntityType">
+    <xs:sequence>
+      <xs:element name="description" type="TextBlockType" minOccurs="0"/>
+      <xs:element name="attr" type="AttrType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="IdType" use="required"/>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="AttrType">
+    <xs:sequence>
+      <xs:element name="description" type="TextBlockType" minOccurs="0"/>
+      <xs:element name="constraints" type="TextBlockType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="IdType" use="required"/>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="type" type="xs:token" use="required"/>
+    <xs:attribute name="required" type="xs:boolean" use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="BusinessRulesType">
+    <xs:sequence>
+      <xs:element name="rule" type="RuleType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="RuleType">
+    <xs:sequence>
+      <xs:element name="statement" type="TextBlockType"/>
+      <xs:element name="examples" type="TextBlockType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="IdType" use="required"/>
+  </xs:complexType>
+
+  <!-- =========================
+       Goals
+       ========================= -->
+
+  <xs:complexType name="GoalsType">
+    <xs:sequence>
+      <xs:element name="goal" type="GoalType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="qgoal" type="QualityGoalType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="obstacle" type="ObstacleType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="goalLink" type="GoalLinkType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="GoalType">
+    <xs:sequence>
+      <xs:element name="statement" type="TextBlockType"/>
+      <xs:element name="rationale" type="TextBlockType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="IdType" use="required"/>
+    <xs:attribute name="title" type="xs:string" use="required"/>
+    <xs:attribute name="priority" type="PriorityType" use="optional"/>
+    <xs:attribute name="status" type="StatusType" use="optional"/>
+    <xs:attribute name="ownerRef" type="IdType" use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="QualityGoalType">
+    <xs:sequence>
+      <xs:element name="statement" type="TextBlockType"/>
+      <xs:element name="metric" type="TextBlockType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="IdType" use="required"/>
+    <xs:attribute name="title" type="xs:string" use="required"/>
+    <xs:attribute name="priority" type="PriorityType" use="optional"/>
+    <xs:attribute name="status" type="StatusType" use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="ObstacleType">
+    <xs:sequence>
+      <xs:element name="statement" type="TextBlockType"/>
+      <xs:element name="mitigation" type="TextBlockType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="IdType" use="required"/>
+    <xs:attribute name="title" type="xs:string" use="required"/>
+    <xs:attribute name="likelihood" type="xs:token" use="optional"/>
+    <xs:attribute name="severity" type="xs:token" use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="GoalLinkType">
+    <xs:attribute name="id" type="IdType" use="required"/>
+    <xs:attribute name="from" type="IdType" use="required"/>
+    <xs:attribute name="to" type="IdType" use="required"/>
+    <xs:attribute name="type" type="TraceType" use="required"/>
+    <xs:attribute name="confidence" type="ConfidenceType" use="optional"/>
+  </xs:complexType>
+
+  <!-- =========================
+       Scenarios
+       ========================= -->
+
+  <xs:complexType name="ScenariosType">
+    <xs:sequence>
+      <xs:element name="scenario" type="ScenarioType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="misuseCase" type="ScenarioType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="edgeCase" type="ScenarioType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ScenarioType">
+    <xs:sequence>
+      <xs:element name="narrative" type="TextBlockType"/>
+      <xs:element name="refs" type="RefsType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="IdType" use="required"/>
+    <xs:attribute name="title" type="xs:string" use="required"/>
+    <xs:attribute name="actorRef" type="IdType" use="optional"/>
+  </xs:complexType>
+
+  <!-- =========================
+       Requirements
+       ========================= -->
+
+  <xs:complexType name="RequirementsType">
+    <xs:sequence>
+      <xs:element name="reqPackage" type="ReqPackageType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="req" type="ReqTypeItem" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ReqPackageType">
+    <xs:sequence>
+      <xs:element name="description" type="TextBlockType" minOccurs="0"/>
+      <xs:element name="req" type="ReqTypeItem" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="IdType" use="required"/>
+    <xs:attribute name="title" type="xs:string" use="required"/>
+    <xs:attribute name="ownerRef" type="IdType" use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="ReqTypeItem">
+    <xs:sequence>
+      <xs:element name="statement" type="TextBlockType"/>
+      <xs:element name="rationale" type="TextBlockType" minOccurs="0"/>
+      <xs:element name="notes" type="TextBlockType" minOccurs="0"/>
+      <xs:element name="acceptance" type="AcceptanceType" minOccurs="0"/>
+      <xs:element name="refs" type="RefsType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="IdType" use="required"/>
+    <xs:attribute name="type" type="ReqType" use="required"/>
+    <xs:attribute name="title" type="xs:string" use="required"/>
+    <xs:attribute name="status" type="StatusType" use="optional"/>
+    <xs:attribute name="priority" type="PriorityType" use="optional"/>
+    <xs:attribute name="ownerRef" type="IdType" use="optional"/>
+    <xs:attribute name="appliesTo" type="xs:token" use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="AcceptanceType">
+    <xs:sequence>
+      <xs:element name="criterion" type="CriterionType" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="CriterionType">
+    <xs:sequence>
+      <xs:element name="given" type="TextBlockType" minOccurs="0"/>
+      <xs:element name="when" type="TextBlockType" minOccurs="0"/>
+      <xs:element name="then" type="TextBlockType" minOccurs="1"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="IdType" use="optional"/>
+  </xs:complexType>
+
+  <!-- =========================
+       Interfaces (minimal)
+       ========================= -->
+
+  <xs:complexType name="InterfacesType">
+    <xs:sequence>
+      <xs:element name="api" type="ApiType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="event" type="EventType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ApiType">
+    <xs:sequence>
+      <xs:element name="description" type="TextBlockType" minOccurs="0"/>
+      <xs:element name="endpoint" type="EndpointType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="IdType" use="required"/>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="protocol" type="xs:token" use="optional"/>
+    <xs:attribute name="auth" type="xs:token" use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="EndpointType">
+    <xs:sequence>
+      <xs:element name="summary" type="TextBlockType" minOccurs="0"/>
+      <xs:element name="request" type="TextBlockType" minOccurs="0"/>
+      <xs:element name="response" type="TextBlockType" minOccurs="0"/>
+      <xs:element name="errors" type="TextBlockType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="IdType" use="required"/>
+    <xs:attribute name="method" type="xs:token" use="required"/>
+    <xs:attribute name="path" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="EventType">
+    <xs:sequence>
+      <xs:element name="description" type="TextBlockType" minOccurs="0"/>
+      <xs:element name="payload" type="TextBlockType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="IdType" use="required"/>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <!-- =========================
+       Verification
+       ========================= -->
+
+  <xs:complexType name="VerificationType">
+    <xs:sequence>
+      <xs:element name="testSuite" type="TestSuiteType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="testCase" type="TestCaseType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="TestSuiteType">
+    <xs:sequence>
+      <xs:element name="description" type="TextBlockType" minOccurs="0"/>
+      <xs:element name="members" type="RefsType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="IdType" use="required"/>
+    <xs:attribute name="title" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <xs:complexType name="TestCaseType">
+    <xs:sequence>
+      <xs:element name="purpose" type="TextBlockType" minOccurs="0"/>
+      <xs:element name="steps" type="TextBlockType" minOccurs="0"/>
+      <xs:element name="expected" type="TextBlockType" minOccurs="0"/>
+      <xs:element name="refs" type="RefsType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="IdType" use="required"/>
+    <xs:attribute name="type" type="TestType" use="required"/>
+    <xs:attribute name="title" type="xs:string" use="required"/>
+  </xs:complexType>
+
+  <!-- =========================
+       Trace
+       ========================= -->
+
+  <xs:complexType name="TraceTypeContainer">
+    <xs:sequence>
+      <xs:element name="traceEdge" type="TraceEdgeType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="TraceEdgeType">
+    <xs:sequence>
+      <xs:element name="notes" type="TextBlockType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="IdType" use="required"/>
+    <xs:attribute name="from" type="IdType" use="required"/>
+    <xs:attribute name="to" type="IdType" use="required"/>
+    <xs:attribute name="type" type="TraceType" use="required"/>
+    <xs:attribute name="confidence" type="ConfidenceType" use="optional"/>
+  </xs:complexType>
+
+  <!-- =========================
+       Governance (minimal)
+       ========================= -->
+
+  <xs:complexType name="GovernanceType">
+    <xs:sequence>
+      <xs:element name="issue" type="IssueType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="approval" type="ApprovalType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="IssueType">
+    <xs:sequence>
+      <xs:element name="statement" type="TextBlockType"/>
+      <xs:element name="notes" type="TextBlockType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="IdType" use="required"/>
+    <xs:attribute name="status" type="StatusType" use="optional"/>
+    <xs:attribute name="owner" type="xs:string" use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="ApprovalType">
+    <xs:sequence>
+      <xs:element name="description" type="TextBlockType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="IdType" use="required"/>
+    <xs:attribute name="role" type="xs:string" use="required"/>
+    <xs:attribute name="status" type="StatusType" use="optional"/>
+  </xs:complexType>
+
+</xs:schema>
