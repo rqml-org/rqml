@@ -1,33 +1,87 @@
 ---
-id: schema-reference
-title: RQML Schema reference
+id: reference-index
+title: RQML Reference
 sidebar_label: Reference
 sidebar_position: 5
+description: A–Z index of RQML 2.0.1 elements and attributes, patterns, and versioning notes.
 ---
 
-This page documents RQML schema version 2.0.1 (located at `static/schema/rqml-2.0.1.xsd`, served from `/schema/rqml-2.0.1.xsd` at build time).
+RQML schema version **2.0.1** is defined in `static/schema/rqml-2.0.1.xsd` (served at `/schema/rqml-2.0.1.xsd`). Use this page as an entry point to the element/attribute reference.
 
-## Overview
-- Root element `rqml` (type `RqmlDocumentType`) with required `version="2.0.1"`, `docId`, and `status`.
-- Global key enforces unique `@id` values across the document; `traceEdge` `from`/`to` attributes must reference existing IDs.
+## Common patterns
+- **IDs**: `IdType` tokens, 2–80 chars, start with a letter; allow letters, digits, `.`, `_`, `-`. Keep stable across revisions.
+- **References**: `ref`, `goalLink`, `traceEdge`, and `refs` collections all point to existing IDs; the schema enforces this with keyrefs.
+- **Language**: Use clear, testable prose; avoid ambiguity. Text blocks allow mixed content for formatting.
+- **Cardinality**: Required elements are noted in each element page; optional sections may be omitted entirely.
 
-## Meta & Conventions
-- `meta` requires `title` and `system`; optional `summary`, `authors` (with name/role/org/contact), `dates`, `conventions`, and `profiles` (each with `@id` and `@type`).
-- `IdType` allows human-friendly tokens (e.g., `REQ-LOGIN-001`, `GOAL_AUTH_01`), 2–80 chars, starting with a letter. Status values: `draft`, `review`, `approved`, `deprecated`. Priorities: `must`, `should`, `may`.
+## Versioning
+- Documents set `rqml@version="2.0.1"` (fixed), along with required `docId` and `status`.
+- Schema path: `/schema/rqml-2.0.1.xsd`. Validate with `xmllint --schema static/schema/rqml-2.0.1.xsd yourfile.xml --noout`.
 
-## Catalogs, Domain, and Goals
-- Optional catalogs: `glossary` (terms with definitions and optional synonyms), `actors`, `stakeholders`, `constraints`, `policies`, `decisions`, `risks`.
-- Domain model: `entities` with attributes (`type`, `required`, optional constraints) and `businessRules`.
-- Goals: functional (`goal`), quality (`qgoal`), obstacles, and `goalLink` edges using `TraceType` with optional `confidence`.
+## Elements A–Z
+### C
+- [`catalogs`](./elements/catalogs.md)
 
-## Scenarios, Requirements, and Interfaces
-- Scenarios: `scenario`, `misuseCase`, `edgeCase` share `@id`, `title`, `narrative`, optional `actorRef` and `refs`.
-- Requirements: `requirements` container holds `reqPackage` groups and `req` items. Each requirement has `@id`, `type` (FR/NFR/IR/DR/SR/CR/PR/UXR/OR), `title`, optional `status/priority/ownerRef/appliesTo`, plus `statement`, optional `rationale/notes`, `acceptance` criteria (Given/When/Then elements), and `refs`.
-- Interfaces: `api` definitions with `endpoint` children (`@method`, `@path`, optional request/response/errors) and `event` definitions with payload descriptions.
+### D
+- [`domain`](./elements/domain.md)
 
-## Verification, Trace, and Governance
-- Verification: `testSuite` (with member refs) and `testCase` (`@type` acceptance/integration/unit/security/performance/inspection, plus purpose/steps/expected/refs).
-- Traceability: `traceEdge` elements connect any two IDs with a typed relation (`refines`, `satisfies`, `dependsOn`, `conflictsWith`, `threatens`, `mitigates`, `verifiedBy`, `covers`, `implements`).
-- Governance: `issue` and `approval` items carry IDs, statuses, roles, and descriptive text.
+### G
+- [`goals`](./elements/goals.md)
+- [`governance`](./elements/governance.md)
 
+### I
+- [`interfaces`](./elements/interfaces.md)
 
+### M
+- [`meta`](./elements/meta.md)
+
+### R
+- [`requirements`](./elements/requirements.md)
+- [`rqml` (root)](./elements/rqml.md)
+
+### S
+- [`scenarios`](./elements/scenarios.md)
+
+### T
+- [`trace`](./elements/trace.md)
+
+### V
+- [`verification`](./elements/verification.md)
+
+## Attributes A–Z
+### A
+- [`@appliesTo`](./elements/requirements.md#attributes)
+- [`@auth`](./elements/interfaces.md#attributes)
+
+### C
+- [`@confidence`](./elements/trace.md#attributes)
+
+### D
+- [`@docId`](./elements/rqml.md#attributes)
+
+### F
+- [`@from`](./elements/trace.md#attributes)
+
+### I
+- [`@id`](./elements/rqml.md#attributes)
+
+### M
+- [`@method`](./elements/interfaces.md#attributes)
+
+### O
+- [`@ownerRef`](./elements/requirements.md#attributes)
+
+### P
+- [`@path`](./elements/interfaces.md#attributes)
+- [`@priority`](./elements/goals.md#attributes)
+- [`@protocol`](./elements/interfaces.md#attributes)
+
+### S
+- [`@status`](./elements/rqml.md#attributes)
+
+### T
+- [`@type`](./elements/requirements.md#attributes)
+- [`@to`](./elements/trace.md#attributes)
+
+### V
+- [`@version`](./elements/rqml.md#attributes)

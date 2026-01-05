@@ -1,21 +1,39 @@
 ---
-id: requirements
-title: Requirements
-sidebar_position: 6
-description: Author normative requirements, packages, and acceptance criteria.
+id: element-requirements
+title: requirements
+description: Container for requirement packages and individual requirements.
 ---
 
-The `requirements` section is required and holds the core normative content.
+## Summary
+Required section holding all normative requirements.
 
-## Structure
-- `reqPackage`: Optional grouping container with `@id`, `title`, optional `ownerRef`, optional `description`, and nested `req` items.
-- `req`: Individual requirement with attributes:
-  - `@id` (`IdType`, unique within document)
-  - `@type` (one of `FR`, `NFR`, `IR`, `DR`, `SR`, `CR`, `PR`, `UXR`, `OR`)
-  - `@title` (human-readable)
-  - Optional `status`, `priority`, `ownerRef`, `appliesTo`
-  - Children: `statement` (required), optional `rationale`, `notes`, `acceptance`, `refs`.
-- `acceptance`: Contains one or more `criterion` entries, each with optional `@id` and `given`/`when`/`then` text blocks.
+## Where it appears
+- `rqml > requirements`
+
+## Content model
+- `reqPackage` (0..n) → `description` (0..1), `req` (0..n)
+- `req` (0..n)
+
+`req` children:
+- `statement` (1)
+- `rationale` (0..1)
+- `notes` (0..1)
+- `acceptance` (0..1) → `criterion` (1..n) each with `given` (0..1), `when` (0..1), `then` (1)
+- `refs` (0..1) → `ref` (0..n)
+
+## Attributes
+| Element | Name | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- | --- |
+| reqPackage | `id` | IdType | yes | — | Package identifier. |
+| reqPackage | `title` | string | yes | — | Package title. |
+| reqPackage | `ownerRef` | IdType | no | — | Owner reference. |
+| req | `id` | IdType | yes | — | Requirement identifier. |
+| req | `type` | ReqType (`FR|NFR|IR|DR|SR|CR|PR|UXR|OR`) | yes | — | Requirement classification. |
+| req | `title` | string | yes | — | Human-readable title. |
+| req | `status` | StatusType | no | — | Lifecycle. |
+| req | `priority` | PriorityType | no | — | Importance (`must|should|may`). |
+| req | `ownerRef` | IdType | no | — | Responsible owner. |
+| req | `appliesTo` | token | no | — | Scope or target component. |
 
 ### Requirement type meanings
 - **FR — Functional Requirement**: What the system must do—features, behaviors, business functions.
@@ -28,17 +46,19 @@ The `requirements` section is required and holds the core normative content.
 - **UXR — User Experience Requirement**: UI/interaction expectations (flows, accessibility, i18n, content rules, user-facing behavior).
 - **OR — Operational Requirement**: Run/operate/observe the system (monitoring, logging, alerting, backups, RPO/RTO, runbooks).
 
-## Authoring tips
-- Keep `statement` crisp and testable; use `acceptance` to express BDD-style criteria when needed.
-- Reuse `@id` references from catalogs, domain entities, and goals via `refs` or `appliesTo`.
-- Use `priority` to distinguish `must/should/may` and `status` to track lifecycle (`draft/review/approved/deprecated`).
-- Group related requirements into `reqPackage` to clarify ownership and scope.
+## Example (minimal)
+```xml
+<requirements>
+  <req id="REQ-1" type="FR" title="Do a thing">
+    <statement>The system SHALL perform the thing.</statement>
+  </req>
+</requirements>
+```
 
-## Example
+## Example (typical)
 ```xml
 <requirements>
   <reqPackage id="PKG-AUTH" title="Authorization" ownerRef="STK-RISK">
-    <description>Payment authorization flow</description>
     <req id="REQ-AUTH-001" type="FR" title="Authorize payment" priority="must">
       <statement>The system SHALL authorize card payments via the acquiring bank.</statement>
       <rationale>Enable online checkout for merchants.</rationale>
@@ -58,8 +78,7 @@ The `requirements` section is required and holds the core normative content.
 </requirements>
 ```
 
-## Theory
-- Requirements should be necessary, verifiable, unambiguous, and feasible (IEEE 29148 qualities).
-- Categorizing by type (FR/NFR/etc.) aligns with classic RE taxonomies; acceptance criteria make requirements testable (BDD/Gherkin influence).
-- Packaging requirements aids scoping and ownership, echoing Volere and disciplined backlog management.
-- Bibliography: [IEEE 29148-2018](https://standards.ieee.org/standard/29148-2018.html), [Specification by Example](https://www.manning.com/books/specification-by-example), [Volere Template](http://www.volere.org/template.htm).
+## Notes / LLM hints
+- Write `statement` in verifiable, unambiguous language; express behaviors, not design details.
+- Use `acceptance` to capture BDD-style tests when possible; ensure each `criterion` has a `then`.
+- Keep `id` stable; rely on `status` and `priority` to reflect lifecycle rather than rewriting IDs.

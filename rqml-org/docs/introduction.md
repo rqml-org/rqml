@@ -5,29 +5,110 @@ sidebar_label: Introduction
 sidebar_position: 1
 ---
 
-# RQML Schema Documentation
+# RQML: Make requirements the thing you build
 
-This documentation covers the RQML XML schema used to capture requirements, goals, scenarios, verification, and traceability data for engineering projects. The current schema version is **2.0.1** and is served from `static/schema/rqml-2.0.1.xsd` (available at `/schema/rqml-2.0.1.xsd` when the site is built).
+Most software teams *say* requirements matter — then spend their lives arguing in tickets, guessing intent from scattered docs, and treating code as the only “real” truth.
 
-## What you'll find here
-- **Schema reference**: key elements, attributes, and allowed values across meta data, catalogs, goals, requirements, interfaces, verification, trace, and governance.
+**RQML flips that.**
 
-- **Examples**: minimal document skeletons and snippets you can adapt for new specs.
+With RQML, the **requirements become the primary artifact**: structured, versioned, reviewable, and readable by both humans *and* LLMs. Teams collaborate on intent. LLMs generate the implementation from that intent.
 
-## Validation
-- You can validate RQML documents with many XML tools, for example xmllint on the command line: `xmllint --schema static/schema/rqml-2.0.1.xsd sample.rqml.xml --noout`.
-- Minimal skeleton:
+**You maintain the spec.  
+The code is derived.**
 
-```xml
-<rqml xmlns="https://rqml.org/schema/2.0.1" version="2.0.1" docId="DOC-001" status="draft">
-  <meta>
-    <title>System Title</title>
-    <system>System Code</system>
-  </meta>
-  <requirements>
-    <req id="REQ-001" type="FR" title="Example requirement">
-      <statement>As a user, I can ...</statement>
-    </req>
-  </requirements>
-</rqml>
-```
+---
+
+## What you can do with RQML
+
+RQML is designed for a workflow where:
+
+- **Stakeholders and developers collaborate in one place** (the RQML spec).
+- **LLMs use the spec as executable intent** to generate code and changes.
+- **Validation and structure reduce ambiguity** compared to free-form documents.
+- **The spec stays in sync with the system** because it *drives* the system.
+
+If it isn’t in RQML, it isn’t a requirement.  
+If it isn’t derived from RQML, it isn’t the system.
+
+---
+
+## Why “requirements as the product” works
+
+Traditional dev workflows treat requirements as input and code as output — but the output quickly becomes the only reliable truth. That makes change expensive, reviews harder, and onboarding slower.
+
+RQML aims to make change cheap again by putting the center of gravity back where it belongs:
+
+- **Intent is explicit**
+- **Context is preserved**
+- **Decisions are reviewable**
+- **Implementation can be regenerated**
+
+Think of it like moving from “hand-crafted binaries” to “source code”… except the new “source code” is your requirements.
+
+---
+
+## What’s in an RQML document (high level)
+
+An RQML document captures system intent in a structured form — typically including things like:
+
+- **Metadata**: versioning, ownership, lifecycle
+- **Goals and context**: what the system is for, constraints, scope
+- **Scenarios**: how users and systems interact
+- **Requirements**: the contractual behaviors and qualities of the system
+- **Interfaces & verification**: integration points and how requirements are proven
+
+You don’t need to learn everything up front. The fastest way to understand RQML is to read (and edit) a tiny example.
+
+---
+
+## How to use this documentation
+
+This site is organized to get you productive quickly, then deepen your understanding as you go.
+
+### Quick start
+Get a minimal RQML file running fast — the smallest possible “Hello World” for spec-first development.
+
+➡️ **Next:** *Quick start*
+
+### User guide
+Learn how to *write* RQML: document structure, requirement types, patterns, and practical authoring workflows (including LLM-assisted writing).
+
+➡️ **Then:** *User guide*
+
+### Examples
+Browse complete example specs you can copy into a project, including common product patterns (CLI tools, web apps, auth, etc.).
+
+➡️ **Explore:** *Examples*
+
+### Reference
+A complete catalog of elements, attributes, and rules — designed to be searchable and linkable when you’re authoring.
+
+➡️ **Look up:** *Reference*
+
+### FAQ
+Short answers to the questions you’ll inevitably ask: “How does this compare to X?”, “Where does code live?”, “How strict is the schema?”, “Can we adopt incrementally?”, and more.
+
+➡️ **When stuck:** *FAQ*
+
+---
+
+## A simple way to try RQML today
+
+If you want to “get it” in minutes:
+
+1. Open **Quick start**
+2. Copy the smallest example RQML document
+3. Read it like a contract
+4. Imagine your project’s intent living *there* instead of scattered across code and tickets
+
+Once you’ve done that, the rest of the site will click into place.
+
+---
+
+## Philosophy (in one paragraph)
+
+RQML is built for an LLM-native world: humans should own **intent**, not plumbing. The spec should be the **single source of truth**, and implementation should be **generated**, reproducible, and continuously aligned with the current requirements.
+
+If that sounds like the future you want to build—start with the Quick start.
+
+➡️ **Go to:** *Quick start*
