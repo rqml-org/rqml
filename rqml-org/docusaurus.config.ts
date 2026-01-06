@@ -5,7 +5,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
-  title: 'RQML documentation',
+  title: 'RQML',
   tagline: 'Requrements Markup Language',
   favicon: 'img/favicon.ico',
 
@@ -15,7 +15,7 @@ const config: Config = {
   },
 
   // Set the production url of your site here
-  url: 'https://rqml.org',
+  url: 'https://rqml.dev',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/',
@@ -75,10 +75,10 @@ const config: Config = {
       respectPrefersColorScheme: true,
     },
     navbar: {
-      title: 'RQML',
+      title: 'Home',
       logo: {
-        alt: 'My Site Logo',
-        src: 'img/logo.svg',
+        alt: 'RQML logo',
+        src: 'img/RQML_logo_transparent.png',
       },
       items: [
         {
@@ -87,11 +87,14 @@ const config: Config = {
           position: 'left',
           label: 'Documentation',
         },
-        {to: '/blog', label: 'Blog', position: 'left'},
         {
-          href: 'https://github.com/facebook/docusaurus',
-          label: 'GitHub',
-          position: 'right',
+          href: "/schema/rqml-2.0.1.xsd",      // file in /static/schema/rqml.xsd
+          label: "Get RQML Schema",
+          position: "right",
+          className: "navbar__downloadButton",
+          // optional: opens in new tab
+          target: "_blank",
+          rel: "noopener noreferrer",
         },
       ],
     },

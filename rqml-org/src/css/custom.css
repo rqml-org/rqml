@@ -1,30 +1,156 @@
-/**
- * Any CSS included here will be global. The classic template
- * bundles Infima by default. Infima is a CSS framework designed to
- * work well for content-centric websites.
- */
+/* src/css/custom.css */
 
-/* You can override the default Infima variables here. */
+/* Brand palette */
 :root {
-  --ifm-color-primary: #2e8555;
-  --ifm-color-primary-dark: #29784c;
-  --ifm-color-primary-darker: #277148;
-  --ifm-color-primary-darkest: #205d3b;
-  --ifm-color-primary-light: #33925d;
-  --ifm-color-primary-lighter: #359962;
-  --ifm-color-primary-lightest: #3cad6e;
-  --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --rqml-purple: #8568ab;
+  --rqml-white:  #fffeff;
+  --rqml-cyan:   #02a9ea;
+  --rqml-yellow: #faff00;
+  --rqml-black:  #000300;
+
+  /* Docusaurus theme tokens (LIGHT) */
+  --ifm-color-primary: #8568ab;
+  --ifm-color-primary-dark: #785b9a;
+  --ifm-color-primary-darker: #6e5490;
+  --ifm-color-primary-darkest: #5a4476;
+  --ifm-color-primary-light: #9277b6;
+  --ifm-color-primary-lighter: #9d84be;
+  --ifm-color-primary-lightest: #b4a1cf;
+
+  --ifm-background-color: var(--rqml-white);
+  --ifm-font-color-base: var(--rqml-black);
+
+  --ifm-navbar-background-color: var(--rqml-purple);
+  --ifm-footer-background-color: #f6f1fb;
+
+  --ifm-link-color: var(--rqml-purple);
+  --ifm-link-hover-color: var(--rqml-cyan);
+
+  --ifm-color-success: var(--rqml-cyan);
+  --ifm-color-warning: var(--rqml-yellow);
+
+  --ifm-code-font-size: 92%;
+  --ifm-code-background: rgba(133, 104, 171, 0.10);
+  --ifm-code-color: var(--rqml-black);
+
+  --ifm-menu-color-active: var(--rqml-purple);
+  --ifm-toc-link-color: var(--rqml-black);
+  --ifm-toc-link-color-active: var(--rqml-purple);
+
+  /* Nice rounding / softness */
+  --ifm-global-radius: 10px;
 }
 
-/* For readability concerns, you should choose a lighter palette in dark mode. */
+/* DARK mode overrides */
 [data-theme='dark'] {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+  --ifm-background-color: #0b0610; /* deep near-black with a purple tint */
+  --ifm-font-color-base: var(--rqml-white);
+
+  --ifm-navbar-background-color: #0b0610;
+  --ifm-footer-background-color: #08040c;
+
+  --ifm-link-color: var(--rqml-cyan);
+  --ifm-link-hover-color: var(--rqml-yellow);
+
+  --ifm-menu-color-active: var(--rqml-cyan);
+  --ifm-toc-link-color: rgba(255, 254, 255, 0.82);
+  --ifm-toc-link-color-active: var(--rqml-cyan);
+
+  --ifm-code-background: rgba(2, 169, 234, 0.12);
+  --ifm-code-color: var(--rqml-white);
+
+  /* Make primary still purple, but slightly brighter on dark */
+  --ifm-color-primary: #9d84be;
+  --ifm-color-primary-dark: #9277b6;
+  --ifm-color-primary-darker: #8568ab;
+  --ifm-color-primary-darkest: #6e5490;
+  --ifm-color-primary-light: #b4a1cf;
+  --ifm-color-primary-lighter: #c1b0d8;
+  --ifm-color-primary-lightest: #d7cde7;
+}
+
+/* Accent selection color */
+::selection {
+  background: rgba(250, 255, 0, 0.55);
+  color: var(--rqml-black);
+}
+[data-theme='dark'] ::selection {
+  background: rgba(250, 255, 0, 0.65);
+  color: var(--rqml-black);
+}
+
+/* Buttons */
+.button--primary {
+  background: var(--rqml-purple);
+  border-color: var(--rqml-purple);
+  color: var(--rqml-white);
+}
+.button--primary:hover {
+  background: var(--rqml-cyan);
+  border-color: var(--rqml-cyan);
+  color: var(--rqml-black);
+}
+.button--secondary {
+  border-color: rgba(133, 104, 171, 0.35);
+}
+[data-theme='dark'] .button--secondary {
+  border-color: rgba(2, 169, 234, 0.35);
+}
+
+/* Code blocks: subtle brand border */
+.theme-code-block {
+  border: 1px solid rgba(133, 104, 171, 0.20);
+  border-radius: 12px;
+}
+[data-theme='dark'] .theme-code-block {
+  border-color: rgba(2, 169, 234, 0.22);
+}
+
+/* Navbar link hover underline accent */
+.navbar__link:hover {
+  /* text-decoration: underline; */
+  text-decoration-color: var(--rqml-purple);
+  text-underline-offset: 4px;
+}
+
+/* Add breathing room between brand and first nav item */
+.navbar__brand {
+  gap: 0.55rem;
+  margin-right: 1.1rem;
+}
+
+/* Admonitions: keep them “on brand” without being too loud */
+.alert--info {
+  --ifm-alert-background-color: rgba(2, 169, 234, 0.12);
+  --ifm-alert-border-color: rgba(2, 169, 234, 0.45);
+}
+.alert--warning {
+  --ifm-alert-background-color: rgba(250, 255, 0, 0.18);
+  --ifm-alert-border-color: rgba(250, 255, 0, 0.55);
+}
+.alert--danger {
+  --ifm-alert-background-color: rgba(133, 104, 171, 0.14);
+  --ifm-alert-border-color: rgba(133, 104, 171, 0.55);
+}
+
+/* Subtle focus ring for accessibility */
+:focus-visible {
+  outline: 3px solid rgba(2, 169, 234, 0.75);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+.navbar__downloadButton {
+  background: var(--rqml-purple);
+  color: #fffeff !important;
+  border-radius: 999px;
+  padding: 0.45rem 0.6rem;
+  margin-right: 0.45rem;
+  font-weight: 600;
+}
+
+.navbar__downloadButton:hover {
+  background: var(--rqml-cyan);
+  color: #fffeff !important;
+  text-decoration: none;
 }
