@@ -1,0 +1,306 @@
+---
+title: RQML
+description: Requirements you can compile. Make specs the source of truth—not code.
+slug: /
+---
+
+import Heading from '@theme/Heading';
+import styles from './index.module.css';
+
+<div className={styles.page}>
+
+  {/* HERO 1 */}
+  <header className={`hero ${styles.hero}`}>
+    <div className="container">
+      <p className={styles.kicker}>RQML • Requirements for LLM-era software</p>
+
+      <Heading as="h1" className={styles.heroTitle}>
+        Requirements you can compile.
+      </Heading>
+
+      <p className={styles.heroSubtitle}>
+        RQML is a human-readable, LLM-friendly requirements format that turns scattered intent into shared, durable
+        project context—so AI-generated code becomes more accurate, consistent, and maintainable.
+      </p>
+
+      <div className={styles.heroCtas}>
+        <a className="button button--primary button--lg" href="/docs/quick-start">
+          Get started
+        </a>
+        <a className="button button--secondary button--lg" href="/docs/examples">
+          See examples
+        </a>
+      </div>
+
+      <div className={styles.heroLinks}>
+        <a href="/schema">Download schema</a>
+        <span className={styles.dot}>•</span>
+        <a href="/docs/why-rqml">Why RQML exists</a>
+        <span className={styles.dot}>•</span>
+        <a href="/docs/reference">Reference</a>
+      </div>
+    </div>
+  </header>
+
+  {/* HERO 2: WHY NOW */}
+  <section className={`container ${styles.section}`}>
+    <div className={styles.twoCol}>
+      <div>
+        <Heading as="h2">LLMs amplify weak requirements.</Heading>
+        <p className={styles.lead}>
+          Teams already cut corners on requirements because writing “proper specs” feels slow and unrewarding.
+          LLM-assisted coding makes that problem sharper.
+        </p>
+
+        <ul className={styles.bullets}>
+          <li>AI is fast—but it <strong>guesses context</strong> unless you provide it.</li>
+          <li>You get <strong>prompt soup</strong>, inconsistent decisions, and fragile architecture.</li>
+          <li>Docs rot because they’re <strong>manual</strong>, boring, and hard to keep aligned.</li>
+        </ul>
+
+        <p className={styles.punch}>
+          If you’re using LLMs to write code, you need a better way to communicate intent than scattered chats and
+          half-remembered assumptions.
+        </p>
+
+        <a className="button button--outline button--primary" href="/docs/why-rqml">
+          Read the rationale →
+        </a>
+      </div>
+
+      <div className={styles.cardStack}>
+        <div className={`card ${styles.card}`}>
+          <div className="card__body">
+            <Heading as="h3" className={styles.cardTitle}>Before</Heading>
+            <p className={styles.cardText}>
+              A thousand tiny assumptions in chat logs, tickets, and tribal knowledge.
+            </p>
+            <div className={styles.tagRow}>
+              <span className={styles.tag}>Ambiguous</span>
+              <span className={styles.tag}>Hard to reuse</span>
+              <span className={styles.tag}>Easy to forget</span>
+            </div>
+          </div>
+        </div>
+
+        <div className={`card ${styles.card}`}>
+          <div className="card__body">
+            <Heading as="h3" className={styles.cardTitle}>After</Heading>
+            <p className={styles.cardText}>
+              One versioned requirements spec that both humans and LLM tools can rely on.
+            </p>
+            <div className={styles.tagRow}>
+              <span className={styles.tag}>Explicit</span>
+              <span className={styles.tag}>Toolable</span>
+              <span className={styles.tag}>Diff-friendly</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* HERO 3: WHAT IT CHANGES */}
+  <section className={`${styles.sectionAlt}`}>
+    <div className="container">
+      <div className={styles.centerHeader}>
+        <Heading as="h2">A shared understanding—between humans and machines.</Heading>
+        <p className={styles.lead}>
+          RQML gives your project a single place to store the “why” and “what” of the system in a way that scales with
+          your codebase and your team.
+        </p>
+      </div>
+
+      <div className={styles.grid3}>
+        {[
+          {
+            title: 'Clear structure',
+            text: 'Goals, scenarios, requirements, interfaces, verification, traceability—organized so nothing important gets lost.',
+          },
+          {
+            title: 'Low ceremony',
+            text: 'Enough Requirements Engineering discipline to be useful—without turning spec writing into a second job.',
+          },
+          {
+            title: 'LLM-ready',
+            text: 'Predictable, structured context that improves codegen, refactors, tests, and architecture decisions.',
+          },
+          {
+            title: 'Diff-friendly',
+            text: 'Review requirements like code. PRs show exactly what changed and why.',
+          },
+          {
+            title: 'Traceable',
+            text: 'Connect goals → requirements → verification so you can prove what you built matches intent.',
+          },
+          {
+            title: 'Toolable',
+            text: 'Schema validation, editor support, CI checks, and automated consistency improvements.',
+          },
+        ].map((f) => (
+          <div key={f.title} className={`card ${styles.featureCard}`}>
+            <div className="card__body">
+              <Heading as="h3" className={styles.cardTitle}>{f.title}</Heading>
+              <p className={styles.cardText}>{f.text}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className={styles.ctaRow}>
+        <a className="button button--primary" href="/docs/user-guide">
+          Open the user guide
+        </a>
+        <a className="button button--secondary" href="/docs/reference">
+          Browse the reference
+        </a>
+      </div>
+    </div>
+  </section>
+
+  {/* HERO 4: HOW */}
+  <section className={`container ${styles.section}`}>
+    <div className={styles.twoCol}>
+      <div>
+        <Heading as="h2">Add one file. Get your context back.</Heading>
+        <ol className={styles.steps}>
+          <li>
+            <strong>Write or generate</strong> <code>requirements.rqml</code> (start small: one scenario + a handful of requirements)
+          </li>
+          <li>
+            <strong>Review like code</strong> (PRs, diffs, schema validation)
+          </li>
+          <li>
+            <strong>Use it everywhere</strong> (LLM prompts, code generation, tests, acceptance criteria)
+          </li>
+        </ol>
+
+        <p className={styles.punch}>
+          Start minimal. Grow as the system grows. Let the structure do the hard work.
+        </p>
+
+        <div className={styles.heroCtas}>
+          <a className="button button--primary" href="/docs/quick-start">
+            Quick start
+          </a>
+          <a className="button button--secondary" href="/docs/examples/hello-world">
+            Hello World spec
+          </a>
+        </div>
+      </div>
+
+      <div className={`card ${styles.snippetCard}`}>
+        <div className="card__body">
+          <Heading as="h3" className={styles.cardTitle}>A tiny spec (on purpose)</Heading>
+          <pre className={styles.pre}>
+{`<rqml version="2.0.1">
+  <goals>
+    <goal id="G1">Users can create and complete tasks</goal>
+  </goals>
+  <scenarios>
+    <scenario id="S1" title="Create a task"/>
+  </scenarios>
+  <requirements>
+    <req id="FR1" type="functional" priority="must">
+      The system shall allow a user to create a task with a title.
+    </req>
+  </requirements>
+</rqml>`}
+          </pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* SUPPORTING: USE CASES */}
+  <section className={`${styles.sectionAlt}`}>
+    <div className="container">
+      <div className={styles.centerHeader}>
+        <Heading as="h2">Works especially well for</Heading>
+        <p className={styles.lead}>Where intent gets lost, RQML keeps it explicit and reusable.</p>
+      </div>
+
+      <div className={styles.grid2}>
+        {[
+          {
+            title: 'Greenfield projects',
+            text: 'Reduce back-and-forth prompting, align faster, and establish a stable architecture narrative.',
+          },
+          {
+            title: 'Refactors',
+            text: 'Preserve intent while changing internals—so the “why” survives redesigns.',
+          },
+          {
+            title: 'Teams & handoffs',
+            text: 'Make decisions portable. New teammates and tools can catch up without archaeology.',
+          },
+          {
+            title: 'Regulated / critical systems',
+            text: 'Traceability + verification paths without heavyweight spec tooling overhead.',
+          },
+        ].map((u) => (
+          <div key={u.title} className={`card ${styles.featureCard}`}>
+            <div className="card__body">
+              <Heading as="h3" className={styles.cardTitle}>{u.title}</Heading>
+              <p className={styles.cardText}>{u.text}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {/* SUPPORTING: MARKDOWN COMPARISON */}
+  <section className={`container ${styles.section}`}>
+    <div className={styles.twoCol}>
+      <div>
+        <Heading as="h2">Why not just Markdown?</Heading>
+        <p className={styles.lead}>
+          Markdown is great for humans—but it’s flexible in ways that make it unreliable as machine-consumable system intent.
+        </p>
+
+        <ul className={styles.bullets}>
+          <li>Markdown is <strong>ambiguous</strong> unless you enforce strict conventions.</li>
+          <li>RQML is structured enough to be <strong>consumed consistently</strong> by tools and LLMs.</li>
+          <li>You still get human context—just with a <strong>predictable shape</strong>.</li>
+        </ul>
+
+        <a className="button button--outline button--primary" href="/docs/reference">
+          See the tag/attribute index →
+        </a>
+      </div>
+
+      <div className={`card ${styles.card}`}>
+        <div className="card__body">
+          <Heading as="h3" className={styles.cardTitle}>The goal</Heading>
+          <p className={styles.cardText}>
+            Make the requirements spec the durable artifact. Let code be generated, regenerated, and refactored around it.
+          </p>
+          <div className={styles.quote}>
+            “Stop re-explaining the same context to every tool, every time.”
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* FINAL CTA */}
+  <section className={styles.final}>
+    <div className="container">
+      <Heading as="h2" className={styles.finalTitle}>Try RQML on your next feature.</Heading>
+      <p className={styles.finalSubtitle}>
+        Put your intent in the repo. Make LLM output calmer, cleaner, and easier to trust.
+      </p>
+
+      <div className={styles.heroCtas}>
+        <a className="button button--primary button--lg" href="/docs/quick-start">
+          Get started in 10 minutes
+        </a>
+        <a className="button button--secondary button--lg" href="/docs/examples">
+          Browse examples
+        </a>
+      </div>
+    </div>
+  </section>
+
+</div>

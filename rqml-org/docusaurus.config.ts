@@ -15,7 +15,7 @@ const config: Config = {
   },
 
   // Set the production url of your site here
-  url: 'https://rqml.dev',
+  url: 'https://rqml.org',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/',
@@ -87,6 +87,7 @@ const config: Config = {
           position: 'left',
           label: 'Documentation',
         },
+        {to: '/why-rqml', label: 'Why RQML', position: 'left'},
         {
           href: "/schema/rqml-2.0.1.xsd",      // file in /static/schema/rqml.xsd
           label: "Get RQML Schema",
@@ -96,6 +97,7 @@ const config: Config = {
           target: "_blank",
           rel: "noopener noreferrer",
         },
+        
       ],
     },
     footer: {
