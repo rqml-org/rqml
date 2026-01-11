@@ -17,6 +17,56 @@
       transparent 55%
     );
   border-bottom: 1px solid var(--ifm-toc-border-color);
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+
+.heroDark {
+  background: linear-gradient(180deg, #0b0610 0%, #12091a 60%, #0b0610 100%);
+  color: var(--rqml-white);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.heroImageWrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.heroImageWorkflow {
+  width: min(75%, 720px);
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+  border-radius: 18px;
+}
+
+#workflow,
+#features {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+
+.heroImageWorkflow {
+  width: min(75%, 720px);
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+  border-radius: 18px;
+}
+
+.heroImageFeatures {
+  width: min(75%, 720px);
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  /* box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+  border-radius: 18px; */
 }
 
 .kicker {
@@ -39,11 +89,24 @@
   opacity: 0.95;
 }
 
+.heroSubtitleCenter {
+  composes: heroSubtitle;
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.heroLogo {
+  display: block;
+  margin: 0 auto 1.25rem auto;
+}
+
 .heroCtas {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
   margin-top: 1.25rem;
+  justify-content: center;
 }
 
 .heroLinks {
@@ -52,7 +115,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  align-items: center;
+  justify-content: center;
 }
 
 .dot {
@@ -65,12 +128,18 @@
 
 .sectionAlt {
   padding: 3.25rem 0;
-  background: var(--ifm-background-surface-color);
+  background: var(--rqml-purple);
   border-top: 1px solid var(--ifm-toc-border-color);
   border-bottom: 1px solid var(--ifm-toc-border-color);
 }
 
 .centerHeader {
+  text-align: center;
+  max-width: 56rem;
+  margin: 0 auto 1.75rem auto;
+}
+
+.centerText {
   text-align: center;
   max-width: 56rem;
   margin: 0 auto 1.75rem auto;
@@ -202,6 +271,9 @@
       transparent 60%
     );
   border-top: 1px solid var(--ifm-toc-border-color);
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
 }
 
 .finalTitle {

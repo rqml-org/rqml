@@ -9,40 +9,68 @@ import styles from './index.module.css';
 
 <div className={styles.page}>
 
-  {/* HERO 1 */}
+  {/* HERO 0 */}
   <header className={`hero ${styles.hero}`}>
     <div className="container">
-      <p className={styles.kicker}>RQML • Requirements for LLM-era software</p>
 
-      <Heading as="h1" className={styles.heroTitle}>
-        Requirements you can compile.
+      <img id="heroLogo" width="25%" src="/img/RQML_logo_transparent.png" alt="RQML logo" className={styles.heroLogo} />
+      <Heading as="h1" className={styles.centerHeader}>
+        Requirements Markup Language
       </Heading>
 
-      <p className={styles.heroSubtitle}>
-        RQML is a human-readable, LLM-friendly requirements format that turns scattered intent into shared, durable
-        project context—so AI-generated code becomes more accurate, consistent, and maintainable.
+      <p size="lg" className={styles.heroSubtitleCenter}>
+        A human-readable, LLM-friendly requirements format that turns scattered intent into shared, durable project context
       </p>
 
       <div className={styles.heroCtas}>
-        <a className="button button--primary button--lg" href="/docs/quick-start">
-          Get started
-        </a>
-        <a className="button button--secondary button--lg" href="/docs/examples">
-          See examples
-        </a>
+        <a className="button button--primary button--lg" href="/docs/quick-start">Get started</a>
+        <a className="button button--secondary button--lg" href="/docs/examples">See examples</a>
       </div>
 
-      <div className={styles.heroLinks}>
-        <a href="/schema">Download schema</a>
-        <span className={styles.dot}>•</span>
-        <a href="/docs/why-rqml">Why RQML exists</a>
-        <span className={styles.dot}>•</span>
-        <a href="/docs/reference">Reference</a>
-      </div>
     </div>
   </header>
 
-  {/* HERO 2: WHY NOW */}
+  {/* HERO 1: Workflow */}
+  <section id="workflow" className={`hero ${styles.hero} ${styles.heroDark}`}>
+    <div className="container">
+      <Heading as="h1" className={styles.centerHeader}>
+        RQML is the missing piece in your LLM workflow.
+      </Heading>
+      <div className={styles.heroImageWrap}>
+        <img
+          className={styles.heroImageWorkflow}
+          src="/img/hero_workflow.svg"
+          alt="RQML workflow illustrating goals, requirements, and verification"
+        />
+      </div>
+      <div className={styles.heroCtas}>
+        <a className="button button--secondary button--lg" href="/why-rqml">Read the rationale</a>
+      </div>
+    </div>
+  </section>
+
+  {/* HERO 2: Features */}
+  <section id="features" className={`hero ${styles.hero}`}>
+    <div className="container">
+      <Heading as="h1" className={styles.centerHeader}>
+        RQML is requirements engineering done properly - benefiting both LLMs and human stakeholders.
+      </Heading>
+      <div className={styles.heroImageWrap}>
+        <img
+          className={styles.heroImageFeatures}
+          src="/img/hero_features.svg"
+          alt="RQML features illustration"
+        />
+      </div>
+      <div className={styles.heroCtas}>
+        <a className="button button--primary button--lg" href="/docs/user-guide">Open the user guide</a>
+        <a className="button button--secondary button--lg" href="/docs/reference">Browse the reference</a>
+      </div>
+    </div>
+  </section>
+
+  {/* HERO 4: WHY NOW */}
+  {/*
   <section className={`container ${styles.section}`}>
     <div className={styles.twoCol}>
       <div>
@@ -99,8 +127,10 @@ import styles from './index.module.css';
       </div>
     </div>
   </section>
+  */}
 
-  {/* HERO 3: WHAT IT CHANGES */}
+  {/* HERO 5: WHAT IT CHANGES */}
+  {/*
   <section className={`${styles.sectionAlt}`}>
     <div className="container">
       <div className={styles.centerHeader}>
@@ -157,18 +187,19 @@ import styles from './index.module.css';
       </div>
     </div>
   </section>
+  */}
 
-  {/* HERO 4: HOW */}
+  {/* HERO 6: HOW */}
   <section className={`container ${styles.section}`}>
     <div className={styles.twoCol}>
       <div>
-        <Heading as="h2">Add one file. Get your context back.</Heading>
+        <Heading as="h2">Start right now</Heading>
         <ol className={styles.steps}>
           <li>
             <strong>Write or generate</strong> <code>requirements.rqml</code> (start small: one scenario + a handful of requirements)
           </li>
           <li>
-            <strong>Review like code</strong> (PRs, diffs, schema validation)
+            <strong>Add instructions to</strong> <code>AGENTS.md</code> to tell your LLMs that your requirements are documented in the RQML file (and that you expect compliant code)
           </li>
           <li>
             <strong>Use it everywhere</strong> (LLM prompts, code generation, tests, acceptance criteria)
@@ -180,29 +211,25 @@ import styles from './index.module.css';
         </p>
 
         <div className={styles.heroCtas}>
-          <a className="button button--primary" href="/docs/quick-start">
-            Quick start
-          </a>
-          <a className="button button--secondary" href="/docs/examples/hello-world">
-            Hello World spec
-          </a>
+          <a className="button button--primary" href="/docs/quick-start">Quick start</a>
         </div>
       </div>
 
       <div className={`card ${styles.snippetCard}`}>
         <div className="card__body">
-          <Heading as="h3" className={styles.cardTitle}>A tiny spec (on purpose)</Heading>
+          <Heading as="h3" className={styles.cardTitle}>Hello world RQML example</Heading>
           <pre className={styles.pre}>
-{`<rqml version="2.0.1">
-  <goals>
-    <goal id="G1">Users can create and complete tasks</goal>
-  </goals>
-  <scenarios>
-    <scenario id="S1" title="Create a task"/>
-  </scenarios>
+{`<rqml xmlns="https://rqml.org/schema/2.0.1" version="2.0.1" docId="DOC-HELLO-001">
+  <meta>
+    <title>Hello World CLI</title>
+    <system>hello</system>
+  </meta>
   <requirements>
-    <req id="FR1" type="functional" priority="must">
-      The system shall allow a user to create a task with a title.
+    <req id="REQ-HELLO-001" type="FR" title="Print greeting" status="draft" priority="must">
+      <statement>
+        The program MUST print "Hello, world!" to standard output 
+        and exit with status code 0.
+      </statement>
     </req>
   </requirements>
 </rqml>`}
@@ -213,6 +240,7 @@ import styles from './index.module.css';
   </section>
 
   {/* SUPPORTING: USE CASES */}
+  {/*
   <section className={`${styles.sectionAlt}`}>
     <div className="container">
       <div className={styles.centerHeader}>
@@ -249,8 +277,10 @@ import styles from './index.module.css';
       </div>
     </div>
   </section>
+  */}
 
   {/* SUPPORTING: MARKDOWN COMPARISON */}
+  {/*
   <section className={`container ${styles.section}`}>
     <div className={styles.twoCol}>
       <div>
@@ -283,22 +313,18 @@ import styles from './index.module.css';
       </div>
     </div>
   </section>
+  */}
 
   {/* FINAL CTA */}
   <section className={styles.final}>
     <div className="container">
-      <Heading as="h2" className={styles.finalTitle}>Try RQML on your next feature.</Heading>
+      <Heading as="h2" className={styles.finalTitle}>Try RQML on your next project.</Heading>
       <p className={styles.finalSubtitle}>
-        Put your intent in the repo. Make LLM output calmer, cleaner, and easier to trust.
+        Put your intent in the repo. Make LLM output calmer, cleaner, and easier to trust. And finally start doing requirements right.
       </p>
 
       <div className={styles.heroCtas}>
-        <a className="button button--primary button--lg" href="/docs/quick-start">
-          Get started in 10 minutes
-        </a>
-        <a className="button button--secondary button--lg" href="/docs/examples">
-          Browse examples
-        </a>
+        <a className="button button--primary button--lg" href="/docs/user-guide">Read the user guide and never turn back</a>
       </div>
     </div>
   </section>

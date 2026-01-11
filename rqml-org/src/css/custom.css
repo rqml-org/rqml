@@ -84,6 +84,9 @@
   background: var(--rqml-purple);
   border-color: var(--rqml-purple);
   color: var(--rqml-white);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 .button--primary:hover {
   background: var(--rqml-cyan);
@@ -92,6 +95,9 @@
 }
 .button--secondary {
   border-color: rgba(133, 104, 171, 0.35);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 [data-theme='dark'] .button--secondary {
   border-color: rgba(2, 169, 234, 0.35);
