@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rqml xmlns="https://rqml.org/schema/2.0.1" version="2.0.1" docId="RES-API-001" status="draft">
+  <meta>
+    <title>Restaurant Reservation &amp; Waitlist API</title>
+    <system>SeatSmart</system>
+    <summary>API for booking tables and managing waitlists at a single location.</summary>
+    <authors>
+      <author>
+        <name>Jordan Lee</name>
+        <role>Product</role>
+      </author>
+    </authors>
+  </meta>
+
+  <catalogs>
+    <actors>
+      <actor id="ACT-GUEST" name="Guest"/>
+      <actor id="ACT-HOST" name="Host"/>
+    </actors>
+    <constraints>
+      <constraint id="CON-HTTPS">
+        <statement>All endpoints must be served over HTTPS.</statement>
+        <source>Security policy</source>
+      </constraint>
+    </constraints>
+  </catalogs>
+
+  <domain>
+    <entities>
+      <entity id="ENT-RES" name="Reservation">
+        <attr id="ATTR-PARTY" name="partySize" type="integer" required="true"/>
+        <attr id="ATTR-TIME" name="time" type="dateTime" required="true"/>
+        <attr id="ATTR-STATUS" name="status" type="token" required="true"/>
+      </entity>
+    </entities>
+  </domain>
+
+  <scenarios>
+    <scenario id="SCN-BOOK" title="Book a table" actorRef="ACT-GUEST">
+      <narrative>Guest books a table for a given time and party size.</narrative>
+    </scenario>
+    <scenario id="SCN-CANCEL" title="Cancel reservation" actorRef="ACT-GUEST">
+      <narrative>Guest cancels an existing reservation.</narrative>
+    </scenario>
+  </scenarios>
+
+  <requirements>
+    <reqPackage id="PKG-RES" title="Reservations">
+      <req id="REQ-BOOK" type="FR" title="Create reservation" priority="must">
+        <statement>The API SHALL allow creating a reservation with time and party size.</statement>
+        <acceptance>
+          <criterion id="CRIT-BOOK-1">
+            <given>Requested time is within hours and capacity allows</given>
+            <when>Client POSTs /reservations</when>
+            <then>Return 201 with reservationId and status=confirmed.</then>
+          </criterion>
+        </acceptance>
+        <refs>
+          <ref ref="ENT-RES"/>
+          <ref ref="SCN-BOOK"/>
+        </refs>
+      </req>
+      <req id="REQ-CANCEL" type="FR" title="Cancel reservation" priority="must">
+        <statement>The API SHALL let a guest cancel an existing reservation.</statement>
+        <acceptance>
+          <criterion id="CRIT-CANCEL-1">
+            <given>A confirmed reservation exists</given>
+            <when>DELETE /reservations/{id}</when>
+            <then>Status becomes canceled and a 200 response is returned.</then>
+          </criterion>
+        </acceptance>
+        <refs>
+          <ref ref="SCN-CANCEL"/>
+        </refs>
+      </req>
+      <req id="REQ-LAT" type="NFR" title="Latency" priority="should">
+        <statement>p95 response time for reservation create SHALL be ≤ 300ms under normal load.</statement>
+      </req>
+      <req id="REQ-SEC" type="SR" title="Transport security">
+        <statement>All API traffic SHALL enforce HTTPS (TLS 1.2+).</statement>
+        <refs>
+          <ref ref="CON-HTTPS"/>
+        </refs>
+      </req>
+    </reqPackage>
+  </requirements>
+
+  <interfaces>
+    <api id="API-RES" name="Reservations API" protocol="https">
+      <endpoint id="EP-CREATE" method="POST" path="/reservations">
+        <summary>Create a reservation.</summary>
+        <request>partySize, time, contact info</request>
+        <response>reservationId, status</response>
+      </endpoint>
+      <endpoint id="EP-CANCEL" method="DELETE" path="/reservations/{id}">
+        <summary>Cancel a reservation.</summary>
+        <response>canceled status</response>
+        <errors>404 if not found</errors>
+      </endpoint>
+    </api>
+  </interfaces>
+
+  <verification>
+    <testCase id="TC-BOOK" type="integration" title="Create reservation 201">
+      <steps>POST /reservations with valid body</steps>
+      <expected>201 created with id and status=confirmed</expected>
+      <refs>
+        <ref ref="REQ-BOOK"/>
+      </refs>
+    </testCase>
+  </verification>
+
+  <trace>
+    <traceEdge id="TR-BOOK" from="REQ-BOOK" to="SCN-BOOK" type="satisfies"/>
+    <traceEdge id="TR-CANCEL" from="REQ-CANCEL" to="SCN-CANCEL" type="satisfies"/>
+    <traceEdge id="TR-TEST-BOOK" from="TC-BOOK" to="REQ-BOOK" type="verifiedBy"/>
+  </trace>
+</rqml>

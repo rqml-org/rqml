@@ -61,50 +61,6 @@ You don’t need to learn everything up front. The fastest way to understand RQM
 
 ---
 
-## How to use this documentation
-
-This site is organized to get you productive quickly, then deepen your understanding as you go.
-
-### Quick start
-Get a minimal RQML file running fast — the smallest possible “Hello World” for spec-first development.
-
-➡️ **Next:** *Quick start*
-
-### User guide
-Learn how to *write* RQML: document structure, requirement types, patterns, and practical authoring workflows (including LLM-assisted writing).
-
-➡️ **Then:** *User guide*
-
-### Examples
-Browse complete example specs you can copy into a project, including common product patterns (CLI tools, web apps, auth, etc.).
-
-➡️ **Explore:** *Examples*
-
-### Reference
-A complete catalog of elements, attributes, and rules — designed to be searchable and linkable when you’re authoring.
-
-➡️ **Look up:** *Reference*
-
-### FAQ
-Short answers to the questions you’ll inevitably ask: “How does this compare to X?”, “Where does code live?”, “How strict is the schema?”, “Can we adopt incrementally?”, and more.
-
-➡️ **When stuck:** *FAQ*
-
----
-
-## A simple way to try RQML today
-
-If you want to “get it” in minutes:
-
-1. Open **Quick start**
-2. Copy the smallest example RQML document
-3. Read it like a contract
-4. Imagine your project’s intent living *there* instead of scattered across code and tickets
-
-Once you’ve done that, the rest of the site will click into place.
-
----
-
 ## Philosophy (in one paragraph)
 
 RQML is built for an LLM-native world: humans should own **intent**, not plumbing. The spec should be the **single source of truth**, and implementation should be **generated**, reproducible, and continuously aligned with the current requirements.

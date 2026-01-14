@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rqml xmlns="https://rqml.org/schema/2.0.1" version="2.0.1" docId="ROBOT-001" status="draft">
+  <meta>
+    <title>Autonomous Warehouse Robots</title>
+    <system>FleetControl</system>
+    <summary>Fleet coordination, task assignment, and safety controls for warehouse AMRs.</summary>
+    <authors>
+      <author>
+        <name>Alex Morgan</name>
+        <role>Systems</role>
+      </author>
+    </authors>
+  </meta>
+
+  <catalogs>
+    <risks>
+      <risk id="RISK-COLLISION" severity="critical">
+        <statement>Collision between robots or with humans.</statement>
+        <mitigation>Real-time obstacle detection and braking.</mitigation>
+      </risk>
+    </risks>
+    <decisions>
+      <decision id="DEC-PLANNER" status="approved">
+        <context>Path planning approach</context>
+        <decision>Use A* with dynamic replanning</decision>
+      </decision>
+    </decisions>
+  </catalogs>
+
+  <domain>
+    <entities>
+      <entity id="ENT-ROBOT" name="Robot">
+        <attr id="ATTR-ID" name="robotId" type="uuid" required="true"/>
+        <attr id="ATTR-STATE" name="state" type="token" required="true"/>
+      </entity>
+      <entity id="ENT-TASK" name="Task">
+        <attr id="ATTR-TASK-ID" name="taskId" type="uuid" required="true"/>
+        <attr id="ATTR-PRIORITY" name="priority" type="token" required="false"/>
+      </entity>
+      <entity id="ENT-ZONE" name="Zone">
+        <attr id="ATTR-NAME" name="name" type="string" required="true"/>
+      </entity>
+    </entities>
+  </domain>
+
+  <goals>
+    <goal id="GOAL-THROUGHPUT" title="High throughput" priority="must">
+      <statement>Maximize picks per hour without sacrificing safety.</statement>
+    </goal>
+    <qgoal id="QGOAL-SAFETY" title="Safety" priority="must">
+      <statement>Zero collisions during operations.</statement>
+    </qgoal>
+  </goals>
+
+  <scenarios>
+    <scenario id="SCN-PICK" title="Pick and deliver">
+      <narrative>A robot receives a pick task and delivers items to a pack station.</narrative>
+    </scenario>
+    <edgeCase id="SCN-OBST" title="Obstacle in path">
+      <narrative>A robot encounters an unexpected obstacle mid-route.</narrative>
+    </edgeCase>
+  </scenarios>
+
+  <requirements>
+    <reqPackage id="PKG-FLEET" title="Fleet control">
+      <req id="REQ-ASSIGN" type="FR" title="Assign tasks" priority="must">
+        <statement>The system SHALL assign tasks to available robots based on proximity and load.</statement>
+        <acceptance>
+          <criterion id="CRIT-ASSIGN-1">
+            <when>A new task is created</when>
+            <then>It is assigned to an available robot within 2 seconds.</then>
+          </criterion>
+        </acceptance>
+        <refs>
+          <ref ref="SCN-PICK"/>
+          <ref ref="ENT-TASK"/>
+        </refs>
+      </req>
+      <req id="REQ-AVOID" type="SR" title="Collision avoidance" priority="must">
+        <statement>Robots SHALL detect obstacles and brake to avoid collision.</statement>
+        <acceptance>
+          <criterion id="CRIT-AVOID-1">
+            <when>An obstacle enters the safety radius</when>
+            <then>The robot decelerates and stops before impact.</then>
+          </criterion>
+        </acceptance>
+        <refs>
+          <ref ref="SCN-OBST"/>
+          <ref ref="RISK-COLLISION"/>
+        </refs>
+      </req>
+      <req id="REQ-LOG" type="DR" title="Telemetry logging" priority="should">
+        <statement>Robots SHALL log position, velocity, and battery every second.</statement>
+      </req>
+      <req id="REQ-RECOVERY" type="OR" title="Recovery" priority="should">
+        <statement>The system SHALL reassign tasks from offline robots within 5 seconds.</statement>
+      </req>
+    </reqPackage>
+  </requirements>
+
+  <interfaces>
+    <api id="API-CONTROL" name="Control API" protocol="https" auth="mTLS">
+      <endpoint id="EP-ASSIGN" method="POST" path="/tasks">
+        <summary>Create and assign a task.</summary>
+        <response>taskId, assignedRobotId</response>
+      </endpoint>
+      <endpoint id="EP-HEARTBEAT" method="POST" path="/robots/{id}/heartbeat">
+        <summary>Report robot telemetry.</summary>
+        <request>position, velocity, battery</request>
+        <response>200 ack</response>
+      </endpoint>
+    </api>
+    <event id="EVT-OBST" name="ObstacleDetected">
+      <description>Emitted when a robot detects an obstacle.</description>
+      <payload>robotId, position, timestamp</payload>
+    </event>
+  </interfaces>
+
+  <verification>
+    <testCase id="TC-ASSIGN" type="integration" title="Task assigned quickly">
+      <expected>Assignment occurs within 2 seconds</expected>
+      <refs>
+        <ref ref="REQ-ASSIGN"/>
+      </refs>
+    </testCase>
+    <testCase id="TC-AVOID" type="inspection" title="Obstacle avoidance">
+      <steps>Inject obstacle at 2m ahead during motion</steps>
+      <expected>Robot brakes and stops before impact</expected>
+      <refs>
+        <ref ref="REQ-AVOID"/>
+      </refs>
+    </testCase>
+  </verification>
+
+  <trace>
+    <traceEdge id="TR-ASSIGN" from="REQ-ASSIGN" to="GOAL-THROUGHPUT" type="satisfies"/>
+    <traceEdge id="TR-AVOID" from="REQ-AVOID" to="QGOAL-SAFETY" type="satisfies"/>
+    <traceEdge id="TR-RISK" from="REQ-AVOID" to="RISK-COLLISION" type="mitigates"/>
+    <traceEdge id="TR-ASSIGN-TEST" from="TC-ASSIGN" to="REQ-ASSIGN" type="verifiedBy"/>
+    <traceEdge id="TR-AVOID-TEST" from="TC-AVOID" to="REQ-AVOID" type="verifiedBy"/>
+  </trace>
+</rqml>

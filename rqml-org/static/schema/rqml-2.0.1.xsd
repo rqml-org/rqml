@@ -108,7 +108,25 @@
        Root
        ========================= -->
 
-  <xs:element name="rqml" type="RqmlDocumentType"/>
+  <xs:element name="rqml" type="RqmlDocumentType">
+
+    <!-- Ensure IDs are unique across the document -->
+    <xs:key name="allIds">
+      <xs:selector xpath=".//profile|.//term|.//actor|.//stakeholder|.//constraint|.//policy|.//decision|.//risk|.//entity|.//attr|.//rule|.//goal|.//qgoal|.//obstacle|.//goalLink|.//scenario|.//misuseCase|.//edgeCase|.//reqPackage|.//req|.//criterion|.//api|.//endpoint|.//event|.//testSuite|.//testCase|.//traceEdge|.//issue|.//approval"/>
+      <xs:field xpath="@id"/>
+    </xs:key>
+
+    <!-- Trace edges must point to declared ids -->
+    <xs:keyref name="traceFromRef" refer="allIds">
+      <xs:selector xpath=".//traceEdge"/>
+      <xs:field xpath="@from"/>
+    </xs:keyref>
+    <xs:keyref name="traceToRef" refer="allIds">
+      <xs:selector xpath=".//traceEdge"/>
+      <xs:field xpath="@to"/>
+    </xs:keyref>
+
+  </xs:element>
 
   <xs:complexType name="RqmlDocumentType">
     <xs:sequence>
@@ -128,22 +146,6 @@
     <xs:attribute name="docId" type="IdType" use="required"/>
     <xs:attribute name="status" type="StatusType" use="required"/>
   </xs:complexType>
-
-  <!-- Ensure IDs are unique across the document -->
-  <xs:key name="allIds">
-    <xs:selector xpath=".//*[@id]"/>
-    <xs:field xpath="@id"/>
-  </xs:key>
-
-  <!-- Trace edges must point to declared ids -->
-  <xs:keyref name="traceFromRef" refer="allIds">
-    <xs:selector xpath=".//traceEdge"/>
-    <xs:field xpath="@from"/>
-  </xs:keyref>
-  <xs:keyref name="traceToRef" refer="allIds">
-    <xs:selector xpath=".//traceEdge"/>
-    <xs:field xpath="@to"/>
-  </xs:keyref>
 
   <!-- =========================
        Meta
@@ -210,15 +212,15 @@
        ========================= -->
 
   <xs:complexType name="CatalogsType">
-    <xs:sequence>
-      <xs:element name="glossary" type="GlossaryType" minOccurs="0"/>
-      <xs:element name="actors" type="ActorsType" minOccurs="0"/>
-      <xs:element name="stakeholders" type="StakeholdersType" minOccurs="0"/>
-      <xs:element name="constraints" type="ConstraintsType" minOccurs="0"/>
-      <xs:element name="policies" type="PoliciesType" minOccurs="0"/>
-      <xs:element name="decisions" type="DecisionsType" minOccurs="0"/>
-      <xs:element name="risks" type="RisksType" minOccurs="0"/>
-    </xs:sequence>
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="glossary" type="GlossaryType"/>
+      <xs:element name="actors" type="ActorsType"/>
+      <xs:element name="stakeholders" type="StakeholdersType"/>
+      <xs:element name="constraints" type="ConstraintsType"/>
+      <xs:element name="policies" type="PoliciesType"/>
+      <xs:element name="decisions" type="DecisionsType"/>
+      <xs:element name="risks" type="RisksType"/>
+    </xs:choice>
   </xs:complexType>
 
   <xs:complexType name="GlossaryType">

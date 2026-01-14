@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rqml xmlns="https://rqml.org/schema/2.0.1" version="2.0.1" docId="TASKS-001" status="draft">
+  <meta>
+    <title>Personal Task Manager</title>
+    <system>Taskie</system>
+    <summary>Lightweight to-do app for individuals.</summary>
+    <authors>
+      <author>
+        <name>Avery Kim</name>
+        <role>Product</role>
+      </author>
+    </authors>
+  </meta>
+
+  <domain>
+    <entities>
+      <entity id="ENT-TASK" name="Task">
+        <attr id="ATTR-TITLE" name="title" type="string" required="true"/>
+        <attr id="ATTR-STATUS" name="status" type="token" required="true"/>
+        <attr id="ATTR-DUE" name="dueDate" type="date" required="false"/>
+      </entity>
+    </entities>
+  </domain>
+
+  <scenarios>
+    <scenario id="SCN-ADD" title="Add a task">
+      <narrative>User enters a title and saves a new task.</narrative>
+    </scenario>
+    <scenario id="SCN-COMPLETE" title="Complete a task">
+      <narrative>User marks an existing task as done.</narrative>
+    </scenario>
+  </scenarios>
+
+  <requirements>
+    <reqPackage id="PKG-TASKS" title="Tasks">
+      <req id="REQ-ADD" type="FR" title="Create task" priority="must">
+        <statement>The system SHALL let a user create a task with a title.</statement>
+        <acceptance>
+          <criterion id="CRIT-ADD-1">
+            <when>User provides a title</when>
+            <then>The task is saved with status "open".</then>
+          </criterion>
+        </acceptance>
+        <refs>
+          <ref ref="ENT-TASK"/>
+          <ref ref="SCN-ADD"/>
+        </refs>
+      </req>
+      <req id="REQ-COMPLETE" type="FR" title="Complete task" priority="must">
+        <statement>The system SHALL allow marking a task as completed.</statement>
+        <acceptance>
+          <criterion id="CRIT-COMP-1">
+            <given>An open task exists</given>
+            <when>User marks it done</when>
+            <then>Status becomes "completed" with timestamp.</then>
+          </criterion>
+        </acceptance>
+        <refs>
+          <ref ref="SCN-COMPLETE"/>
+        </refs>
+      </req>
+      <req id="REQ-LIST" type="NFR" title="List performance" priority="should">
+        <statement>The task list SHALL render within 150ms for up to 500 tasks.</statement>
+      </req>
+    </reqPackage>
+  </requirements>
+
+  <verification>
+    <testCase id="TC-ADD-1" type="integration" title="Create task success">
+      <steps>POST /tasks with title=Buy milk</steps>
+      <expected>201 with taskId and status=open</expected>
+      <refs>
+        <ref ref="REQ-ADD"/>
+      </refs>
+    </testCase>
+  </verification>
+
+  <trace>
+    <traceEdge id="TR-ADD" from="REQ-ADD" to="SCN-ADD" type="satisfies"/>
+    <traceEdge id="TR-TEST" from="TC-ADD-1" to="REQ-ADD" type="verifiedBy"/>
+  </trace>
+</rqml>

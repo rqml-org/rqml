@@ -1,0 +1,19 @@
+<rqml xmlns="https://rqml.org/schema/2.0.1" version="2.0.1" docId="DOC-HELLO-001" status="draft">
+  <meta>
+    <title>Hello World CLI</title>
+    <system>hello</system>
+  </meta>
+
+  <requirements>
+    <req id="REQ-HELLO-001" type="FR" title="Print greeting" status="draft" priority="must">
+      <statement>The program MUST print "Hello, world!" to standard output and exit with status code 0.</statement>
+      <acceptance>
+        <criterion>
+          <when>The user runs <code>hello</code>.</when>
+          <then>The program prints exactly <code>Hello, world!</code> followed by a newline and exits with code 0.</then>
+        </criterion>
+      </acceptance>
+    </req>
+  </requirements>
+</rqml>
+

@@ -6,7 +6,9 @@
   --rqml-white:  #fffeff;
   --rqml-cyan:   #02a9ea;
   --rqml-yellow: #faff00;
-  --rqml-black:  #000300;
+  --rqml-orange: #FC7A1E;
+  --rqml-green:  #60A561;
+  --rqml-black:  #191716;
 
   /* Docusaurus theme tokens (LIGHT) */
   --ifm-color-primary: #8568ab;
@@ -21,13 +23,13 @@
   --ifm-font-color-base: var(--rqml-black);
 
   --ifm-navbar-background-color: var(--rqml-purple);
-  --ifm-footer-background-color: #f6f1fb;
+  --ifm-footer-background-color: var(--rqml-purple);
 
   --ifm-link-color: var(--rqml-purple);
-  --ifm-link-hover-color: var(--rqml-cyan);
+  --ifm-link-hover-color: var(--rqml-white);
 
-  --ifm-color-success: var(--rqml-cyan);
-  --ifm-color-warning: var(--rqml-yellow);
+  --ifm-color-success: var(--rqml-green);
+  --ifm-color-warning: var(--rqml-orange);
 
   --ifm-code-font-size: 92%;
   --ifm-code-background: rgba(133, 104, 171, 0.10);
@@ -43,20 +45,21 @@
 
 /* DARK mode overrides */
 [data-theme='dark'] {
-  --ifm-background-color: #0b0610; /* deep near-black with a purple tint */
+  --ifm-background-color: #191716; /* deep near-black with a purple tint */
   --ifm-font-color-base: var(--rqml-white);
 
-  --ifm-navbar-background-color: #0b0610;
-  --ifm-footer-background-color: #08040c;
+  --ifm-navbar-background-color: var(--rqml-black);
+  --ifm-footer-background-color: var(--rqml-purple);
 
-  --ifm-link-color: var(--rqml-cyan);
-  --ifm-link-hover-color: var(--rqml-yellow);
+  --ifm-link-color: var(--rqml-green);
+  --ifm-link-hover-color: var(--rqml-white);
 
-  --ifm-menu-color-active: var(--rqml-cyan);
+  --ifm-menu-color-active: var(--rqml-purple);
   --ifm-toc-link-color: rgba(255, 254, 255, 0.82);
-  --ifm-toc-link-color-active: var(--rqml-cyan);
+  --ifm-toc-link-color-active: var(--rqml-orange);
 
-  --ifm-code-background: rgba(2, 169, 234, 0.12);
+  /* --ifm-code-background: rgba(2, 169, 234, 0.12); */
+  --ifm-code-background: var(--rqml-green);
   --ifm-code-color: var(--rqml-white);
 
   /* Make primary still purple, but slightly brighter on dark */
@@ -123,6 +126,10 @@
 .navbar__brand {
   gap: 0.55rem;
   margin-right: 1.1rem;
+}
+
+.footer--dark {
+  --ifm-footer-background-color: var(--rqml-black); /* pick your color */
 }
 
 /* Admonitions: keep them “on brand” without being too loud */

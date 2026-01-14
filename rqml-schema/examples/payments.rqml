@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rqml xmlns="https://rqml.org/schema/2.0.1" version="2.0.1" docId="PAY-001" status="review">
+  <meta>
+    <title>Checkout Payments</title>
+    <system>Checkout</system>
+    <summary>Authorization, capture, and refund flows for an e-commerce checkout API.</summary>
+    <authors>
+      <author>
+        <name>Sam Rivera</name>
+        <role>Product</role>
+      </author>
+    </authors>
+  </meta>
+
+  <catalogs>
+    <constraints>
+      <constraint id="CON-TLS">
+        <statement>All APIs must use TLS 1.2+.</statement>
+      </constraint>
+    </constraints>
+    <risks>
+      <risk id="RISK-FRAUD" severity="high">
+        <statement>Fraudulent card-not-present attempts.</statement>
+        <mitigation>Velocity checks and 3DS when required.</mitigation>
+      </risk>
+    </risks>
+  </catalogs>
+
+  <goals>
+    <goal id="GOAL-AVAIL" title="High availability" priority="must">
+      <statement>Payment API remains available during peak events.</statement>
+    </goal>
+    <qgoal id="QGOAL-LAT" title="Low latency" priority="should">
+      <statement>Keep latency low for checkout.</statement>
+      <metric>p95 authorization latency ≤ 500ms at 200 rps.</metric>
+    </qgoal>
+  </goals>
+
+  <scenarios>
+    <scenario id="SCN-CHECKOUT" title="Card checkout">
+      <narrative>User submits card details and receives authorization result.</narrative>
+    </scenario>
+    <misuseCase id="SCN-FRAUD" title="Fraud attempt">
+      <narrative>Attacker replays stolen card numbers.</narrative>
+    </misuseCase>
+  </scenarios>
+
+  <requirements>
+    <reqPackage id="PKG-PAY" title="Payments">
+      <req id="REQ-AUTH" type="FR" title="Authorize payment" priority="must">
+        <statement>The system SHALL authorize card payments with the acquiring bank.</statement>
+        <acceptance>
+          <criterion id="CRIT-AUTH-1">
+            <given>Valid card and funds</given>
+            <when>POST /payments is called</when>
+            <then>Response includes paymentId and status=authorized.</then>
+          </criterion>
+        </acceptance>
+        <refs>
+          <ref ref="SCN-CHECKOUT"/>
+          <ref ref="GOAL-AVAIL"/>
+        </refs>
+      </req>
+      <req id="REQ-REFUND" type="FR" title="Refund payment" priority="should">
+        <statement>The system SHALL allow refunds on captured payments.</statement>
+        <acceptance>
+          <criterion id="CRIT-REF-1">
+            <given>A captured payment exists</given>
+            <when>POST /payments/{id}/refunds</when>
+            <then>A refundId is returned and payment status reflects refund.</then>
+          </criterion>
+        </acceptance>
+      </req>
+      <req id="REQ-LAT" type="NFR" title="Latency" priority="should">
+        <statement>p95 authorization latency SHALL be ≤ 500ms at 200 rps.</statement>
+      </req>
+      <req id="REQ-SEC" type="SR" title="Secure transport" priority="must">
+        <statement>All payment endpoints SHALL enforce TLS 1.2+.</statement>
+        <refs>
+          <ref ref="CON-TLS"/>
+        </refs>
+      </req>
+      <req id="REQ-FRAUD" type="SR" title="Fraud mitigation" priority="must">
+        <statement>The system SHALL apply velocity checks and challenge flows when risk is high.</statement>
+        <refs>
+          <ref ref="RISK-FRAUD"/>
+        </refs>
+      </req>
+    </reqPackage>
+  </requirements>
+
+  <interfaces>
+    <api id="API-PAY" name="Payments API" protocol="https" auth="oauth2">
+      <endpoint id="EP-AUTH" method="POST" path="/payments">
+        <summary>Create a payment and request authorization.</summary>
+        <response>paymentId, status (authorized|declined|pending)</response>
+        <errors>422 for validation, 502 for upstream decline.</errors>
+      </endpoint>
+      <endpoint id="EP-REF" method="POST" path="/payments/{id}/refunds">
+        <summary>Refund a captured payment.</summary>
+        <response>refundId, status</response>
+      </endpoint>
+    </api>
+    <event id="EVT-PAY-UPDATED" name="PaymentUpdated">
+      <description>Emitted when a payment status changes.</description>
+      <payload>paymentId, status, updatedAt</payload>
+    </event>
+  </interfaces>
+
+  <verification>
+    <testCase id="TC-AUTH" type="integration" title="Authorize happy path">
+      <steps>POST /payments with valid card</steps>
+      <expected>201 with status=authorized</expected>
+      <refs>
+        <ref ref="REQ-AUTH"/>
+      </refs>
+    </testCase>
+    <testCase id="TC-LAT" type="performance" title="Latency budget">
+      <purpose>Ensure p95 latency meets target.</purpose>
+      <refs>
+        <ref ref="REQ-LAT"/>
+      </refs>
+    </testCase>
+  </verification>
+
+  <trace>
+    <traceEdge id="TR-AUTH-GOAL" from="REQ-AUTH" to="GOAL-AVAIL" type="satisfies" confidence="0.9"/>
+    <traceEdge id="TR-AUTH-TEST" from="TC-AUTH" to="REQ-AUTH" type="verifiedBy"/>
+    <traceEdge id="TR-LAT-TEST" from="TC-LAT" to="REQ-LAT" type="verifiedBy"/>
+    <traceEdge id="TR-FRAUD" from="REQ-FRAUD" to="RISK-FRAUD" type="mitigates"/>
+  </trace>
+</rqml>

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rqml xmlns="https://rqml.org/schema/2.0.1" version="2.0.1" docId="TELEMED-001" status="review">
+  <meta>
+    <title>Telemedicine Platform</title>
+    <system>CareConnect</system>
+    <summary>Video consultations, scheduling, and prescriptions with privacy controls.</summary>
+    <authors>
+      <author>
+        <name>Priya Singh</name>
+        <role>Product</role>
+      </author>
+    </authors>
+  </meta>
+
+  <catalogs>
+    <actors>
+      <actor id="ACT-PATIENT" name="Patient"/>
+      <actor id="ACT-CLINICIAN" name="Clinician"/>
+    </actors>
+    <policies>
+      <policy id="POL-HIPAA" source="HIPAA">
+        <obligation>Protect PHI with encryption in transit and at rest.</obligation>
+      </policy>
+    </policies>
+  </catalogs>
+
+  <domain>
+    <entities>
+      <entity id="ENT-VISIT" name="Visit">
+        <attr id="ATTR-SLOT" name="timeSlot" type="dateTime" required="true"/>
+        <attr id="ATTR-STATE" name="state" type="token" required="true"/>
+      </entity>
+      <entity id="ENT-PRESC" name="Prescription">
+        <attr id="ATTR-MED" name="medication" type="string" required="true"/>
+        <attr id="ATTR-DOS" name="dosage" type="string" required="true"/>
+      </entity>
+    </entities>
+  </domain>
+
+  <goals>
+    <goal id="GOAL-ACCESS" title="Accessible care" priority="must">
+      <statement>Allow patients to see a clinician within 24 hours.</statement>
+    </goal>
+    <qgoal id="QGOAL-QUALITY" title="High call quality" priority="should">
+      <statement>Video calls remain stable with minimal jitter.</statement>
+    </qgoal>
+  </goals>
+
+  <scenarios>
+    <scenario id="SCN-BOOK" title="Book a visit" actorRef="ACT-PATIENT">
+      <narrative>Patient books an appointment slot with a clinician.</narrative>
+    </scenario>
+    <scenario id="SCN-CALL" title="Start video consult" actorRef="ACT-CLINICIAN">
+      <narrative>Clinician and patient join a secure video call.</narrative>
+    </scenario>
+    <scenario id="SCN-PRESC" title="Issue prescription" actorRef="ACT-CLINICIAN">
+      <narrative>Clinician issues an e-prescription after the call.</narrative>
+    </scenario>
+  </scenarios>
+
+  <requirements>
+    <reqPackage id="PKG-VISIT" title="Visits">
+      <req id="REQ-SCHED" type="FR" title="Schedule visit" priority="must">
+        <statement>The system SHALL let patients book available slots with clinicians.</statement>
+        <acceptance>
+          <criterion id="CRIT-SCHED-1">
+            <given>A clinician has open slots</given>
+            <when>Patient selects a slot</when>
+            <then>A visit is created with state=scheduled and a confirmation is returned.</then>
+          </criterion>
+        </acceptance>
+        <refs>
+          <ref ref="SCN-BOOK"/>
+          <ref ref="ENT-VISIT"/>
+        </refs>
+      </req>
+      <req id="REQ-VIDEO" type="FR" title="Secure video" priority="must">
+        <statement>The platform SHALL provide encrypted video sessions for visits.</statement>
+        <acceptance>
+          <criterion id="CRIT-VIDEO-1">
+            <when>Clinician and patient join a visit</when>
+            <then>A video session is established using end-to-end encrypted transport.</then>
+          </criterion>
+        </acceptance>
+        <refs>
+          <ref ref="SCN-CALL"/>
+        </refs>
+      </req>
+      <req id="REQ-PHI" type="SR" title="Protect PHI" priority="must">
+        <statement>PHI SHALL be encrypted in transit and at rest.</statement>
+        <refs>
+          <ref ref="POL-HIPAA"/>
+        </refs>
+      </req>
+      <req id="REQ-PRESC" type="FR" title="Issue prescription" priority="should">
+        <statement>Clinicians SHALL be able to issue and transmit prescriptions electronically.</statement>
+        <acceptance>
+          <criterion id="CRIT-PRESC-1">
+            <given>A completed visit</given>
+            <when>The clinician submits a prescription</when>
+            <then>A prescription record is created and sent to the pharmacy.</then>
+          </criterion>
+        </acceptance>
+        <refs>
+          <ref ref="SCN-PRESC"/>
+          <ref ref="ENT-PRESC"/>
+        </refs>
+      </req>
+      <req id="REQ-QUALITY" type="NFR" title="Call quality" priority="should">
+        <statement>Video calls SHALL maintain p95 MOS equivalent ≥ 4.0 under target bandwidth.</statement>
+      </req>
+    </reqPackage>
+  </requirements>
+
+  <interfaces>
+    <api id="API-VISIT" name="Visits API" protocol="https" auth="oauth2">
+      <endpoint id="EP-SCHEDULE" method="POST" path="/visits">
+        <summary>Create a visit</summary>
+        <request>patientId, clinicianId, slot</request>
+        <response>visitId, state</response>
+      </endpoint>
+      <endpoint id="EP-START" method="POST" path="/visits/{id}/start">
+        <summary>Start video session</summary>
+        <response>sessionUrl, token</response>
+      </endpoint>
+    </api>
+    <event id="EVT-VISIT-UPDATED" name="VisitUpdated">
+      <description>Emitted when a visit state changes.</description>
+      <payload>visitId, state, updatedAt</payload>
+    </event>
+  </interfaces>
+
+  <verification>
+    <testSuite id="TS-VISIT" title="Visit flows">
+      <members>
+        <ref ref="TC-SCHED"/>
+        <ref ref="TC-VIDEO"/>
+      </members>
+    </testSuite>
+    <testCase id="TC-SCHED" type="integration" title="Schedule visit success">
+      <steps>POST /visits with valid slot</steps>
+      <expected>201 with state=scheduled</expected>
+      <refs>
+        <ref ref="REQ-SCHED"/>
+      </refs>
+    </testCase>
+    <testCase id="TC-VIDEO" type="security" title="Encrypted video established">
+      <expected>Video session negotiates encrypted transport</expected>
+      <refs>
+        <ref ref="REQ-VIDEO"/>
+        <ref ref="REQ-PHI"/>
+      </refs>
+    </testCase>
+  </verification>
+
+  <trace>
+    <traceEdge id="TR-SCHED-GOAL" from="REQ-SCHED" to="GOAL-ACCESS" type="satisfies"/>
+    <traceEdge id="TR-VIDEO-PHI" from="REQ-VIDEO" to="REQ-PHI" type="dependsOn"/>
+    <traceEdge id="TR-SCHED-TEST" from="TC-SCHED" to="REQ-SCHED" type="verifiedBy"/>
+    <traceEdge id="TR-VIDEO-TEST" from="TC-VIDEO" to="REQ-VIDEO" type="verifiedBy"/>
+  </trace>
+</rqml>
