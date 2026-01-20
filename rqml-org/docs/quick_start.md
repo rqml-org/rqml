@@ -81,7 +81,6 @@ When making changes, you MUST preserve traceability between **requirements ⇄ c
 - Ask for the missing requirement(s) OR propose candidate RQML wording.
 - Clearly label assumptions and include them as RQML notes or open items.
 ```
-Optional: add a stricter “no-ghost-features” clause
 
 If you want to be very firm about preventing untraced behavior, add a stricter "no-ghost-features" clause:
 ```markdown
