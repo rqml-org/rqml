@@ -1,7 +1,7 @@
 ---
 id: verification
 title: Verification
-sidebar_position: 8
+sidebar_position: 9
 description: Capture how requirements are tested and inspected.
 ---
 

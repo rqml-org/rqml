@@ -1,7 +1,7 @@
 ---
 id: interfaces
 title: Interfaces
-sidebar_position: 7
+sidebar_position: 8
 description: Describe APIs, events, and other external touchpoints.
 ---
 

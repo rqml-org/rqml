@@ -27,6 +27,7 @@
     * Verifiable (has acceptance criteria or can be tested)
     * Unambiguous (single interpretation)
     * Feasible (technically achievable)
+  - Use `behavior` to formalize entity lifecycles as state machines (derived from requirements)
   - Document `interfaces` for system boundaries (APIs, events)
   - Add `verification` to define how requirements are tested
   - Create `trace` edges to link artifacts for impact analysis
@@ -38,6 +39,7 @@
 
   - Read `domain/entities` for data models (classes, database schemas, types)
   - Read `domain/businessRules` for validation logic and constraints
+  - Read `behavior/stateMachine` for state enums, transition logic, and lifecycle validation
   - Read `requirements` with type="FR" for features to implement
   - Read `requirements` with type="NFR" for quality attributes (performance, reliability)
   - Read `requirements` with type="IR" for API contracts and integrations
@@ -56,10 +58,11 @@
   4. goals - Objectives: business goals, quality goals, obstacles, goal links
   5. scenarios - User journeys: use cases, misuse cases, edge cases
   6. requirements (REQUIRED) - Normative statements: packages and individual requirements
-  7. interfaces - System boundaries: APIs, endpoints, events
-  8. verification - Testing: test suites and test cases
-  9. trace - Traceability: edges linking all artifacts
-  10. governance - Change control: issues and approvals
+  7. behavior - State machines: formalized entity lifecycles derived from requirements
+  8. interfaces - System boundaries: APIs, endpoints, events
+  9. verification - Testing: test suites and test cases
+  10. trace - Traceability: edges linking all artifacts
+  11. governance - Change control: issues and approvals
 
   ID CONVENTIONS
   ==============
@@ -74,6 +77,9 @@
   - Scenarios: SCN-<NAME> (e.g., SCN-CHECKOUT)
   - Risks: RISK-<NAME> (e.g., RISK-FRAUD)
   - Decisions: DEC-<NAME> (e.g., DEC-IDEMPOTENCY)
+  - State Machines: SM-<NAME> (e.g., SM-ORDER)
+  - States: ST-<NAME> (e.g., ST-PENDING, ST-CONFIRMED)
+  - Transitions: TR-<NAME> (e.g., TR-CONFIRM, TR-SHIP)
 
   STANDARDS ALIGNMENT
   ===================
@@ -385,6 +391,27 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <!--
+    StateKindType: Classification of states in a state machine
+
+    VALUES:
+    - initial: The starting state; exactly one per state machine
+    - normal: Regular intermediate state (default)
+    - final: Terminal state; no outgoing transitions allowed
+
+    FOR LLMs:
+    - Every state machine must have exactly one initial state
+    - Final states represent completed lifecycles
+    - Normal states are the default; omit the attribute for normal states
+  -->
+  <xs:simpleType name="StateKindType">
+    <xs:restriction base="xs:token">
+      <xs:enumeration value="initial"/>
+      <xs:enumeration value="normal"/>
+      <xs:enumeration value="final"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <!-- =========================
        Reusable complex types
 
@@ -452,7 +479,7 @@
 
     STRUCTURE:
     Contains sections in fixed order: meta, catalogs?, domain?, goals?,
-    scenarios?, requirements, interfaces?, verification?, trace?, governance?
+    scenarios?, requirements, behavior?, interfaces?, verification?, trace?, governance?
 
     CONSTRAINTS:
     - All @id attributes must be unique within the document
@@ -467,7 +494,7 @@
 
     <!-- Ensure IDs are unique across the document -->
     <xs:key name="allIds">
-      <xs:selector xpath=".//profile|.//term|.//actor|.//stakeholder|.//constraint|.//policy|.//decision|.//risk|.//entity|.//attr|.//rule|.//goal|.//qgoal|.//obstacle|.//goalLink|.//scenario|.//misuseCase|.//edgeCase|.//reqPackage|.//req|.//criterion|.//api|.//endpoint|.//event|.//testSuite|.//testCase|.//traceEdge|.//issue|.//approval"/>
+      <xs:selector xpath=".//profile|.//term|.//actor|.//stakeholder|.//constraint|.//policy|.//decision|.//risk|.//entity|.//attr|.//rule|.//stateMachine|.//state|.//transition|.//goal|.//qgoal|.//obstacle|.//goalLink|.//scenario|.//misuseCase|.//edgeCase|.//reqPackage|.//req|.//criterion|.//api|.//endpoint|.//event|.//testSuite|.//testCase|.//traceEdge|.//issue|.//approval"/>
       <xs:field xpath="@id"/>
     </xs:key>
 
@@ -478,6 +505,22 @@
     </xs:keyref>
     <xs:keyref name="traceToRef" refer="allIds">
       <xs:selector xpath=".//traceEdge"/>
+      <xs:field xpath="@to"/>
+    </xs:keyref>
+
+    <!-- State machine initial state must reference a declared state -->
+    <xs:keyref name="smInitialRef" refer="allIds">
+      <xs:selector xpath=".//stateMachine"/>
+      <xs:field xpath="@initial"/>
+    </xs:keyref>
+
+    <!-- Transition from/to must reference declared states -->
+    <xs:keyref name="transitionFromRef" refer="allIds">
+      <xs:selector xpath=".//transition"/>
+      <xs:field xpath="@from"/>
+    </xs:keyref>
+    <xs:keyref name="transitionToRef" refer="allIds">
+      <xs:selector xpath=".//transition"/>
       <xs:field xpath="@to"/>
     </xs:keyref>
 
@@ -498,6 +541,7 @@
       <xs:element name="goals" type="GoalsType" minOccurs="0"/>
       <xs:element name="scenarios" type="ScenariosType" minOccurs="0"/>
       <xs:element name="requirements" type="RequirementsType"/>
+      <xs:element name="behavior" type="BehaviorType" minOccurs="0"/>
       <xs:element name="interfaces" type="InterfacesType" minOccurs="0"/>
       <xs:element name="verification" type="VerificationType" minOccurs="0"/>
       <xs:element name="trace" type="TraceTypeContainer" minOccurs="0"/>
@@ -1520,6 +1564,181 @@
       <xs:element name="then" type="TextBlockType" minOccurs="1"/>
     </xs:sequence>
     <xs:attribute name="id" type="IdType" use="optional"/>
+  </xs:complexType>
+
+  <!-- =========================
+       Behavior Section
+
+       State machines that formalize entity lifecycles derived from requirements.
+       Models valid states and transitions to enable precise behavioral specs.
+
+       Placed after requirements because state machines refine/formalize requirement
+       statements into explicit lifecycle models. Transitions reference requirements.
+
+       Aligned with UML state machine concepts (simplified flat model).
+
+       FOR LLMs:
+       - Use state machines to formalize entity lifecycles (Order, Payment, User, etc.)
+       - Generate state enums, transition functions, and validation logic
+       - Generate state transition tests (happy path, all transitions, invalid transitions)
+       - Link transitions to requirements via refs for traceability
+       - Check guards to generate conditional logic
+       ========================= -->
+
+  <!--
+    BehaviorType: Container for state machines
+
+    CHILDREN:
+    - stateMachine: Individual state machine definitions
+  -->
+  <xs:complexType name="BehaviorType">
+    <xs:sequence>
+      <xs:element name="stateMachine" type="StateMachineType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!--
+    StateMachineType: Finite state machine definition
+
+    Models the valid lifecycle of an entity or process. An entity is always
+    in exactly one state; transitions move it between states based on events
+    and guards.
+
+    ATTRIBUTES:
+    - id: Unique identifier (e.g., SM-ORDER, SM-PAYMENT, SM-USER-ACCOUNT)
+    - name: Human-readable state machine name
+    - entityRef: Optional reference to the domain entity this governs
+    - initial: Required reference to the initial state ID
+
+    CHILDREN:
+    - description: Purpose and scope of this state machine
+    - state: State definitions (at least one required)
+    - transition: Transition definitions between states
+
+    FOR LLMs:
+    - Generate state enum/type from all state names
+    - Generate transition validation function
+    - Use entityRef to link to domain entity for the status field
+    - Ensure initial state exists and is reachable
+    - Verify all non-final states have at least one outgoing transition
+
+    EXAMPLE ID PATTERNS:
+    - SM-ORDER (order lifecycle)
+    - SM-PAYMENT (payment processing)
+    - SM-TICKET (support ticket workflow)
+    - SM-DOC-REVIEW (document approval process)
+  -->
+  <xs:complexType name="StateMachineType">
+    <xs:sequence>
+      <xs:element name="description" type="TextBlockType" minOccurs="0"/>
+      <xs:element name="state" type="StateType" minOccurs="1" maxOccurs="unbounded"/>
+      <xs:element name="transition" type="TransitionType" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="IdType" use="required"/>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="entityRef" type="IdType" use="optional"/>
+    <xs:attribute name="initial" type="IdType" use="required"/>
+  </xs:complexType>
+
+  <!--
+    StateType: Individual state in a state machine
+
+    Represents a distinct condition or situation in an entity's lifecycle.
+    States are mutually exclusive; an entity is in exactly one state at a time.
+
+    ATTRIBUTES:
+    - id: Unique identifier (e.g., ST-PENDING, ST-CONFIRMED, ST-CANCELLED)
+    - name: Human-readable state name (use for enum values in code generation)
+    - type: State kind: initial, normal, or final (default: normal)
+
+    CHILDREN:
+    - description: What this state represents and when an entity is in it
+    - onEntry: Actions to perform when entering this state
+    - onExit: Actions to perform when leaving this state
+    - invariant: Conditions that must hold while in this state
+
+    FOR LLMs:
+    - Generate enum values from state names (use PascalCase or snake_case)
+    - onEntry actions become side effects in transition handlers
+    - onExit actions become cleanup logic before transitions
+    - invariant becomes validation logic or assertions
+    - States with type="final" should have no outgoing transitions
+
+    EXAMPLE STATE NAMES:
+    - Pending, Confirmed, Shipped, Delivered, Cancelled (order)
+    - Draft, Review, Approved, Published, Archived (document)
+    - Active, Suspended, Closed (account)
+  -->
+  <xs:complexType name="StateType">
+    <xs:sequence>
+      <xs:element name="description" type="TextBlockType" minOccurs="0"/>
+      <xs:element name="onEntry" type="TextBlockType" minOccurs="0"/>
+      <xs:element name="onExit" type="TextBlockType" minOccurs="0"/>
+      <xs:element name="invariant" type="TextBlockType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="IdType" use="required"/>
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="type" type="StateKindType" use="optional" default="normal"/>
+  </xs:complexType>
+
+  <!--
+    TransitionType: State transition definition
+
+    Defines a valid movement from one state to another, optionally triggered
+    by an event and constrained by a guard condition.
+
+    ATTRIBUTES:
+    - id: Unique identifier (e.g., TR-CONFIRM, TR-SHIP, TR-CANCEL)
+    - from: Source state ID (must exist in same state machine)
+    - to: Target state ID (must exist in same state machine)
+    - event: Optional event name that triggers this transition
+
+    CHILDREN:
+    - description: Human-readable explanation of this transition
+    - trigger: What causes this transition (if not captured by event attribute)
+    - guard: Condition that must be true for transition to fire
+    - action: What happens during the transition (side effects)
+    - refs: Links to requirements this transition implements
+
+    FOR LLMs:
+
+    CODE GENERATION:
+    - Generate transition table/map: { from, to, event, guard? }
+    - Generate event handler functions from event names
+    - Guard text becomes conditional logic (if/when)
+    - Action text becomes side effect code
+    - Use refs to add traceability comments in generated code
+
+    TEST GENERATION:
+    - Generate test for each transition (valid path)
+    - Generate test for transition with guard=true and guard=false
+    - Generate test for invalid transitions (wrong source state)
+    - Generate test for missing event (should reject)
+
+    PATTERNS:
+    - event="confirm" -> onConfirm() handler
+    - guard="payment authorized" -> if (order.paymentAuthorized)
+    - action="send email" -> emailService.send(...)
+
+    EXAMPLE:
+    <transition id="TR-SHIP" from="ST-CONFIRMED" to="ST-SHIPPED" event="ship">
+      <guard>All items picked and packed</guard>
+      <action>Capture payment; generate tracking number</action>
+      <refs><ref ref="REQ-ORDER-SHIP"/></refs>
+    </transition>
+  -->
+  <xs:complexType name="TransitionType">
+    <xs:sequence>
+      <xs:element name="description" type="TextBlockType" minOccurs="0"/>
+      <xs:element name="trigger" type="TextBlockType" minOccurs="0"/>
+      <xs:element name="guard" type="TextBlockType" minOccurs="0"/>
+      <xs:element name="action" type="TextBlockType" minOccurs="0"/>
+      <xs:element name="refs" type="RefsType" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="IdType" use="required"/>
+    <xs:attribute name="from" type="IdType" use="required"/>
+    <xs:attribute name="to" type="IdType" use="required"/>
+    <xs:attribute name="event" type="xs:string" use="optional"/>
   </xs:complexType>
 
   <!-- =========================

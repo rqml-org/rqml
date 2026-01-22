@@ -1,7 +1,7 @@
 ---
 id: governance
 title: Governance
-sidebar_position: 10
+sidebar_position: 11
 description: Track issues, approvals, and lifecycle controls for the specification.
 ---
 

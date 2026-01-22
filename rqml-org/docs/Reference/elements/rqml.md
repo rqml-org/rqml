@@ -17,6 +17,7 @@ Root container for an RQML document.
 - `goals` (0..1)
 - `scenarios` (0..1)
 - `requirements` (1)
+- `behavior` (0..1)
 - `interfaces` (0..1)
 - `verification` (0..1)
 - `trace` (0..1)
@@ -45,9 +46,11 @@ Root container for an RQML document.
 <rqml xmlns="https://rqml.org/schema/2.0.1" version="2.0.1" docId="PAY-REQS" status="review">
   <meta>...</meta>
   <catalogs>...</catalogs>
+  <domain>...</domain>
   <goals>...</goals>
   <scenarios>...</scenarios>
   <requirements>...</requirements>
+  <behavior>...</behavior>
   <verification>...</verification>
   <trace>...</trace>
   <governance>...</governance>

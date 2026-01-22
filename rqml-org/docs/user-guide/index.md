@@ -21,13 +21,14 @@ In order, the top-level structure is:
 1. **`meta`** *(required)* — Document identity and metadata (versioning, authorship, lifecycle, etc.).
 2. **`catalogs`** *(optional)* — Shared definitions and reusable lists (e.g., requirement types, severities, tags, vocabularies).
 3. **`domain`** *(optional)* — Domain context and terminology: key concepts, constraints, assumptions, and glossary-style information.
-4. **`goals`** *(optional)* — The “why”: business/product goals, desired outcomes, and success criteria.
+4. **`goals`** *(optional)* — The "why": business/product goals, desired outcomes, and success criteria.
 5. **`scenarios`** *(optional)* — Narrative descriptions of how the system is used (user journeys, use cases, operational stories).
-6. **`requirements`** *(required)* — The “what”: normative requirements statements that the system must satisfy.
-7. **`interfaces`** *(optional)* — External boundaries: APIs, UIs, integrations, events, data contracts, protocols.
-8. **`verification`** *(optional)* — How requirements are validated (tests, acceptance criteria, inspection procedures).
-9. **`trace`** *(optional)* — Traceability links between goals, scenarios, requirements, interfaces, and verification.
-10. **`governance`** *(optional)* — Ownership, review/approval workflow, change control, and policy for maintaining the spec.
+6. **`requirements`** *(required)* — The "what": normative requirements statements that the system must satisfy.
+7. **`behavior`** *(optional)* — State machines: entity lifecycles, workflow states, and valid transitions that formalize requirements.
+8. **`interfaces`** *(optional)* — External boundaries: APIs, UIs, integrations, events, data contracts, protocols.
+9. **`verification`** *(optional)* — How requirements are validated (tests, acceptance criteria, inspection procedures).
+10. **`trace`** *(optional)* — Traceability links between goals, scenarios, requirements, interfaces, and verification.
+11. **`governance`** *(optional)* — Ownership, review/approval workflow, change control, and policy for maintaining the spec.
 
 ### A minimal skeleton
 
