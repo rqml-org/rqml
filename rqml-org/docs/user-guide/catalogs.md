@@ -60,6 +60,67 @@ The optional `catalogs` section centralizes reusable definitions and lookup list
 </catalogs>
 ```
 
+## Code generation examples
+
+LLMs can generate implementation artifacts from catalog definitions:
+
+**Actor enums and types:**
+```typescript
+enum ActorType {
+  EndUser = 'human',
+  PaymentGateway = 'system',
+  AdminUser = 'human',
+}
+
+interface Actor {
+  id: string;
+  name: string;
+  type: ActorType;
+}
+```
+
+**Constraint validation:**
+```typescript
+// From CON-HTTPS: All APIs must enforce TLS 1.2+
+export function validateTLSVersion(req: Request): void {
+  const tlsVersion = req.socket.getPeerCertificate()?.version;
+  if (!tlsVersion || tlsVersion < 'TLSv1.2') {
+    throw new SecurityError('TLS 1.2+ required per CON-HTTPS');
+  }
+}
+```
+
+**Decision-based configuration:**
+```typescript
+// From DEC-IDEMPOTENCY: Use Idempotency-Key header
+export const idempotencyConfig = {
+  headerName: 'Idempotency-Key',
+  ttlSeconds: 86400, // 24 hours
+  storage: 'redis',
+};
+```
+
+**Risk mitigation middleware:**
+```typescript
+// From RISK-FRAUD: 3DS and velocity checks
+async function fraudCheckMiddleware(req: PaymentRequest): Promise<void> {
+  await velocityCheck(req.cardToken, req.amount);
+  if (await shouldRequire3DS(req)) {
+    await initiate3DSChallenge(req);
+  }
+}
+```
+
+## Test generation examples
+
+Catalogs drive specific verification approaches:
+
+1. **Constraint compliance tests**: Verify all API endpoints enforce declared constraints
+2. **Policy evidence tests**: Ensure required audit trails and evidence collection for policies
+3. **Decision validation**: Test that approved decisions are actually implemented
+4. **Risk coverage**: Verify each high-severity risk has active mitigation in place
+5. **Actor authorization**: Test that each actor can only perform their authorized operations
+
 ## Theory
 - Catalogs normalize vocabulary and reusable facts, reducing ambiguity—a core RE principle from IEEE 29148 on consistent terminology.
 - Decision and risk logs mirror lightweight ADRs and ISO 31000 risk management practice.

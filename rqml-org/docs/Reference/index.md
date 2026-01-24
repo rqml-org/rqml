@@ -11,6 +11,7 @@ RQML schema version **2.0.1** is defined in `static/schema/rqml-2.0.1.xsd` (serv
 ## Common patterns
 - **IDs**: `IdType` tokens, 2–80 chars, start with a letter; allow letters, digits, `.`, `_`, `-`. Keep stable across revisions.
 - **References**: `ref`, `goalLink`, `traceEdge`, and `refs` collections all point to existing IDs; the schema enforces this with keyrefs.
+- **External references**: `traceEdge` supports `fromUri`/`toUri` for tracing to external systems (Jira, Git, files, regulations) using URIs.
 - **Language**: Use clear, testable prose; avoid ambiguity. Text blocks allow mixed content for formatting.
 - **Cardinality**: Required elements are noted in each element page; optional sections may be omitted entirely.
 
@@ -19,6 +20,9 @@ RQML schema version **2.0.1** is defined in `static/schema/rqml-2.0.1.xsd` (serv
 - Schema path: `/schema/rqml-2.0.1.xsd`. Validate with `xmllint --schema static/schema/rqml-2.0.1.xsd yourfile.xml --noout`.
 
 ## Elements A–Z
+### B
+- [`behavior`](./elements/behavior.md)
+
 ### C
 - [`catalogs`](./elements/catalogs.md)
 
@@ -55,12 +59,15 @@ RQML schema version **2.0.1** is defined in `static/schema/rqml-2.0.1.xsd` (serv
 
 ### C
 - [`@confidence`](./elements/trace.md#attributes)
+- [`@createdAt`](./elements/trace.md#attributes)
+- [`@createdBy`](./elements/trace.md#attributes)
 
 ### D
 - [`@docId`](./elements/rqml.md#attributes)
 
 ### F
 - [`@from`](./elements/trace.md#attributes)
+- [`@fromUri`](./elements/trace.md#attributes)
 
 ### I
 - [`@id`](./elements/rqml.md#attributes)
@@ -80,8 +87,10 @@ RQML schema version **2.0.1** is defined in `static/schema/rqml-2.0.1.xsd` (serv
 - [`@status`](./elements/rqml.md#attributes)
 
 ### T
-- [`@type`](./elements/requirements.md#attributes)
+- [`@tags`](./elements/trace.md#attributes)
 - [`@to`](./elements/trace.md#attributes)
+- [`@toUri`](./elements/trace.md#attributes)
+- [`@type`](./elements/requirements.md#attributes)
 
 ### V
 - [`@version`](./elements/rqml.md#attributes)

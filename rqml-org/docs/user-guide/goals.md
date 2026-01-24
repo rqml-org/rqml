@@ -37,6 +37,71 @@ Use the optional `goals` section to record intended outcomes and relationships b
 </goals>
 ```
 
+## Code generation examples
+
+LLMs can translate goals into architectural and operational code:
+
+**Quality goal monitoring:**
+```typescript
+// From QGOAL-LATENCY: p95 latency ≤ 500ms under 200 rps
+export class LatencyMonitor {
+  private metrics: MetricsClient;
+
+  async recordRequest(duration: number): Promise<void> {
+    await this.metrics.histogram('api.latency', duration, {
+      goal: 'QGOAL-LATENCY',
+      threshold: 500,
+    });
+
+    const p95 = await this.metrics.getPercentile('api.latency', 0.95);
+    if (p95 > 500) {
+      this.metrics.alert('QGOAL-LATENCY violation', { p95 });
+    }
+  }
+}
+```
+
+**Availability infrastructure:**
+```typescript
+// From GOAL-AVAIL: High availability during peak shopping
+export const availabilityConfig = {
+  replicas: 5, // for GOAL-AVAIL
+  healthCheck: {
+    path: '/health',
+    interval: 10000,
+    timeout: 2000,
+  },
+  autoScaling: {
+    minReplicas: 3,
+    maxReplicas: 20,
+    targetCPU: 70,
+  },
+};
+```
+
+**Obstacle mitigation:**
+```typescript
+// From OBS-DB: DB contention mitigation via sharding
+export class ShardedPaymentRepository {
+  private shards: Map<string, DatabaseConnection>;
+
+  getShardForMerchant(merchantId: string): DatabaseConnection {
+    const shardKey = this.hashMerchant(merchantId);
+    return this.shards.get(shardKey)!;
+  }
+}
+```
+
+## Test generation examples
+
+Goals inform test strategy and performance benchmarks:
+
+1. **Quality goal tests**: Performance/load tests targeting metrics from qgoals (e.g., p95 latency tests)
+2. **Availability tests**: Chaos engineering tests, failover scenarios, health check validation
+3. **Obstacle scenarios**: Tests that simulate obstacles and verify mitigations work
+4. **Goal conflict tests**: Tests that verify trade-offs are handled appropriately
+5. **Metric collection tests**: Verify monitoring and alerting for quality goals
+
 ## Theory
 - Goals represent stakeholder intentions; refining goals into requirements follows KAOS and i* goal-oriented RE practices.
 - Quality goals need measurable criteria (ISO/IEC 25010 quality attributes) to avoid vagueness.

@@ -35,6 +35,115 @@ The optional `interfaces` section captures system boundaries and contracts.
 </interfaces>
 ```
 
+## Code generation examples
+
+LLMs can generate complete API implementations and event infrastructure:
+
+**API endpoint handlers:**
+```typescript
+// From EP-AUTH: POST /payments
+@Post('/payments')
+@Auth('oauth2')
+async createPayment(
+  @Body() body: CreatePaymentRequest
+): Promise<CreatePaymentResponse> {
+  // Implements EP-AUTH
+  const payment = await this.paymentService.authorize({
+    amount: body.amount,
+    currency: body.currency,
+    sourceToken: body.sourceToken,
+  });
+
+  return {
+    paymentId: payment.id,
+    status: payment.status, // authorized|declined|pending per EP-AUTH
+  };
+}
+
+@ErrorHandler()
+handlePaymentError(error: Error): HttpResponse {
+  if (error instanceof ValidationError) {
+    return { status: 422, body: { error: error.message } }; // per EP-AUTH errors
+  }
+  if (error instanceof AcquirerError) {
+    return { status: 502, body: { error: 'upstream decline' } };
+  }
+  throw error;
+}
+```
+
+**Event emitters and handlers:**
+```typescript
+// From EVT-PAYMENT-UPDATED
+export interface PaymentUpdatedEvent {
+  paymentId: string;
+  status: string;
+  updatedAt: string;
+}
+
+export class PaymentEventEmitter {
+  async emitPaymentUpdated(payment: Payment): Promise<void> {
+    await this.eventBus.publish('PaymentUpdated', {
+      paymentId: payment.id,
+      status: payment.status,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+}
+
+export class PaymentEventHandler {
+  @Subscribe('PaymentUpdated')
+  async handlePaymentUpdated(event: PaymentUpdatedEvent): Promise<void> {
+    await this.notificationService.notifyMerchant(event.paymentId);
+    await this.analyticsService.trackPaymentStatus(event);
+  }
+}
+```
+
+**OpenAPI specification generation:**
+```yaml
+# From API-PAYMENTS endpoints
+openapi: 3.0.0
+paths:
+  /payments:
+    post:
+      summary: Create a payment and request authorization
+      security:
+        - oauth2: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                amount: { type: number }
+                currency: { type: string }
+                sourceToken: { type: string }
+      responses:
+        '201':
+          description: Payment created
+          content:
+            application/json:
+              schema:
+                properties:
+                  paymentId: { type: string }
+                  status: { enum: [authorized, declined, pending] }
+        '422':
+          description: Validation error
+        '502':
+          description: Upstream decline
+```
+
+## Test generation examples
+
+Interface definitions drive contract and integration testing:
+
+1. **API endpoint tests**: HTTP tests for each method/path combination
+2. **Contract tests**: Verify request/response schemas match specifications
+3. **Error scenario tests**: Test all documented error responses
+4. **Authentication tests**: Verify auth requirements are enforced
+5. **Event integration tests**: Test event emission and consumption
+6. **Performance tests**: Load test API endpoints per any stated SLAs
+
 ## Theory
 - Interface specs define system boundaries (ISO/IEC/IEEE 42010 emphasizes clear interfaces in architecture descriptions).
 - Precise contracts reduce integration risk; aligning with API design guidelines (REST/HTTP semantics) improves interoperability.

@@ -93,7 +93,7 @@ Use the behavior section when:
 </behavior>
 ```
 
-## Code generation from state machines
+## Code generation examples
 
 LLMs can generate the following from state machine definitions:
 
@@ -123,7 +123,7 @@ function canTransition(currentState: string, event: string): boolean {
 }
 ```
 
-## Test generation from state machines
+## Test generation examples
 
 State machines enable systematic test generation:
 

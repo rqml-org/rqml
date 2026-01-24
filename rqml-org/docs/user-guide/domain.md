@@ -40,6 +40,78 @@ The optional `domain` section captures shared understanding of the problem space
 </domain>
 ```
 
+## Code generation examples
+
+LLMs can generate domain models and logic from domain definitions:
+
+**Entity classes and types:**
+```typescript
+// From ENT-PAYMENT
+interface Payment {
+  paymentId: string; // uuid, required
+  amount: number; // decimal, required, positive
+  currency: string;
+  status: PaymentStatus;
+  createdAt: Date;
+}
+
+class PaymentEntity implements Payment {
+  constructor(
+    public paymentId: string,
+    public amount: number,
+    public currency: string,
+    public status: PaymentStatus,
+    public createdAt: Date
+  ) {
+    this.validate();
+  }
+
+  private validate(): void {
+    if (this.amount <= 0) {
+      throw new ValidationError('Amount must be positive per ATTR-AMOUNT');
+    }
+  }
+}
+```
+
+**Database schema:**
+```sql
+-- From ENT-PAYMENT
+CREATE TABLE payments (
+  payment_id UUID PRIMARY KEY,
+  amount DECIMAL(19, 4) NOT NULL CHECK (amount > 0),
+  currency VARCHAR(3) NOT NULL,
+  status VARCHAR(20) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+```
+
+**Business rule validation:**
+```typescript
+// From BR-DECLINE: Decline transactions exceeding merchant limit
+export function validateTransactionLimit(
+  payment: Payment,
+  merchantLimit: number
+): void {
+  if (payment.amount > merchantLimit) {
+    throw new BusinessRuleError(
+      `Transaction exceeds merchant limit per BR-DECLINE`,
+      { amount: payment.amount, limit: merchantLimit }
+    );
+  }
+}
+```
+
+## Test generation examples
+
+Domain definitions enable focused testing:
+
+1. **Entity validation tests**: Test attribute constraints and required fields
+2. **Business rule tests**: Test each rule with examples from the spec (valid and invalid cases)
+3. **Type safety tests**: Verify type coercion and boundaries (e.g., decimal precision, UUID format)
+4. **Constraint violation tests**: Ensure validation errors are thrown appropriately
+5. **Schema migration tests**: Verify database schema matches entity definitions
+
 ## Theory
 - Domain modeling clarifies context and reduces misinterpretation—aligned with problem analysis in IEEE 29148 and Context/Problem frames (Michael Jackson).
 - Entities/attributes echo data modeling best practices (3NF/DDD) to ground requirements in shared concepts.

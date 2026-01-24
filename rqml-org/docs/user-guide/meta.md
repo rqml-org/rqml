@@ -54,6 +54,110 @@ On the root `rqml` element (not inside `meta`):
 </rqml>
 ```
 
+## Code generation examples
+
+LLMs use metadata to generate project infrastructure and documentation:
+
+**Project configuration from system metadata:**
+```json
+// From meta: system="Payments", title="Payments Service Requirements"
+{
+  "name": "payments-service",
+  "version": "1.0.0",
+  "description": "Requirements for the payments API and reconciliation workflows",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/acme/payments-service"
+  },
+  "author": "Avery Kim <avery@example.com>",
+  "rqml": {
+    "docId": "PAY-REQS",
+    "status": "review",
+    "updated": "2025-01-15"
+  }
+}
+```
+
+**ID generation from conventions:**
+```typescript
+// From conventions/idConventions: "REQ-<area>-NNN, GOAL-<area>-NNN"
+export class RequirementIdGenerator {
+  generateId(area: string, type: 'REQ' | 'GOAL'): string {
+    const count = this.getNextSequence(area, type);
+    return `${type}-${area.toUpperCase()}-${count.toString().padStart(3, '0')}`;
+  }
+}
+
+// Examples: REQ-AUTH-001, GOAL-PERF-042
+```
+
+**Normative keyword validation:**
+```typescript
+// From conventions/normativeKeywords: RFC 2119
+export class StatementValidator {
+  validateNormativeLanguage(statement: string): ValidationResult {
+    const keywords = ['SHALL', 'MUST', 'SHOULD', 'MAY'];
+    const hasNormative = keywords.some(kw => statement.includes(kw));
+
+    if (!hasNormative) {
+      return {
+        valid: false,
+        message: 'Requirement statements must use RFC 2119 keywords (SHALL/MUST/SHOULD/MAY)',
+      };
+    }
+
+    return { valid: true };
+  }
+}
+```
+
+**Profile-based conditional generation:**
+```typescript
+// From profiles: type="safety"
+export function generateCodeForProfile(profile: Profile, requirements: Requirement[]): string {
+  if (profile.type === 'safety') {
+    // Generate additional safety checks and assertions
+    return generateSafetyCriticalCode(requirements);
+  } else if (profile.type === 'mobile') {
+    // Generate mobile-optimized implementations
+    return generateMobileCode(requirements);
+  }
+  return generateStandardCode(requirements);
+}
+```
+
+**Documentation header generation:**
+```markdown
+<!-- From meta section -->
+# Payments Service Requirements
+
+**Document ID**: PAY-REQS
+**Status**: Review
+**System**: Payments
+**Last Updated**: 2025-01-15
+
+## Authors
+- Avery Kim (Product, Acme) - avery@example.com
+
+## Summary
+Requirements for the payments API and reconciliation workflows.
+
+## Conventions
+- **ID Format**: REQ-<area>-NNN, GOAL-<area>-NNN
+- **Normative Keywords**: Per RFC 2119 (MUST/SHALL/SHOULD/MAY)
+```
+
+## Test generation examples
+
+Metadata informs test organization and documentation:
+
+1. **Test file naming**: Use system name and conventions to generate test file paths
+2. **Test metadata**: Embed document status and version in test reports
+3. **Author attribution**: Generate test ownership from author information
+4. **Convention tests**: Validate that all IDs follow declared conventions
+5. **Profile tests**: Generate profile-specific test suites
+6. **Status-based execution**: Only run tests for requirements with status=approved
+
 ## Theory
 - Good meta data underpins change control and provenance—aligns with IEEE 29148 emphasis on traceable requirements specs.
 - Status and dating enable configuration management (see ISO/IEC/IEEE 12207 lifecycle processes).

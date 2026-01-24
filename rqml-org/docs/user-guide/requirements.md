@@ -58,6 +58,98 @@ The `requirements` section is required and holds the core normative content.
 </requirements>
 ```
 
+## Code generation examples
+
+LLMs generate different code patterns based on requirement type:
+
+**Functional Requirements (FR) → Application logic:**
+```typescript
+// From REQ-AUTH-001: Authorize card payments
+export class PaymentAuthService {
+  async authorizePayment(req: AuthRequest): Promise<Payment> {
+    // Implements REQ-AUTH-001
+    const authResult = await this.acquirer.authorize({
+      amount: req.amount,
+      currency: req.currency,
+      cardToken: req.cardToken,
+    });
+
+    return this.createPayment({
+      id: generateId(),
+      status: authResult.approved ? 'authorized' : 'declined',
+      ...authResult,
+    });
+  }
+}
+```
+
+**Security Requirements (SR) → Security middleware:**
+```typescript
+// From SR requirement: Enforce TLS 1.2+
+export function tlsEnforcementMiddleware(req: Request, res: Response, next: NextFunction) {
+  const tlsVersion = req.socket.getPeerCertificate()?.version;
+  if (!tlsVersion || tlsVersion < 'TLSv1.2') {
+    return res.status(426).json({ error: 'TLS 1.2+ required' });
+  }
+  next();
+}
+```
+
+**Data Requirements (DR) → Validation schemas:**
+```typescript
+// From DR requirement: Email validation per RFC 5322
+import { z } from 'zod';
+
+export const PaymentRequestSchema = z.object({
+  amount: z.number().positive(),
+  currency: z.string().length(3),
+  email: z.string().email(), // Implements DR-EMAIL-001
+});
+```
+
+**Operational Requirements (OR) → Observability:**
+```typescript
+// From OR requirement: Emit structured logs
+export class PaymentLogger {
+  logAuthorization(payment: Payment): void {
+    logger.info('payment.authorized', {
+      paymentId: payment.id,
+      amount: payment.amount,
+      timestamp: new Date().toISOString(),
+      requirement: 'OR-LOGGING-001',
+    });
+  }
+}
+```
+
+## Test generation examples
+
+Requirements drive test implementation through acceptance criteria:
+
+1. **Given-When-Then tests**: Direct translation from acceptance criteria to test cases
+2. **Type-specific tests**: FR → integration tests, SR → security tests, NFR → performance tests
+3. **Priority-based suites**: Critical path tests from "must" requirements first
+4. **Coverage mapping**: Each requirement gets at least one test
+5. **Traceability**: Test names reference requirement IDs for impact analysis
+
+**Example test from acceptance criterion:**
+```typescript
+describe('REQ-AUTH-001: Authorize payment', () => {
+  it('CRIT-1: authorized payment with valid merchant', async () => {
+    // Given: authenticated merchant requests authorization
+    const merchant = await createAuthenticatedMerchant();
+
+    // When: acquirer responds with approval
+    mockAcquirer.authorize.mockResolvedValue({ approved: true });
+    const result = await paymentService.authorize(merchant, validRequest);
+
+    // Then: payment marked authorized with paymentId
+    expect(result.status).toBe('authorized');
+    expect(result.paymentId).toBeDefined();
+  });
+});
+```
+
 ## Theory
 - Requirements should be necessary, verifiable, unambiguous, and feasible (IEEE 29148 qualities).
 - Categorizing by type (FR/NFR/etc.) aligns with classic RE taxonomies; acceptance criteria make requirements testable (BDD/Gherkin influence).

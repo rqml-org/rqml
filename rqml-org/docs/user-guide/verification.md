@@ -36,6 +36,99 @@ The optional `verification` section records planned and executed checks against 
 </verification>
 ```
 
+## Code generation examples
+
+LLMs generate test implementations from verification specifications:
+
+**Test suite organization:**
+```typescript
+// From TS-PAYMENT: Payment Flow
+describe('TS-PAYMENT: Payment Flow', () => {
+  let paymentService: PaymentService;
+  let testContext: TestContext;
+
+  beforeAll(async () => {
+    testContext = await setupTestEnvironment();
+    paymentService = testContext.getService('payment');
+  });
+
+  // Individual test cases from members
+  include('./tests/TC-AUTH-001.test');
+  include('./tests/TC-AUTH-002.test');
+  include('./tests/TC-REFUND-001.test');
+
+  afterAll(async () => {
+    await testContext.teardown();
+  });
+});
+```
+
+**Integration test from test case:**
+```typescript
+// From TC-AUTH-001: Authorize payment success
+describe('TC-AUTH-001: Authorize payment success', () => {
+  it('should return 201 with paymentId and status=authorized', async () => {
+    // Step: Submit POST /payments with valid token and amount
+    const response = await request(app)
+      .post('/payments')
+      .send({
+        amount: 100.00,
+        currency: 'USD',
+        sourceToken: 'tok_valid_12345',
+      })
+      .set('Authorization', 'Bearer valid-token');
+
+    // Expected: Response status 201 with paymentId and status=authorized
+    expect(response.status).toBe(201);
+    expect(response.body.paymentId).toBeDefined();
+    expect(response.body.status).toBe('authorized');
+
+    // Refs: REQ-AUTH-001, SCN-CHECKOUT
+  });
+});
+```
+
+**Performance test specification:**
+```typescript
+// From test case with type="performance"
+import { check } from 'k6';
+import http from 'k6/http';
+
+export const options = {
+  stages: [
+    { duration: '2m', target: 200 }, // Ramp to 200 rps
+    { duration: '5m', target: 200 }, // Hold at 200 rps
+  ],
+  thresholds: {
+    http_req_duration: ['p(95)<500'], // p95 latency requirement
+  },
+};
+
+export default function() {
+  const response = http.post('https://api/payments', {
+    amount: 100,
+    currency: 'USD',
+    sourceToken: 'tok_test',
+  });
+
+  check(response, {
+    'status is 201': (r) => r.status === 201,
+    'has paymentId': (r) => r.json('paymentId') !== undefined,
+  });
+}
+```
+
+## Test generation examples
+
+Verification section drives comprehensive test automation:
+
+1. **Test scaffolding**: Generate test files, describe blocks, and setup/teardown from test suites
+2. **Test implementation**: Convert steps and expected outcomes into executable test code
+3. **Test data**: Generate fixtures and mocks based on requirements referenced in refs
+4. **Type-specific tests**: Use appropriate frameworks (Jest for unit, Cypress for acceptance, k6 for performance)
+5. **Traceability**: Embed requirement IDs in test metadata for coverage reporting
+6. **CI/CD integration**: Group tests by suite for parallel execution and failure isolation
+
 ## Theory
 - Verification ties requirements to evidence; IEEE 29148 stresses testability and traceability to demonstrate conformance.
 - Test types (acceptance, integration, unit, etc.) mirror V-model layering and standard QA practices.
