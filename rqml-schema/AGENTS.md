@@ -1,14 +1,15 @@
 # RQML Agent Guidelines
 
-**Strictness: `standard`**
+## Strictness: `standard`
 
-<!--
-Strictness levels:
-- relaxed:   Prototyping mode. Spec is advisory. Ask before major features, but quick iteration allowed.
-- standard:  Production default. Spec-first for features. Update spec before implementing. Maintain core traces.
-- strict:    Full traceability. All behavior must be specified. No ghost features. Complete trace graph.
-- certified: Regulated/safety-critical. Audit-grade traces with metadata. Formal verification alignment.
--->
+| Level | Description |
+|-------|-------------|
+| `relaxed` | Prototyping. Spec is advisory. Quick iteration allowed. |
+| `standard` | Production default. Spec-first for features. Core traces. |
+| `strict` | Full traceability. All behavior specified. No ghost features. |
+| `certified` | Regulated/safety-critical. Audit-grade traces with metadata. |
+
+---
 
 This project uses **RQML** as the single source of truth for system intent. The specification lives in `requirements.rqml`.
 
