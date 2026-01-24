@@ -10,7 +10,7 @@ The optional `trace` section encodes explicit relationships between artifacts to
 ## Elements
 - `traceEdge`: Each edge has `@id`, `type`, optional `confidence` (0.0–1.0), optional lifecycle metadata, optional `tags`, and optional `notes`.
 - Endpoints use `@from`/`@to` for internal references or `@fromUri`/`@toUri` for external systems.
-- `type` uses `TraceType` enumeration: `refines`, `satisfies`, `dependsOn`, `conflictsWith`, `threatens`, `mitigates`, `verifiedBy`, `covers`, `implements`.
+- `type` uses `TraceType` enumeration: `refines`, `satisfies`, `dependsOn`, `conflictsWith`, `threatens`, `mitigates`, `verifiedBy`, `covers`, `implements`, `supersedes`.
 
 ### Endpoint attributes
 | Attribute | Purpose | Validation |
@@ -110,6 +110,26 @@ Custom tags can be added for project-specific concerns. A trace can have multipl
   <!-- Performance trace -->
   <traceEdge id="TR-023" from="REQ-PERF-001" to="GOAL-PERF" type="satisfies"
              tags="performance"/>
+</trace>
+```
+
+### Deprecation with supersedes
+When replacing a requirement, mark the old one as deprecated and link with `supersedes`:
+```xml
+<!-- In requirements section -->
+<req id="REQ-AUTH-001" type="FR" title="Password authentication" status="deprecated">
+  <statement>The system shall authenticate users via username and password.</statement>
+  <notes>Deprecated 2025-03-15. See REQ-AUTH-002.</notes>
+</req>
+<req id="REQ-AUTH-002" type="FR" title="OAuth authentication" status="approved">
+  <statement>The system shall authenticate users via OAuth 2.0 with PKCE.</statement>
+</req>
+
+<!-- In trace section -->
+<trace>
+  <traceEdge id="TR-050" from="REQ-AUTH-002" to="REQ-AUTH-001" type="supersedes">
+    <notes>OAuth replaces password auth per security audit 2025-Q1.</notes>
+  </traceEdge>
 </trace>
 ```
 

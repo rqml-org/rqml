@@ -45,6 +45,7 @@ Optional section to record explicit trace links across the document and to exter
 | `verifiedBy` | Source is verified by target. |
 | `covers` | Source covers target (for test coverage). |
 | `implements` | Source implements target (for code traceability). |
+| `supersedes` | Source replaces target (for deprecation/versioning). |
 
 ## Example (minimal)
 ```xml
@@ -99,6 +100,16 @@ Optional section to record explicit trace links across the document and to exter
 </trace>
 ```
 
+## Example (deprecation with supersedes)
+```xml
+<trace>
+  <!-- New requirement supersedes deprecated one -->
+  <traceEdge id="TR-040" from="REQ-AUTH-002" to="REQ-AUTH-001" type="supersedes">
+    <notes>OAuth replaces password auth per security audit 2025-Q1.</notes>
+  </traceEdge>
+</trace>
+```
+
 ## URI conventions for external references
 | System | Pattern | Example |
 | --- | --- | --- |
@@ -114,4 +125,5 @@ Optional section to record explicit trace links across the document and to exter
 - Use `from`/`to` for internal elements (keyref-validated); use `fromUri`/`toUri` for external systems.
 - Pick the most specific relation type; use `notes` for rationale when it is not obvious.
 - Use `status=approved` to filter for reliable traces in impact analysis.
+- Use `supersedes` when deprecating requirements; mark old requirement as `status="deprecated"`.
 - Common tags: `safety`, `security`, `compliance`, `performance`, `accessibility`.

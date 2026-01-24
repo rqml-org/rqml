@@ -295,6 +295,11 @@
       * Direction: implementation -> requirement
       * NOTE: This type is primarily for downstream tools that track code-to-requirement mapping
 
+    - supersedes: Source replaces target (for deprecation/versioning)
+      * Example: REQ-AUTH-002 supersedes REQ-AUTH-001 after security audit
+      * Direction: replacement -> deprecated (new replaces old)
+      * Use when archiving requirements: mark old as deprecated, link new via supersedes
+
     FOR LLMs:
     - Use trace edges to answer "why does this exist?" (follow satisfies/refines up)
     - Use trace edges to answer "what depends on this?" (follow dependsOn/implements down)
@@ -313,6 +318,8 @@
       <xs:enumeration value="covers"/>
       <!-- reserved for downstream tooling -->
       <xs:enumeration value="implements"/>
+      <!-- lifecycle management -->
+      <xs:enumeration value="supersedes"/>
     </xs:restriction>
   </xs:simpleType>
 
