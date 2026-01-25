@@ -11,7 +11,9 @@
 
 ---
 
-This project uses **RQML** as the single source of truth for system intent. The specification lives in `requirements.rqml`.
+This project uses **RQML** as the single source of truth for system intent.
+
+**Specification file:** `requirements.rqml` *(adjust if you use a different name)*
 
 ---
 
@@ -236,6 +238,6 @@ Before I can specify this requirement, I need to understand:
 
 ## Files
 
-- **Specification:** `requirements.rqml`
+- **Specification:** One `.rqml` file in repo root (by convention `requirements.rqml`)
 - **Schema:** Validates against RQML 2.0.1
 - **Tests:** `tests/` or `verification/`

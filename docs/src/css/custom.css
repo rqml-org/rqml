@@ -51,7 +51,7 @@
   --ifm-navbar-background-color: var(--rqml-black);
   --ifm-footer-background-color: var(--rqml-purple);
 
-  --ifm-link-color: var(--rqml-white);
+  --ifm-link-color: var(--rqml-cyan);
   --ifm-link-hover-color: var(--rqml-white);
 
   --ifm-menu-color-active: var(--rqml-purple);
@@ -59,7 +59,7 @@
   --ifm-toc-link-color-active: var(--rqml-orange);
 
   /* --ifm-code-background: rgba(2, 169, 234, 0.12); */
-  --ifm-code-background: var(--rqml-green);
+  --ifm-code-background: var(--ifm-color-primary-darkest);
   --ifm-code-color: var(--rqml-white);
 
   /* Make primary still purple, but slightly brighter on dark */

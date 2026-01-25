@@ -44,7 +44,9 @@ RQML gives your project a **single source of truth** for system intent—structu
 
 ## Quick Start
 
-### 1. Create `requirements.rqml` in your project root
+### 1. Create one `.rqml` file in your project root
+
+By convention, name it `requirements.rqml`—or use a descriptive name like `myapp.rqml`.
 
 ```xml
 <rqml xmlns="https://rqml.org/schema/2.0.1" version="2.0.1" docId="DOC-HELLO-001" status="draft">
@@ -76,7 +78,7 @@ Download the [AGENTS.md template](https://rqml.org/AGENTS.md) and add it to your
 
 ### 3. Use it everywhere
 
-- **LLM prompts**: "Implement the requirements in requirements.rqml"
+- **LLM prompts**: "Implement the requirements in the .rqml file"
 - **Code generation**: Requirements become the authoritative source
 - **Tests**: Trace test cases back to requirements
 - **Reviews**: PRs show exactly what requirements changed and why

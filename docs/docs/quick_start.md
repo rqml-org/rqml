@@ -7,8 +7,8 @@ sidebar_position: 2
 
 # Quick start
 
-- Create a file "requirements.rqml" in the root of your project
-- Copy the following scaffold into your requirements.rqml:
+- Create **one `.rqml` file** in the root of your repository (by convention `requirements.rqml`, or a descriptive name like `myapp.rqml`)
+- Copy the following scaffold into your `.rqml` file:
 ```xml
 <rqml xmlns="https://rqml.org/schema/2.0.1" version="2.0.1" docId="DOC-HELLO-001" status="draft">
   <meta>
@@ -22,7 +22,7 @@ sidebar_position: 2
   </requirements>
 </rqml>
 ```
-- Tell your LLM of choice that the requirements specification for your project is in requirements.rqml - you can do this through your prompt and/or in AGENTS.md (see below for example AGENTS.md entry)
+- Tell your LLM of choice that the requirements specification for your project is in the `.rqml` file - you can do this through your prompt and/or in AGENTS.md (see below for example AGENTS.md entry)
 - Write your requirements in the RQML file, with help of an LLM if you want.
 - Ask your LLM to implement the requirements
 - Test and repeat.
