@@ -91,15 +91,27 @@ const config: Config = {
         },
         {to: '/why-rqml', label: 'Why RQML', position: 'left'},
         {
-          href: "/schema/rqml-2.0.1.xsd",      // file in /static/schema/rqml.xsd
-          label: "Get RQML Schema",
+          href: "/AGENTS.md",
+          label: "Get AGENTS.md",
           position: "right",
           className: "navbar__downloadButton",
-          // optional: opens in new tab
           target: "_blank",
           rel: "noopener noreferrer",
         },
-        
+        {
+          href: "/schema/rqml-2.0.1.xsd",
+          label: "Get Schema",
+          position: "right",
+          className: "navbar__downloadButton",
+          target: "_blank",
+          rel: "noopener noreferrer",
+        },
+        {
+          href: 'https://github.com/gudgeirsson/rqml',
+          position: 'right',
+          className: 'header-github-link',
+          'aria-label': 'GitHub repository',
+        },
       ],
     },
     footer: {

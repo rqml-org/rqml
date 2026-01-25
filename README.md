@@ -5,7 +5,7 @@
 <h1 align="center">Requirements Markup Language</h1>
 
 <p align="center">
-  <strong>A human-readable, LLM-friendly requirements format that captures your intent and turns it into reliable project context.</strong>
+  <strong>An LLM-first (but human readable) software requirements format that captures your intent and turns it into reliable project context.</strong>
 </p>
 
 <p align="center">
