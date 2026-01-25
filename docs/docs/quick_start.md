@@ -29,7 +29,7 @@ sidebar_position: 2
 
 # Example AGENTS.md
 
-Download the [AGENTS.md template](/AGENTS.md) and copy it to your project root. Adjust the **Strictness** level to match your project needs.
+Download the <a href="/AGENTS.md" target="_blank">AGENTS.md template</a> and copy it to your project root. Adjust the **Strictness** level to match your project needs.
 
 The template includes:
 

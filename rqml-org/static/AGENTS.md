@@ -1,1 +1,0 @@
-../../rqml-schema/AGENTS.md

@@ -1,11 +1,12 @@
 {
-  "name": "rqml-org",
+  "name": "rqml-docs",
   "version": "0.0.0",
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",
-    "start": "docusaurus start",
-    "build": "docusaurus build",
+    "copy-assets": "cp ../schema/AGENTS.md static/AGENTS.md",
+    "start": "npm run copy-assets && docusaurus start",
+    "build": "npm run copy-assets && docusaurus build",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
     "clear": "docusaurus clear",
