@@ -26,7 +26,7 @@ Root container for an RQML document.
 ## Attributes
 | Name | Type | Required | Default | Description |
 | --- | --- | --- | --- | --- |
-| `version` | `xs:token` (fixed `2.0.1`) | yes | 2.0.1 | Schema version. |
+| `version` | `xs:token` | yes | — | Schema version (must match the schema). |
 | `docId` | `IdType` | yes | — | Stable document identifier. |
 | `status` | `StatusType` (`draft|review|approved|deprecated`) | yes | — | Lifecycle state of the document. |
 
@@ -58,5 +58,5 @@ Root container for an RQML document.
 ```
 
 ## Notes / LLM hints
-- Always set `version="2.0.1"`; validators treat it as fixed.
+- Set `version` to match the schema version you're using.
 - Ensure all child elements respect ordering shown in the content model.

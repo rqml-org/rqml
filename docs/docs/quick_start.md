@@ -10,7 +10,10 @@ sidebar_position: 2
 - Create **one `.rqml` file** in the root of your repository (by convention `requirements.rqml`, or a descriptive name like `myapp.rqml`)
 - Copy the following scaffold into your `.rqml` file:
 ```xml
-<rqml xmlns="https://rqml.org/schema/2.0.1" version="2.0.1" docId="DOC-HELLO-001" status="draft">
+<rqml xmlns="https://rqml.org/schema/2.0.1"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="https://rqml.org/schema/2.0.1 https://rqml.org/schema/rqml-2.0.1.xsd"
+      version="2.0.1" docId="DOC-HELLO-001" status="draft">
   <meta>
     <title>...</title>
     <system>...</system>
@@ -33,9 +36,7 @@ Download the <a href="/AGENTS.md" target="_blank">AGENTS.md template</a> and cop
 
 The template includes:
 
-- **Strictness levels**: `relaxed`, `standard`, `strict`, `certified` — choose based on your project's regulatory and traceability needs
-- **Phase-based workflow**: Elicit → Specify → Implement → Verify → Trace
-- **Quality checklists** for requirements (testable, unambiguous, traceable)
+- **Strictness levels**: `relaxed`, `standard`, `strict`, `certified` — choose based on your project's needs
+- **Spec-first workflow**: Elicit → Specify → Implement → Verify → Trace
 - **Sync protocol** for when code and spec diverge
-- **Summary templates** for PRs, commits, and elicitation questions
-- **Quick reference table** comparing strictness levels across all aspects
+- **Change summary template** for PRs and commits

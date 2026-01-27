@@ -49,7 +49,10 @@ RQML gives your project a **single source of truth** for system intent—structu
 By convention, name it `requirements.rqml`—or use a descriptive name like `myapp.rqml`.
 
 ```xml
-<rqml xmlns="https://rqml.org/schema/2.0.1" version="2.0.1" docId="DOC-HELLO-001" status="draft">
+<rqml xmlns="https://rqml.org/schema/2.0.1"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="https://rqml.org/schema/2.0.1 https://rqml.org/schema/rqml-2.0.1.xsd"
+      version="2.0.1" docId="DOC-HELLO-001" status="draft">
   <meta>
     <title>Hello World CLI</title>
     <system>hello</system>

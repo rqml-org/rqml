@@ -219,15 +219,20 @@ import styles from './index.module.css';
         <div className="card__body">
           <Heading as="h3" className={styles.cardTitle}>Hello world RQML example</Heading>
           <pre className={styles.pre}>
-{`<rqml xmlns="https://rqml.org/schema/2.0.1" version="2.0.1" docId="DOC-HELLO-001">
+{`<rqml xmlns="https://rqml.org/schema/2.0.1"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="https://rqml.org/schema/2.0.1
+        https://rqml.org/schema/rqml-2.0.1.xsd"
+      version="2.0.1" docId="DOC-HELLO-001" status="draft">
   <meta>
     <title>Hello World CLI</title>
     <system>hello</system>
   </meta>
   <requirements>
-    <req id="REQ-HELLO-001" type="FR" title="Print greeting" status="draft" priority="must">
+    <req id="REQ-HELLO-001" type="FR" title="Print greeting"
+         status="draft" priority="must">
       <statement>
-        The program MUST print "Hello, world!" to standard output 
+        The program MUST print "Hello, world!" to standard output
         and exit with status code 0.
       </statement>
     </req>

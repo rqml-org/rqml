@@ -3,10 +3,10 @@ id: reference-index
 title: RQML Reference
 sidebar_label: Reference
 sidebar_position: 5
-description: A–Z index of RQML 2.0.1 elements and attributes, patterns, and versioning notes.
+description: A–Z index of RQML elements and attributes, patterns, and versioning notes.
 ---
 
-RQML schema version **2.0.1** is defined in `static/schema/rqml-2.0.1.xsd` (served at `/schema/rqml-2.0.1.xsd`). Use this page as an entry point to the element/attribute reference.
+The current RQML schema is served at `/schema/rqml-2.0.1.xsd`. Use this page as an entry point to the element/attribute reference.
 
 ## Common patterns
 - **IDs**: `IdType` tokens, 2–80 chars, start with a letter; allow letters, digits, `.`, `_`, `-`. Keep stable across revisions.
@@ -16,8 +16,8 @@ RQML schema version **2.0.1** is defined in `static/schema/rqml-2.0.1.xsd` (serv
 - **Cardinality**: Required elements are noted in each element page; optional sections may be omitted entirely.
 
 ## Versioning
-- Documents set `rqml@version="2.0.1"` (fixed), along with required `docId` and `status`.
-- Schema path: `/schema/rqml-2.0.1.xsd`. Validate with `xmllint --schema static/schema/rqml-2.0.1.xsd yourfile.xml --noout`.
+- Documents must set `rqml@version` to match the schema version, along with required `docId` and `status`.
+- Validate with `xmllint --schema /path/to/rqml-x.y.z.xsd yourfile.rqml --noout`.
 
 ## Elements A–Z
 ### B

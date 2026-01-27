@@ -20,7 +20,7 @@ The `meta` section defines the identity of the RQML document and its lifecycle. 
 
 ## Attributes
 On the root `rqml` element (not inside `meta`):
-- `version` (required, fixed `2.0.1`), `docId` (required, `IdType`), `status` (required; `draft|review|approved|deprecated`).
+- `version` (required, must match schema), `docId` (required, `IdType`), `status` (required; `draft|review|approved|deprecated`).
 
 ## Authoring tips
 - Keep `docId` stable across revisions; track lifecycle via `status` and `dates/updated`.
