@@ -86,7 +86,7 @@ For PRs and commits:
 
 ## Schema Validation
 
-The `.rqml` file must remain valid XML conforming to RQML 2.0.1.
+The `.rqml` file must remain valid XML conforming to the version of RQML referenced in the version attribute in the spec document.
 
 **To validate:** Try xmllint first (pre-installed on macOS/Linux):
 ```bash
