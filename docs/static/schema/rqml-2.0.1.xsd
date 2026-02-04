@@ -295,6 +295,11 @@
       * Direction: implementation -> requirement
       * NOTE: This type is primarily for downstream tools that track code-to-requirement mapping
 
+    - supersedes: Source replaces target (for deprecation/versioning)
+      * Example: REQ-AUTH-002 supersedes REQ-AUTH-001 after security audit
+      * Direction: replacement -> deprecated (new replaces old)
+      * Use when archiving requirements: mark old as deprecated, link new via supersedes
+
     FOR LLMs:
     - Use trace edges to answer "why does this exist?" (follow satisfies/refines up)
     - Use trace edges to answer "what depends on this?" (follow dependsOn/implements down)
@@ -313,6 +318,8 @@
       <xs:enumeration value="covers"/>
       <!-- reserved for downstream tooling -->
       <xs:enumeration value="implements"/>
+      <!-- lifecycle management -->
+      <xs:enumeration value="supersedes"/>
     </xs:restriction>
   </xs:simpleType>
 
@@ -498,7 +505,9 @@
       <xs:field xpath="@id"/>
     </xs:key>
 
-    <!-- Trace edges must point to declared ids -->
+    <!-- Trace edges: internal refs (from/to) must point to declared ids.
+         External refs (fromUri/toUri) are not validated by schema.
+         Keyrefs only fire when the attribute is present. -->
     <xs:keyref name="traceFromRef" refer="allIds">
       <xs:selector xpath=".//traceEdge"/>
       <xs:field xpath="@from"/>
@@ -2030,43 +2039,63 @@
   <!--
     TraceEdgeType: Individual traceability link
 
+    Supports both internal references (to elements within the RQML document) and
+    external references (to systems like Jira, Git, files, regulations, etc.).
+    At least one endpoint should be internal for the trace to be useful within RQML.
+
     ATTRIBUTES:
     - id: Unique identifier for this edge
-    - from: Source element ID (the element creating the relationship)
-    - to: Target element ID (the element being related to)
+    - from: Source element ID within this document (keyref-validated)
+    - to: Target element ID within this document (keyref-validated)
+    - fromUri: Source as external URI (for tracing from external systems)
+    - toUri: Target as external URI (for tracing to external systems)
     - type: Relationship type (TraceType)
     - confidence: Certainty of this relationship (0.0-1.0)
+    - status: Lifecycle state (draft/review/approved/deprecated)
+    - createdBy: Who created this trace (person, role, or tool)
+    - createdAt: When this trace was created (ISO 8601 dateTime)
+    - tags: Space-separated category tags for filtering (e.g., "safety security")
+
+    ENDPOINT RULES:
+    - Use from/to for internal RQML elements (validated by schema)
+    - Use fromUri/toUri for external systems (not validated)
+    - At least one of from or fromUri should be specified
+    - At least one of to or toUri should be specified
+    - Can combine internal and external (e.g., from + toUri)
 
     CHILDREN:
     - notes: Explanation of why this relationship exists
 
+    EXTERNAL URI CONVENTIONS:
+    - Jira:        jira:PROJ-1234
+    - GitHub:      github:owner/repo/issues/42 or github:owner/repo/pull/99
+    - Git commit:  git:a1b2c3d4e5f6
+    - File:        file:src/auth/login.ts#L42-L87
+    - Confluence:  confluence:12345678
+    - Regulation:  urn:gdpr:article:17 or urn:iso27001:A.12.3
+    - Full URL:    https://jira.example.com/browse/PROJ-1234
+
     FOR LLMs - COMMON TRACE PATTERNS:
 
-    Goal Coverage:
-    - requirement satisfies goal (REQ-001 satisfies GOAL-001)
-    - qgoal refines goal (QGOAL-001 refines GOAL-001)
+    Internal traces (within RQML):
+    - requirement satisfies goal: from="REQ-001" to="GOAL-001" type="satisfies"
+    - qgoal refines goal: from="QGOAL-001" to="GOAL-001" type="refines"
+    - obstacle threatens goal: from="OBS-001" to="GOAL-001" type="threatens"
+    - requirement mitigates risk: from="REQ-001" to="RISK-001" type="mitigates"
+    - testCase verifies requirement: from="TC-001" to="REQ-001" type="verifiedBy"
+    - requirement dependsOn requirement: from="REQ-002" to="REQ-001" type="dependsOn"
+    - goal conflictsWith goal: from="GOAL-001" to="GOAL-002" type="conflictsWith"
 
-    Threat/Risk:
-    - obstacle threatens goal (OBS-001 threatens GOAL-001)
-    - requirement mitigates risk (REQ-001 mitigates RISK-001)
-
-    Verification:
-    - testCase verifiedBy requirement (TC-001 verifiedBy REQ-001) [direction note: typically req verifiedBy test]
-    - testCase covers scenario (TC-001 covers SCN-001)
-
-    Implementation:
-    - code implements requirement (reserved for tooling)
-
-    Dependencies:
-    - requirement dependsOn requirement (REQ-002 dependsOn REQ-001)
-    - requirement dependsOn constraint (REQ-001 dependsOn CON-001)
-
-    Conflicts:
-    - goal conflictsWith goal (GOAL-001 conflictsWith GOAL-002)
+    External traces (to/from external systems):
+    - requirement implements Jira story: from="REQ-001" toUri="jira:PROJ-1234" type="implements"
+    - code implements requirement: fromUri="file:src/auth.ts#L42" to="REQ-001" type="implements"
+    - git commit implements requirement: fromUri="git:a1b2c3d" to="REQ-001" type="implements"
+    - requirement satisfies regulation: from="REQ-GDPR-001" toUri="urn:gdpr:article:17" type="satisfies"
+    - external spec refines goal: fromUri="confluence:12345" to="GOAL-001" type="refines"
 
     IMPACT ANALYSIS:
     To find what's affected by changing element X:
-    1. Find all edges where from=X or to=X
+    1. Find all edges where from=X or to=X (internal) or fromUri/toUri match (external)
     2. Recursively follow edges to find transitive impacts
     3. Higher confidence edges indicate stronger impacts
 
@@ -2075,16 +2104,45 @@
     1. For each goal, find edges where to=goal_id and type=satisfies
     2. Goals without satisfies edges are uncovered
     3. Flag uncovered goals for stakeholder attention
+
+    LIFECYCLE MANAGEMENT:
+    - status=draft: Auto-generated or tentative traces awaiting verification
+    - status=review: Traces under stakeholder review
+    - status=approved: Confirmed traces that can be relied upon
+    - status=deprecated: Traces no longer valid but kept for audit history
+    - Use createdBy to track accountability (person, role, or tool like "import-jira")
+    - Use createdAt for audit trails and staleness detection
+    - Filter by status=approved for reliable impact analysis
+
+    CATEGORIZATION:
+    Use tags to categorize traces for filtering and reporting:
+    - safety: Functional safety traces (IEC 61508, ISO 26262)
+    - security: Security-related traces (ISO 27001, OWASP)
+    - compliance: Regulatory compliance traces (GDPR, HIPAA, SOX)
+    - performance: Performance requirement traces
+    - accessibility: Accessibility requirement traces (WCAG)
+    - Custom tags as needed for project-specific concerns
+    Example: tags="safety compliance" for a trace relevant to both domains
   -->
   <xs:complexType name="TraceEdgeType">
     <xs:sequence>
       <xs:element name="notes" type="TextBlockType" minOccurs="0"/>
     </xs:sequence>
     <xs:attribute name="id" type="IdType" use="required"/>
-    <xs:attribute name="from" type="IdType" use="required"/>
-    <xs:attribute name="to" type="IdType" use="required"/>
+    <!-- Internal references (keyref-validated when present) -->
+    <xs:attribute name="from" type="IdType"/>
+    <xs:attribute name="to" type="IdType"/>
+    <!-- External references (URI-based, for tracing to external systems) -->
+    <xs:attribute name="fromUri" type="xs:anyURI"/>
+    <xs:attribute name="toUri" type="xs:anyURI"/>
     <xs:attribute name="type" type="TraceType" use="required"/>
-    <xs:attribute name="confidence" type="ConfidenceType" use="optional"/>
+    <xs:attribute name="confidence" type="ConfidenceType"/>
+    <!-- Lifecycle metadata -->
+    <xs:attribute name="status" type="StatusType"/>
+    <xs:attribute name="createdBy" type="xs:string"/>
+    <xs:attribute name="createdAt" type="xs:dateTime"/>
+    <!-- Categorization -->
+    <xs:attribute name="tags" type="xs:NMTOKENS"/>
   </xs:complexType>
 
   <!-- =========================

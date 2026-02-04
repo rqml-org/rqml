@@ -11,9 +11,12 @@
 
 ---
 
-This project uses **RQML** as the single source of truth for system intent.
+This project uses **RQML** as the single source of truth for system intent. Familiarize yourself with the documentation at https://rqml.org/docs/user-guide/
 
 **Specification file:** Specification lives in a single .rqml file in the root of the project - convention is `requirements.rqml`
+
+**Schema file:**
+The RQML XSD schema is at https://rqml.org/schema/rqml-2.0.1.xsd. Make sure to adhere to the schema at all times and follow guidelines in schema comments. Use as much of the RQML tagset as is necessary to capture and describe high quality requirements.
 
 ---
 
@@ -86,7 +89,7 @@ For PRs and commits:
 
 ## Schema Validation
 
-The `.rqml` file must remain valid XML conforming to RQML 2.0.1.
+The `.rqml` file must remain valid XML conforming to the version of RQML referenced in the version attribute in the spec document.
 
 **To validate:** Try xmllint first (pre-installed on macOS/Linux):
 ```bash
