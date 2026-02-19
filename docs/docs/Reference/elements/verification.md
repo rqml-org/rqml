@@ -11,7 +11,7 @@ Optional section describing how requirements are validated.
 - `rqml > verification`
 
 ## Content model
-- `testSuite` (0..n) → `description` (0..1), `members` (0..1) → `ref` (0..n)
+- `testSuite` (0..n) → `description` (0..1)
 - `testCase` (0..n) → `purpose` (0..1), `steps` (0..1), `expected` (0..1)
 
 ## Attributes
@@ -34,9 +34,7 @@ Optional section describing how requirements are validated.
 ```xml
 <verification>
   <testSuite id="TS-PAYMENT" title="Payment Flow">
-    <members>
-      <ref ref="TC-AUTH-001"/>
-    </members>
+    <description>End-to-end payment authorization and capture tests.</description>
   </testSuite>
   <testCase id="TC-AUTH-001" type="integration" title="Authorize payment success">
     <purpose>Verify successful authorization path.</purpose>

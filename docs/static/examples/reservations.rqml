@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rqml xmlns="https://rqml.org/schema/2.0.1" version="2.0.1" docId="RES-API-001" status="draft">
+<rqml xmlns="https://rqml.org/schema/2.1.0" version="2.1.0" docId="RES-API-001" status="draft">
   <meta>
     <title>Restaurant Reservation &amp; Waitlist API</title>
     <system>SeatSmart</system>
@@ -55,10 +55,6 @@
             <then>Return 201 with reservationId and status=confirmed.</then>
           </criterion>
         </acceptance>
-        <refs>
-          <ref ref="ENT-RES"/>
-          <ref ref="SCN-BOOK"/>
-        </refs>
       </req>
       <req id="REQ-CANCEL" type="FR" title="Cancel reservation" priority="must">
         <statement>The API SHALL let a guest cancel an existing reservation.</statement>
@@ -69,18 +65,12 @@
             <then>Status becomes canceled and a 200 response is returned.</then>
           </criterion>
         </acceptance>
-        <refs>
-          <ref ref="SCN-CANCEL"/>
-        </refs>
       </req>
       <req id="REQ-LAT" type="NFR" title="Latency" priority="should">
         <statement>p95 response time for reservation create SHALL be ≤ 300ms under normal load.</statement>
       </req>
       <req id="REQ-SEC" type="SR" title="Transport security">
         <statement>All API traffic SHALL enforce HTTPS (TLS 1.2+).</statement>
-        <refs>
-          <ref ref="CON-HTTPS"/>
-        </refs>
       </req>
     </reqPackage>
   </requirements>
@@ -104,15 +94,29 @@
     <testCase id="TC-BOOK" type="integration" title="Create reservation 201">
       <steps>POST /reservations with valid body</steps>
       <expected>201 created with id and status=confirmed</expected>
-      <refs>
-        <ref ref="REQ-BOOK"/>
-      </refs>
     </testCase>
   </verification>
 
   <trace>
-    <traceEdge id="TR-BOOK" from="REQ-BOOK" to="SCN-BOOK" type="satisfies"/>
-    <traceEdge id="TR-CANCEL" from="REQ-CANCEL" to="SCN-CANCEL" type="satisfies"/>
-    <traceEdge id="TR-TEST-BOOK" from="TC-BOOK" to="REQ-BOOK" type="verifiedBy"/>
+    <edge id="TR-BOOK" type="satisfies">
+      <from><locator><local id="REQ-BOOK"/></locator></from>
+      <to><locator><local id="SCN-BOOK"/></locator></to>
+    </edge>
+    <edge id="TR-BOOK-ENT" type="refines">
+      <from><locator><local id="REQ-BOOK"/></locator></from>
+      <to><locator><local id="ENT-RES"/></locator></to>
+    </edge>
+    <edge id="TR-CANCEL" type="satisfies">
+      <from><locator><local id="REQ-CANCEL"/></locator></from>
+      <to><locator><local id="SCN-CANCEL"/></locator></to>
+    </edge>
+    <edge id="TR-SEC-CON" type="satisfies">
+      <from><locator><local id="REQ-SEC"/></locator></from>
+      <to><locator><local id="CON-HTTPS"/></locator></to>
+    </edge>
+    <edge id="TR-TEST-BOOK" type="verifiedBy">
+      <from><locator><local id="TC-BOOK"/></locator></from>
+      <to><locator><local id="REQ-BOOK"/></locator></to>
+    </edge>
   </trace>
 </rqml>

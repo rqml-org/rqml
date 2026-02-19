@@ -9,7 +9,7 @@ The optional `catalogs` section centralizes reusable definitions and lookup list
 
 ## Subsections
 - `glossary`: `term` entries with `@id`, `name`, `definition`, and optional `synonyms`.
-- `actors`: `actor` items with `@id`, `name`, optional `type`, and optional `goals` refs to link motivations.
+- `actors`: `actor` items with `@id`, `name`, and optional `type`.
 - `stakeholders`: `stakeholder` items with `@id`, `name`, optional `org`, and `concerns`.
 - `constraints`: `constraint` items with `@id`, `statement`, optional `severity` and `source`.
 - `policies`: `policy` items with `@id`, `obligation`, and optional `evidence`/`source`.
@@ -17,7 +17,7 @@ The optional `catalogs` section centralizes reusable definitions and lookup list
 - `risks`: `risk` entries with `@id`, `statement`, optional `mitigation`, optional `severity`.
 
 ## Authoring tips
-- Reuse `@id` references from catalogs in downstream sections (e.g., `ownerRef`, `goalLink`, `refs`) to avoid duplication.
+- Reuse `@id` references from catalogs in downstream sections (e.g., `ownerRef`, `goalLink`) to avoid duplication.
 - Keep definitions concise; use `TextBlockType` content for structured paragraphs when needed.
 - Treat `decisions` and `policies` as living artifacts—update `status` as choices move from draft to approved.
 

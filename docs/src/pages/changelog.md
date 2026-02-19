@@ -24,7 +24,7 @@ _February 2026_
 - `breaks` — source breaks backward compatibility with target
 
 ### Removed
-- `RefType` and `RefsType` — inline `refs` elements removed from `scenario`, `req`, `transition`, and `testCase` (use trace edges instead)
+- `RefType` and `RefsType` — inline `refs` elements removed from `scenario`, `req`, `transition`, `testCase`, `actor`, and `testSuite` (use trace edges instead)
 - `fromUri` / `toUri` attributes on trace edges (replaced by `external` locator)
 
 ---

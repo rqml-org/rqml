@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rqml xmlns="https://rqml.org/schema/2.0.1" version="2.0.1" docId="TELEMED-001" status="review">
+<rqml xmlns="https://rqml.org/schema/2.1.0" version="2.1.0" docId="TELEMED-001" status="review">
   <meta>
     <title>Telemedicine Platform</title>
     <system>CareConnect</system>
@@ -69,10 +69,6 @@
             <then>A visit is created with state=scheduled and a confirmation is returned.</then>
           </criterion>
         </acceptance>
-        <refs>
-          <ref ref="SCN-BOOK"/>
-          <ref ref="ENT-VISIT"/>
-        </refs>
       </req>
       <req id="REQ-VIDEO" type="FR" title="Secure video" priority="must">
         <statement>The platform SHALL provide encrypted video sessions for visits.</statement>
@@ -82,15 +78,9 @@
             <then>A video session is established using end-to-end encrypted transport.</then>
           </criterion>
         </acceptance>
-        <refs>
-          <ref ref="SCN-CALL"/>
-        </refs>
       </req>
       <req id="REQ-PHI" type="SR" title="Protect PHI" priority="must">
         <statement>PHI SHALL be encrypted in transit and at rest.</statement>
-        <refs>
-          <ref ref="POL-HIPAA"/>
-        </refs>
       </req>
       <req id="REQ-PRESC" type="FR" title="Issue prescription" priority="should">
         <statement>Clinicians SHALL be able to issue and transmit prescriptions electronically.</statement>
@@ -101,10 +91,6 @@
             <then>A prescription record is created and sent to the pharmacy.</then>
           </criterion>
         </acceptance>
-        <refs>
-          <ref ref="SCN-PRESC"/>
-          <ref ref="ENT-PRESC"/>
-        </refs>
       </req>
       <req id="REQ-QUALITY" type="NFR" title="Call quality" priority="should">
         <statement>Video calls SHALL maintain p95 MOS equivalent ≥ 4.0 under target bandwidth.</statement>
@@ -132,31 +118,48 @@
 
   <verification>
     <testSuite id="TS-VISIT" title="Visit flows">
-      <members>
-        <ref ref="TC-SCHED"/>
-        <ref ref="TC-VIDEO"/>
-      </members>
     </testSuite>
     <testCase id="TC-SCHED" type="integration" title="Schedule visit success">
       <steps>POST /visits with valid slot</steps>
       <expected>201 with state=scheduled</expected>
-      <refs>
-        <ref ref="REQ-SCHED"/>
-      </refs>
     </testCase>
     <testCase id="TC-VIDEO" type="security" title="Encrypted video established">
       <expected>Video session negotiates encrypted transport</expected>
-      <refs>
-        <ref ref="REQ-VIDEO"/>
-        <ref ref="REQ-PHI"/>
-      </refs>
     </testCase>
   </verification>
 
   <trace>
-    <traceEdge id="TR-SCHED-GOAL" from="REQ-SCHED" to="GOAL-ACCESS" type="satisfies"/>
-    <traceEdge id="TR-VIDEO-PHI" from="REQ-VIDEO" to="REQ-PHI" type="dependsOn"/>
-    <traceEdge id="TR-SCHED-TEST" from="TC-SCHED" to="REQ-SCHED" type="verifiedBy"/>
-    <traceEdge id="TR-VIDEO-TEST" from="TC-VIDEO" to="REQ-VIDEO" type="verifiedBy"/>
+    <edge id="TR-SCHED-GOAL" type="satisfies">
+      <from><locator><local id="REQ-SCHED"/></locator></from>
+      <to><locator><local id="GOAL-ACCESS"/></locator></to>
+    </edge>
+    <edge id="TR-SCHED-SCN" type="satisfies">
+      <from><locator><local id="REQ-SCHED"/></locator></from>
+      <to><locator><local id="SCN-BOOK"/></locator></to>
+    </edge>
+    <edge id="TR-VIDEO-SCN" type="satisfies">
+      <from><locator><local id="REQ-VIDEO"/></locator></from>
+      <to><locator><local id="SCN-CALL"/></locator></to>
+    </edge>
+    <edge id="TR-VIDEO-PHI" type="dependsOn">
+      <from><locator><local id="REQ-VIDEO"/></locator></from>
+      <to><locator><local id="REQ-PHI"/></locator></to>
+    </edge>
+    <edge id="TR-PHI-POL" type="satisfies">
+      <from><locator><local id="REQ-PHI"/></locator></from>
+      <to><locator><local id="POL-HIPAA"/></locator></to>
+    </edge>
+    <edge id="TR-PRESC-SCN" type="satisfies">
+      <from><locator><local id="REQ-PRESC"/></locator></from>
+      <to><locator><local id="SCN-PRESC"/></locator></to>
+    </edge>
+    <edge id="TR-SCHED-TEST" type="verifiedBy">
+      <from><locator><local id="TC-SCHED"/></locator></from>
+      <to><locator><local id="REQ-SCHED"/></locator></to>
+    </edge>
+    <edge id="TR-VIDEO-TEST" type="verifiedBy">
+      <from><locator><local id="TC-VIDEO"/></locator></from>
+      <to><locator><local id="REQ-VIDEO"/></locator></to>
+    </edge>
   </trace>
 </rqml>

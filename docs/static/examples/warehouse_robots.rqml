@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rqml xmlns="https://rqml.org/schema/2.0.1" version="2.0.1" docId="ROBOT-001" status="draft">
+<rqml xmlns="https://rqml.org/schema/2.1.0" version="2.1.0" docId="ROBOT-001" status="draft">
   <meta>
     <title>Autonomous Warehouse Robots</title>
     <system>FleetControl</system>
@@ -71,10 +71,6 @@
             <then>It is assigned to an available robot within 2 seconds.</then>
           </criterion>
         </acceptance>
-        <refs>
-          <ref ref="SCN-PICK"/>
-          <ref ref="ENT-TASK"/>
-        </refs>
       </req>
       <req id="REQ-AVOID" type="SR" title="Collision avoidance" priority="must">
         <statement>Robots SHALL detect obstacles and brake to avoid collision.</statement>
@@ -84,10 +80,6 @@
             <then>The robot decelerates and stops before impact.</then>
           </criterion>
         </acceptance>
-        <refs>
-          <ref ref="SCN-OBST"/>
-          <ref ref="RISK-COLLISION"/>
-        </refs>
       </req>
       <req id="REQ-LOG" type="DR" title="Telemetry logging" priority="should">
         <statement>Robots SHALL log position, velocity, and battery every second.</statement>
@@ -119,24 +111,41 @@
   <verification>
     <testCase id="TC-ASSIGN" type="integration" title="Task assigned quickly">
       <expected>Assignment occurs within 2 seconds</expected>
-      <refs>
-        <ref ref="REQ-ASSIGN"/>
-      </refs>
     </testCase>
     <testCase id="TC-AVOID" type="inspection" title="Obstacle avoidance">
       <steps>Inject obstacle at 2m ahead during motion</steps>
       <expected>Robot brakes and stops before impact</expected>
-      <refs>
-        <ref ref="REQ-AVOID"/>
-      </refs>
     </testCase>
   </verification>
 
   <trace>
-    <traceEdge id="TR-ASSIGN" from="REQ-ASSIGN" to="GOAL-THROUGHPUT" type="satisfies"/>
-    <traceEdge id="TR-AVOID" from="REQ-AVOID" to="QGOAL-SAFETY" type="satisfies"/>
-    <traceEdge id="TR-RISK" from="REQ-AVOID" to="RISK-COLLISION" type="mitigates"/>
-    <traceEdge id="TR-ASSIGN-TEST" from="TC-ASSIGN" to="REQ-ASSIGN" type="verifiedBy"/>
-    <traceEdge id="TR-AVOID-TEST" from="TC-AVOID" to="REQ-AVOID" type="verifiedBy"/>
+    <edge id="TR-ASSIGN" type="satisfies">
+      <from><locator><local id="REQ-ASSIGN"/></locator></from>
+      <to><locator><local id="GOAL-THROUGHPUT"/></locator></to>
+    </edge>
+    <edge id="TR-ASSIGN-SCN" type="satisfies">
+      <from><locator><local id="REQ-ASSIGN"/></locator></from>
+      <to><locator><local id="SCN-PICK"/></locator></to>
+    </edge>
+    <edge id="TR-AVOID" type="satisfies">
+      <from><locator><local id="REQ-AVOID"/></locator></from>
+      <to><locator><local id="QGOAL-SAFETY"/></locator></to>
+    </edge>
+    <edge id="TR-AVOID-SCN" type="satisfies">
+      <from><locator><local id="REQ-AVOID"/></locator></from>
+      <to><locator><local id="SCN-OBST"/></locator></to>
+    </edge>
+    <edge id="TR-RISK" type="mitigates">
+      <from><locator><local id="REQ-AVOID"/></locator></from>
+      <to><locator><local id="RISK-COLLISION"/></locator></to>
+    </edge>
+    <edge id="TR-ASSIGN-TEST" type="verifiedBy">
+      <from><locator><local id="TC-ASSIGN"/></locator></from>
+      <to><locator><local id="REQ-ASSIGN"/></locator></to>
+    </edge>
+    <edge id="TR-AVOID-TEST" type="verifiedBy">
+      <from><locator><local id="TC-AVOID"/></locator></from>
+      <to><locator><local id="REQ-AVOID"/></locator></to>
+    </edge>
   </trace>
 </rqml>

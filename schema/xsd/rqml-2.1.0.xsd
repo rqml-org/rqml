@@ -459,13 +459,8 @@
 
     FOR LLMs: Always verify that referenced IDs exist in the document.
   -->
-    <!--
-    RefsType: Collection of references to other elements
 
-    Container for multiple ref elements, used when an artifact relates to
-    several other artifacts (e.g., a requirement linked to multiple goals).
-  -->
-    <!-- =========================
+  <!-- =========================
        Root Element
 
        The rqml element is the document root. It enforces:
@@ -782,7 +777,6 @@
   <xs:complexType name="ActorType">
     <xs:sequence>
       <xs:element name="description" type="TextBlockType" minOccurs="0"/>
-      <xs:element name="goals" type="RefsType" minOccurs="0"/>
     </xs:sequence>
     <xs:attribute name="id" type="IdType" use="required"/>
     <xs:attribute name="name" type="xs:string" use="required"/>
@@ -1933,7 +1927,6 @@
   <xs:complexType name="TestSuiteType">
     <xs:sequence>
       <xs:element name="description" type="TextBlockType" minOccurs="0"/>
-      <xs:element name="members" type="RefsType" minOccurs="0"/>
     </xs:sequence>
     <xs:attribute name="id" type="IdType" use="required"/>
     <xs:attribute name="title" type="xs:string" use="required"/>

@@ -8,7 +8,7 @@ description: Capture how requirements are tested and inspected.
 The optional `verification` section records planned and executed checks against requirements.
 
 ## Elements
-- `testSuite`: Collection with `@id`, `title`, optional `description`, and optional `members` (refs to `testCase` or other items).
+- `testSuite`: Collection with `@id`, `title`, and optional `description`.
 - `testCase`: Individual verification item with `@id`, `title`, `type` (`acceptance|integration|unit|security|performance|inspection`), optional `purpose`, `steps`, `expected`.
 
 ## Authoring tips
@@ -20,9 +20,7 @@ The optional `verification` section records planned and executed checks against 
 ```xml
 <verification>
   <testSuite id="TS-PAYMENT" title="Payment Flow">
-    <members>
-      <ref ref="TC-AUTH-001"/>
-    </members>
+    <description>End-to-end payment authorization and capture tests.</description>
   </testSuite>
   <testCase id="TC-AUTH-001" type="integration" title="Authorize payment success">
     <purpose>Verify successful authorization path.</purpose>
@@ -48,7 +46,7 @@ describe('TS-PAYMENT: Payment Flow', () => {
     paymentService = testContext.getService('payment');
   });
 
-  // Individual test cases from members
+  // Individual test cases in the suite
   include('./tests/TC-AUTH-001.test');
   include('./tests/TC-AUTH-002.test');
   include('./tests/TC-REFUND-001.test');
@@ -79,7 +77,7 @@ describe('TC-AUTH-001: Authorize payment success', () => {
     expect(response.body.paymentId).toBeDefined();
     expect(response.body.status).toBe('authorized');
 
-    // Refs: REQ-AUTH-001, SCN-CHECKOUT
+    // Trace: REQ-AUTH-001, SCN-CHECKOUT
   });
 });
 ```
@@ -120,7 +118,7 @@ Verification section drives comprehensive test automation:
 
 1. **Test scaffolding**: Generate test files, describe blocks, and setup/teardown from test suites
 2. **Test implementation**: Convert steps and expected outcomes into executable test code
-3. **Test data**: Generate fixtures and mocks based on requirements referenced in refs
+3. **Test data**: Generate fixtures and mocks based on requirements referenced in trace edges
 4. **Type-specific tests**: Use appropriate frameworks (Jest for unit, Cypress for acceptance, k6 for performance)
 5. **Traceability**: Embed requirement IDs in test metadata for coverage reporting
 6. **CI/CD integration**: Group tests by suite for parallel execution and failure isolation
