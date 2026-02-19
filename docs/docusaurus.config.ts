@@ -99,7 +99,7 @@ const config: Config = {
           rel: "noopener noreferrer",
         },
         {
-          href: "/schema/rqml-2.0.1.xsd",
+          href: "/schema/rqml-2.1.0.xsd",
           label: "Get Schema",
           position: "right",
           className: "navbar__downloadButton",
@@ -116,7 +116,30 @@ const config: Config = {
     },
     footer: {
       style: 'dark',
-      
+      links: [
+        {
+          title: 'Info',
+          items: [
+            { label: 'About', to: '/about' },
+            { label: 'Changelog', to: '/changelog' },
+          ],
+        },
+        {
+          title: 'Links',
+          items: [
+            { label: 'GitHub', href: 'https://github.com/gudgeirsson/rqml' },
+            { label: 'rqml.org', href: 'https://rqml.org' },
+          ],
+        },
+        {
+          title: 'Legal',
+          items: [
+            { label: 'License', href: 'https://github.com/gudgeirsson/rqml/blob/main/LICENSE' },
+            { label: 'Trademark', href: 'https://github.com/gudgeirsson/rqml/blob/main/TRADEMARK.md' },
+            { label: 'Notice', href: 'https://github.com/gudgeirsson/rqml/blob/main/NOTICE' },
+          ],
+        },
+      ],
       copyright: `Copyright © ${new Date().getFullYear()} The RQML Authors. Built with Docusaurus.`,
     },
     prism: {

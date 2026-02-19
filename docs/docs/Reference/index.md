@@ -6,12 +6,12 @@ sidebar_position: 5
 description: A–Z index of RQML elements and attributes, patterns, and versioning notes.
 ---
 
-The current RQML schema is served at `/schema/rqml-2.0.1.xsd`. Use this page as an entry point to the element/attribute reference.
+The current RQML schema is served at `/schema/rqml-2.1.0.xsd`. Use this page as an entry point to the element/attribute reference.
 
 ## Common patterns
 - **IDs**: `IdType` tokens, 2–80 chars, start with a letter; allow letters, digits, `.`, `_`, `-`. Keep stable across revisions.
-- **References**: `ref`, `goalLink`, `traceEdge`, and `refs` collections all point to existing IDs; the schema enforces this with keyrefs.
-- **External references**: `traceEdge` supports `fromUri`/`toUri` for tracing to external systems (Jira, Git, files, regulations) using URIs.
+- **References**: `goalLink`, `edge` locators, and `testSuite/members` all point to existing IDs; the schema enforces this with keyrefs.
+- **Trace endpoints**: `edge` elements use structured `locator` elements with `local` (same document, keyref-validated), `doc` (cross-document), or `external` (non-RQML URI) references.
 - **Language**: Use clear, testable prose; avoid ambiguity. Text blocks allow mixed content for formatting.
 - **Cardinality**: Required elements are noted in each element page; optional sections may be omitted entirely.
 
@@ -65,10 +65,6 @@ The current RQML schema is served at `/schema/rqml-2.0.1.xsd`. Use this page as 
 ### D
 - [`@docId`](./elements/rqml.md#attributes)
 
-### F
-- [`@from`](./elements/trace.md#attributes)
-- [`@fromUri`](./elements/trace.md#attributes)
-
 ### I
 - [`@id`](./elements/rqml.md#attributes)
 
@@ -88,8 +84,6 @@ The current RQML schema is served at `/schema/rqml-2.0.1.xsd`. Use this page as 
 
 ### T
 - [`@tags`](./elements/trace.md#attributes)
-- [`@to`](./elements/trace.md#attributes)
-- [`@toUri`](./elements/trace.md#attributes)
 - [`@type`](./elements/requirements.md#attributes)
 
 ### V

@@ -1,5 +1,5 @@
 <!--
-  RQML (Requirements Markup Language) Schema v2.0.1
+  RQML (Requirements Markup Language) Schema v2.1.0
   =================================================
 
   PURPOSE
@@ -90,15 +90,15 @@
   - Volere requirements template
   - BDD/Gherkin for acceptance criteria
 
-  NAMESPACE: https://rqml.org/schema/2.0.1
+  NAMESPACE: https://rqml.org/schema/2.1.0
 -->
 <xs:schema
   xmlns:xs="http://www.w3.org/2001/XMLSchema"
-  targetNamespace="https://rqml.org/schema/2.0.1"
-  xmlns="https://rqml.org/schema/2.0.1"
+  targetNamespace="https://rqml.org/schema/2.1.0"
+  xmlns="https://rqml.org/schema/2.1.0"
   elementFormDefault="qualified"
   attributeFormDefault="unqualified"
-  version="2.0.1">
+  version="2.1.0">
 
   <!-- =========================
        Simple types
@@ -320,6 +320,14 @@
       <xs:enumeration value="implements"/>
       <!-- lifecycle management -->
       <xs:enumeration value="supersedes"/>
+      <!-- cross-project / contract semantics -->
+      <xs:enumeration value="consumesInterface"/>
+      <xs:enumeration value="providesInterface"/>
+      <xs:enumeration value="conformsTo"/>
+      <!-- change management -->
+      <xs:enumeration value="deprecates"/>
+      <xs:enumeration value="breaks"/>
+
     </xs:restriction>
   </xs:simpleType>
 
@@ -451,23 +459,13 @@
 
     FOR LLMs: Always verify that referenced IDs exist in the document.
   -->
-  <xs:complexType name="RefType">
-    <xs:attribute name="ref" type="IdType" use="required"/>
-  </xs:complexType>
-
-  <!--
+    <!--
     RefsType: Collection of references to other elements
 
     Container for multiple ref elements, used when an artifact relates to
     several other artifacts (e.g., a requirement linked to multiple goals).
   -->
-  <xs:complexType name="RefsType">
-    <xs:sequence>
-      <xs:element name="ref" type="RefType" minOccurs="0" maxOccurs="unbounded"/>
-    </xs:sequence>
-  </xs:complexType>
-
-  <!-- =========================
+    <!-- =========================
        Root Element
 
        The rqml element is the document root. It enforces:
@@ -480,7 +478,7 @@
     rqml: Root element of an RQML document
 
     REQUIRED ATTRIBUTES:
-    - version: Schema version (fixed at "2.0.1")
+    - version: Schema version (fixed at "2.1.0")
     - docId: Unique document identifier; keep stable across revisions
     - status: Document lifecycle state (draft/review/approved/deprecated)
 
@@ -493,7 +491,7 @@
     - All trace edge @from and @to must reference existing IDs
 
     FOR LLMs:
-    - Always include xmlns="https://rqml.org/schema/2.0.1"
+    - Always include xmlns="https://rqml.org/schema/2.1.0"
     - Start documents with status="draft" during elicitation
     - Use a meaningful docId that identifies the system/project
   -->
@@ -501,7 +499,7 @@
 
     <!-- Ensure IDs are unique across the document -->
     <xs:key name="allIds">
-      <xs:selector xpath=".//profile|.//term|.//actor|.//stakeholder|.//constraint|.//policy|.//decision|.//risk|.//entity|.//attr|.//rule|.//stateMachine|.//state|.//transition|.//goal|.//qgoal|.//obstacle|.//goalLink|.//scenario|.//misuseCase|.//edgeCase|.//reqPackage|.//req|.//criterion|.//api|.//endpoint|.//event|.//testSuite|.//testCase|.//traceEdge|.//issue|.//approval"/>
+      <xs:selector xpath=".//profile|.//term|.//actor|.//stakeholder|.//constraint|.//policy|.//decision|.//risk|.//entity|.//attr|.//rule|.//stateMachine|.//state|.//transition|.//goal|.//qgoal|.//obstacle|.//goalLink|.//scenario|.//misuseCase|.//edgeCase|.//reqPackage|.//req|.//criterion|.//api|.//endpoint|.//event|.//testSuite|.//testCase|.//edge|.//issue|.//approval"/>
       <xs:field xpath="@id"/>
     </xs:key>
 
@@ -509,12 +507,12 @@
          External refs (fromUri/toUri) are not validated by schema.
          Keyrefs only fire when the attribute is present. -->
     <xs:keyref name="traceFromRef" refer="allIds">
-      <xs:selector xpath=".//traceEdge"/>
-      <xs:field xpath="@from"/>
+      <xs:selector xpath=".//edge/from/locator/local"/>
+      <xs:field xpath="@id"/>
     </xs:keyref>
     <xs:keyref name="traceToRef" refer="allIds">
-      <xs:selector xpath=".//traceEdge"/>
-      <xs:field xpath="@to"/>
+      <xs:selector xpath=".//edge/to/locator/local"/>
+      <xs:field xpath="@id"/>
     </xs:keyref>
 
     <!-- State machine initial state must reference a declared state -->
@@ -557,7 +555,7 @@
       <xs:element name="governance" type="GovernanceType" minOccurs="0"/>
     </xs:sequence>
 
-    <xs:attribute name="version" type="xs:token" use="required" fixed="2.0.1"/>
+    <xs:attribute name="version" type="xs:token" use="required" fixed="2.1.0"/>
     <xs:attribute name="docId" type="IdType" use="required"/>
     <xs:attribute name="status" type="StatusType" use="required"/>
   </xs:complexType>
@@ -1381,8 +1379,7 @@
   <xs:complexType name="ScenarioType">
     <xs:sequence>
       <xs:element name="narrative" type="TextBlockType"/>
-      <xs:element name="refs" type="RefsType" minOccurs="0"/>
-    </xs:sequence>
+</xs:sequence>
     <xs:attribute name="id" type="IdType" use="required"/>
     <xs:attribute name="title" type="xs:string" use="required"/>
     <xs:attribute name="actorRef" type="IdType" use="optional"/>
@@ -1511,8 +1508,7 @@
       <xs:element name="rationale" type="TextBlockType" minOccurs="0"/>
       <xs:element name="notes" type="TextBlockType" minOccurs="0"/>
       <xs:element name="acceptance" type="AcceptanceType" minOccurs="0"/>
-      <xs:element name="refs" type="RefsType" minOccurs="0"/>
-    </xs:sequence>
+</xs:sequence>
     <xs:attribute name="id" type="IdType" use="required"/>
     <xs:attribute name="type" type="ReqType" use="required"/>
     <xs:attribute name="title" type="xs:string" use="required"/>
@@ -1742,8 +1738,7 @@
       <xs:element name="trigger" type="TextBlockType" minOccurs="0"/>
       <xs:element name="guard" type="TextBlockType" minOccurs="0"/>
       <xs:element name="action" type="TextBlockType" minOccurs="0"/>
-      <xs:element name="refs" type="RefsType" minOccurs="0"/>
-    </xs:sequence>
+</xs:sequence>
     <xs:attribute name="id" type="IdType" use="required"/>
     <xs:attribute name="from" type="IdType" use="required"/>
     <xs:attribute name="to" type="IdType" use="required"/>
@@ -2002,8 +1997,7 @@
       <xs:element name="purpose" type="TextBlockType" minOccurs="0"/>
       <xs:element name="steps" type="TextBlockType" minOccurs="0"/>
       <xs:element name="expected" type="TextBlockType" minOccurs="0"/>
-      <xs:element name="refs" type="RefsType" minOccurs="0"/>
-    </xs:sequence>
+</xs:sequence>
     <xs:attribute name="id" type="IdType" use="required"/>
     <xs:attribute name="type" type="TestType" use="required"/>
     <xs:attribute name="title" type="xs:string" use="required"/>
@@ -2032,9 +2026,94 @@
   -->
   <xs:complexType name="TraceTypeContainer">
     <xs:sequence>
-      <xs:element name="traceEdge" type="TraceEdgeType" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="edge" type="TraceEdgeType" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
+
+  <!-- =========
+       TRACE GRAPH
+       =========
+
+       RQML 2.x redesigned trace edges to use structured endpoints instead of
+       from/to/fromUri/toUri attributes.
+
+       An endpoint is a locator, which can be:
+         - local: reference to an ID in the same document
+         - doc:   reference to an ID in a different RQML document (addressed by uri/docId)
+         - external: reference to any external artifact by URI
+  -->
+
+  <xs:complexType name="TraceEdgeType">
+    <xs:sequence>
+      <xs:element name="from" type="TraceEndpointType"/>
+      <xs:element name="to" type="TraceEndpointType"/>
+      <xs:element name="notes" type="TextBlockType" minOccurs="0"/>
+    </xs:sequence>
+
+    <xs:attribute name="id" type="IdType" use="required"/>
+    <xs:attribute name="type" type="TraceType" use="required"/>
+    <xs:attribute name="confidence" type="ConfidenceType"/>
+
+    <!-- Lifecycle metadata -->
+    <xs:attribute name="status" type="StatusType"/>
+    <xs:attribute name="createdBy" type="xs:string"/>
+    <xs:attribute name="createdAt" type="xs:dateTime"/>
+
+    <!-- Categorization -->
+    <xs:attribute name="tags" type="xs:NMTOKENS"/>
+  </xs:complexType>
+
+  <xs:complexType name="TraceEndpointType">
+    <xs:sequence>
+      <xs:element name="locator" type="TraceLocatorType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="TraceLocatorType">
+    <xs:choice>
+      <!-- Reference an artifact by id in this document -->
+      <xs:element name="local" type="TraceLocalRefType"/>
+
+      <!-- Reference an artifact by id in another RQML document -->
+      <xs:element name="doc" type="TraceDocRefType"/>
+
+      <!-- Reference any external artifact by URI -->
+      <xs:element name="external" type="TraceExternalRefType"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <xs:complexType name="TraceLocalRefType">
+    <xs:attribute name="id" type="IdType" use="required"/>
+    <!-- Optional hints for tooling / renderers -->
+    <xs:attribute name="kind" type="xs:token"/>
+    <xs:attribute name="title" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="TraceDocRefType">
+    <!-- Where to find the other RQML document -->
+    <xs:attribute name="uri" type="xs:anyURI" use="required"/>
+    <xs:attribute name="docId" type="IdType"/>
+    <!-- Optional pinning for immutability -->
+    <xs:attribute name="version" type="xs:token"/>
+    <xs:attribute name="git" type="xs:token"/>
+
+    <!-- What inside that document -->
+    <xs:attribute name="id" type="IdType" use="required"/>
+
+    <!-- Optional hints for tooling / renderers -->
+    <xs:attribute name="kind" type="xs:token"/>
+    <xs:attribute name="title" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="TraceExternalRefType">
+    <xs:attribute name="uri" type="xs:anyURI" use="required"/>
+    <!-- Optional hints for tooling / renderers -->
+    <xs:attribute name="kind" type="xs:token"/>
+    <xs:attribute name="title" type="xs:string"/>
+  </xs:complexType>
+
+  
+  
 
   <!--
     TraceEdgeType: Individual traceability link
@@ -2124,26 +2203,7 @@
     - Custom tags as needed for project-specific concerns
     Example: tags="safety compliance" for a trace relevant to both domains
   -->
-  <xs:complexType name="TraceEdgeType">
-    <xs:sequence>
-      <xs:element name="notes" type="TextBlockType" minOccurs="0"/>
-    </xs:sequence>
-    <xs:attribute name="id" type="IdType" use="required"/>
-    <!-- Internal references (keyref-validated when present) -->
-    <xs:attribute name="from" type="IdType"/>
-    <xs:attribute name="to" type="IdType"/>
-    <!-- External references (URI-based, for tracing to external systems) -->
-    <xs:attribute name="fromUri" type="xs:anyURI"/>
-    <xs:attribute name="toUri" type="xs:anyURI"/>
-    <xs:attribute name="type" type="TraceType" use="required"/>
-    <xs:attribute name="confidence" type="ConfidenceType"/>
-    <!-- Lifecycle metadata -->
-    <xs:attribute name="status" type="StatusType"/>
-    <xs:attribute name="createdBy" type="xs:string"/>
-    <xs:attribute name="createdAt" type="xs:dateTime"/>
-    <!-- Categorization -->
-    <xs:attribute name="tags" type="xs:NMTOKENS"/>
-  </xs:complexType>
+  
 
   <!-- =========================
        Governance Section

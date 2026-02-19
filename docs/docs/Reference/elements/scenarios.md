@@ -17,7 +17,6 @@ Optional narratives that describe usage, threats, and boundary conditions.
 
 Each scenario-like element has:
 - `narrative` (1)
-- `refs` (0..1) → `ref` (0..n)
 
 ## Attributes
 | Element | Name | Type | Required | Default | Description |
@@ -40,10 +39,6 @@ Each scenario-like element has:
 <scenarios>
   <scenario id="SCN-CHECKOUT" title="User pays with card" actorRef="ACT-USER">
     <narrative>The user submits card details, receives confirmation within 2 seconds.</narrative>
-    <refs>
-      <ref ref="GOAL-AVAIL"/>
-      <ref ref="REQ-AUTH-001"/>
-    </refs>
   </scenario>
   <misuseCase id="SCN-FRAUD" title="Stolen card attempt">
     <narrative>Attacker replays stolen card numbers rapidly to test validity.</narrative>
@@ -52,5 +47,5 @@ Each scenario-like element has:
 ```
 
 ## Notes / LLM hints
-- Keep `narrative` concise; add `refs` to tie scenarios to goals and requirements.
+- Keep `narrative` concise; use trace edges to tie scenarios to goals and requirements.
 - Use `misuseCase` and `edgeCase` to surface risks and robustness concerns early.

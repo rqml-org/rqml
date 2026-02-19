@@ -12,7 +12,7 @@ Optional section describing how requirements are validated.
 
 ## Content model
 - `testSuite` (0..n) → `description` (0..1), `members` (0..1) → `ref` (0..n)
-- `testCase` (0..n) → `purpose` (0..1), `steps` (0..1), `expected` (0..1), `refs` (0..1) → `ref` (0..n)
+- `testCase` (0..n) → `purpose` (0..1), `steps` (0..1), `expected` (0..1)
 
 ## Attributes
 | Element | Name | Type | Required | Default | Description |
@@ -42,14 +42,10 @@ Optional section describing how requirements are validated.
     <purpose>Verify successful authorization path.</purpose>
     <steps>Submit POST /payments with valid token and amount.</steps>
     <expected>Response status 201 with paymentId and status=authorized.</expected>
-    <refs>
-      <ref ref="REQ-AUTH-001"/>
-      <ref ref="SCN-CHECKOUT"/>
-    </refs>
   </testCase>
 </verification>
 ```
 
 ## Notes / LLM hints
-- Include `refs` to connect tests to requirements/scenarios for coverage.
+- Use trace edges to connect tests to requirements/scenarios for coverage.
 - Use `steps` and `expected` to make tests reproducible and observable.

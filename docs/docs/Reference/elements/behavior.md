@@ -29,7 +29,6 @@ Optional section to define state machines that model entity lifecycles and workf
 - `trigger` (0..1)
 - `guard` (0..1)
 - `action` (0..1)
-- `refs` (0..1) → `ref` (0..n)
 
 ## Attributes
 
@@ -90,7 +89,6 @@ Optional section to define state machines that model entity lifecycles and workf
     <transition id="TR-CONFIRM" from="ST-PENDING" to="ST-CONFIRMED" event="confirm">
       <guard>Payment authorization successful</guard>
       <action>Reserve inventory</action>
-      <refs><ref ref="REQ-ORDER-CONFIRM"/></refs>
     </transition>
 
     <transition id="TR-SHIP" from="ST-CONFIRMED" to="ST-SHIPPED" event="ship">
@@ -113,5 +111,5 @@ Optional section to define state machines that model entity lifecycles and workf
 - The `initial` attribute must reference a state defined in the same state machine.
 - States with `type="final"` should have no outgoing transitions.
 - Use `guard` for conditions and `action` for side effects on transitions.
-- Link transitions to requirements via `refs` for traceability.
+- Link transitions to requirements via trace edges for traceability.
 - Generate state enums from state names; generate transition validators from the transition list.

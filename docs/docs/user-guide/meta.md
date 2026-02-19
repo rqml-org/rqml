@@ -29,7 +29,7 @@ On the root `rqml` element (not inside `meta`):
 
 ## Example
 ```xml
-<rqml xmlns="https://rqml.org/schema/2.0.1" version="2.0.1" docId="PAY-REQS" status="review">
+<rqml xmlns="https://rqml.org/schema/2.1.0" version="2.1.0" docId="PAY-REQS" status="review">
   <meta>
     <title>Payments Service Requirements</title>
     <system>Payments</system>

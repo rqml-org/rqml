@@ -8,30 +8,23 @@ description: Capture user journeys, misuse cases, and edge cases.
 Scenarios provide narrative context. The section is optional but useful for grounding requirements and tests.
 
 ## Elements
-- `scenario`: Standard use cases with `@id`, `title`, optional `actorRef`, required `narrative`, and optional `refs`.
+- `scenario`: Standard use cases with `@id`, `title`, optional `actorRef`, and required `narrative`.
 - `misuseCase`: Negative stories (abuse/threat scenarios) with the same structure as `scenario`.
 - `edgeCase`: Exceptional or boundary stories with the same structure.
 
 ## Authoring tips
 - Reference `actors` via `actorRef` when applicable to link motivation and behavior.
 - Keep `narrative` concise but actionable; include main flow and notable branches.
-- Use `refs` to connect scenarios to goals or requirements, enabling traceability and test planning.
+- Use trace edges to connect scenarios to goals or requirements, enabling traceability and test planning.
 
 ## Example
 ```xml
 <scenarios>
   <scenario id="SCN-CHECKOUT" title="User pays with card" actorRef="ACT-USER">
     <narrative>The user submits card details, receives confirmation within 2 seconds.</narrative>
-    <refs>
-      <ref ref="GOAL-AVAIL"/>
-      <ref ref="REQ-AUTH-001"/>
-    </refs>
   </scenario>
   <misuseCase id="SCN-FRAUD" title="Stolen card attempt">
     <narrative>Attacker replays stolen card numbers rapidly to test validity.</narrative>
-    <refs>
-      <ref ref="RISK-FRAUD"/>
-    </refs>
   </misuseCase>
 </scenarios>
 ```

@@ -10,7 +10,7 @@ The optional `behavior` section captures state machines that define valid lifecy
 ## Structure
 - `stateMachine`: A named state machine with `@id`, `name`, optional `entityRef` (links to a domain entity), and required `@initial` (references the starting state).
 - `state`: Individual states with `@id`, `name`, optional `type` (`initial`/`normal`/`final`), and optional `description`, `onEntry`, `onExit`, `invariant`.
-- `transition`: Edges between states with `@id`, `from`, `to`, optional `event`, and optional `description`, `trigger`, `guard`, `action`, `refs`.
+- `transition`: Edges between states with `@id`, `from`, `to`, optional `event`, and optional `description`, `trigger`, `guard`, `action`.
 
 ## When to use state machines
 
@@ -24,7 +24,7 @@ Use the behavior section when:
 - Link state machines to domain entities via `entityRef` to clarify which entity's lifecycle is modeled.
 - Use `guard` to specify conditions that must be true for a transition to fire.
 - Use `action` to document side effects that occur during a transition.
-- Use `refs` on transitions to link to requirements they implement, enabling traceability.
+- Use trace edges to link transitions to the requirements they implement, enabling traceability.
 - Ensure every non-final state has at least one outgoing transition (no dead ends).
 - Mark terminal states with `type="final"` to indicate completed lifecycles.
 
@@ -64,14 +64,12 @@ Use the behavior section when:
       <description>Merchant confirms the order</description>
       <guard>Payment authorization successful</guard>
       <action>Reserve inventory</action>
-      <refs><ref ref="REQ-ORDER-CONFIRM"/></refs>
     </transition>
 
     <transition id="TR-SHIP" from="ST-CONFIRMED" to="ST-SHIPPED" event="ship">
       <description>Order dispatched to carrier</description>
       <guard>All items picked and packed</guard>
       <action>Generate tracking number; notify carrier</action>
-      <refs><ref ref="REQ-ORDER-SHIP"/></refs>
     </transition>
 
     <transition id="TR-DELIVER" from="ST-SHIPPED" to="ST-DELIVERED" event="deliver">
@@ -81,13 +79,11 @@ Use the behavior section when:
 
     <transition id="TR-CANCEL-PENDING" from="ST-PENDING" to="ST-CANCELLED" event="cancel">
       <description>Cancel before confirmation</description>
-      <refs><ref ref="REQ-ORDER-CANCEL"/></refs>
     </transition>
 
     <transition id="TR-CANCEL-CONFIRMED" from="ST-CONFIRMED" to="ST-CANCELLED" event="cancel">
       <description>Cancel after confirmation but before shipment</description>
       <guard>Shipment not yet dispatched</guard>
-      <refs><ref ref="REQ-ORDER-CANCEL"/></refs>
     </transition>
   </stateMachine>
 </behavior>
@@ -136,6 +132,6 @@ State machines enable systematic test generation:
 ## Theory
 - State machines formalize entity lifecycles, reducing ambiguity about valid sequences—aligned with UML behavioral modeling.
 - Guards and actions capture business logic tied to state changes, supporting precise code generation.
-- Linking transitions to requirements via `refs` maintains traceability per IEEE 29148.
+- Linking transitions to requirements via trace edges maintains traceability per IEEE 29148.
 - Explicit lifecycles improve testability by defining the complete set of valid state sequences.
 - Bibliography: [UML State Machine Diagrams](https://www.uml-diagrams.org/state-machine-diagrams.html), [IEEE 29148-2018](https://standards.ieee.org/standard/29148-2018.html), [Statecharts (Harel)](https://www.sciencedirect.com/science/article/pii/0167642387900359).

@@ -19,7 +19,6 @@ Required section holding all normative requirements.
 - `rationale` (0..1)
 - `notes` (0..1)
 - `acceptance` (0..1) → `criterion` (1..n) each with `given` (0..1), `when` (0..1), `then` (1)
-- `refs` (0..1) → `ref` (0..n)
 
 ## Attributes
 | Element | Name | Type | Required | Default | Description |
@@ -69,10 +68,6 @@ Required section holding all normative requirements.
           <then>The payment is marked authorized with paymentId</then>
         </criterion>
       </acceptance>
-      <refs>
-        <ref ref="GOAL-AVAIL"/>
-        <ref ref="SCN-CHECKOUT"/>
-      </refs>
     </req>
   </reqPackage>
 </requirements>

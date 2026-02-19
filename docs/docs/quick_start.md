@@ -10,10 +10,10 @@ sidebar_position: 2
 - Create **one `.rqml` file** in the root of your repository (by convention `requirements.rqml`, or a descriptive name like `myapp.rqml`)
 - Copy the following scaffold into your `.rqml` file:
 ```xml
-<rqml xmlns="https://rqml.org/schema/2.0.1"
+<rqml xmlns="https://rqml.org/schema/2.1.0"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="https://rqml.org/schema/2.0.1 https://rqml.org/schema/rqml-2.0.1.xsd"
-      version="2.0.1" docId="DOC-HELLO-001" status="draft">
+      xsi:schemaLocation="https://rqml.org/schema/2.1.0 https://rqml.org/schema/rqml-2.1.0.xsd"
+      version="2.1.0" docId="DOC-HELLO-001" status="draft">
   <meta>
     <title>...</title>
     <system>...</system>

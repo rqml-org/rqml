@@ -14,7 +14,7 @@ The `requirements` section is required and holds the core normative content.
   - `@type` (one of `FR`, `NFR`, `IR`, `DR`, `SR`, `CR`, `PR`, `UXR`, `OR`)
   - `@title` (human-readable)
   - Optional `status`, `priority`, `ownerRef`, `appliesTo`
-  - Children: `statement` (required), optional `rationale`, `notes`, `acceptance`, `refs`.
+  - Children: `statement` (required), optional `rationale`, `notes`, `acceptance`.
 - `acceptance`: Contains one or more `criterion` entries, each with optional `@id` and `given`/`when`/`then` text blocks.
 
 ### Requirement type meanings
@@ -30,7 +30,7 @@ The `requirements` section is required and holds the core normative content.
 
 ## Authoring tips
 - Keep `statement` crisp and testable; use `acceptance` to express BDD-style criteria when needed.
-- Reuse `@id` references from catalogs, domain entities, and goals via `refs` or `appliesTo`.
+- Reuse `@id` references from catalogs, domain entities, and goals via trace edges or `appliesTo`.
 - Use `priority` to distinguish `must/should/may` and `status` to track lifecycle (`draft/review/approved/deprecated`).
 - Group related requirements into `reqPackage` to clarify ownership and scope.
 
@@ -49,10 +49,6 @@ The `requirements` section is required and holds the core normative content.
           <then>The payment is marked authorized with paymentId</then>
         </criterion>
       </acceptance>
-      <refs>
-        <ref ref="GOAL-AVAIL"/>
-        <ref ref="SCN-CHECKOUT"/>
-      </refs>
     </req>
   </reqPackage>
 </requirements>

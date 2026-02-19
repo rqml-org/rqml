@@ -9,10 +9,10 @@ The optional `verification` section records planned and executed checks against 
 
 ## Elements
 - `testSuite`: Collection with `@id`, `title`, optional `description`, and optional `members` (refs to `testCase` or other items).
-- `testCase`: Individual verification item with `@id`, `title`, `type` (`acceptance|integration|unit|security|performance|inspection`), optional `purpose`, `steps`, `expected`, and optional `refs`.
+- `testCase`: Individual verification item with `@id`, `title`, `type` (`acceptance|integration|unit|security|performance|inspection`), optional `purpose`, `steps`, `expected`.
 
 ## Authoring tips
-- Use `refs` to point from `testCase` to the requirements or scenarios it covers.
+- Use trace edges to connect test cases to the requirements or scenarios they cover.
 - Keep `expected` observable and unambiguous; add `steps` for reproducibility.
 - Group related cases into `testSuite` for releases or capabilities, then trace to requirements using the `trace` section.
 
@@ -28,10 +28,6 @@ The optional `verification` section records planned and executed checks against 
     <purpose>Verify successful authorization path.</purpose>
     <steps>Submit POST /payments with valid token and amount.</steps>
     <expected>Response status 201 with paymentId and status=authorized.</expected>
-    <refs>
-      <ref ref="REQ-AUTH-001"/>
-      <ref ref="SCN-CHECKOUT"/>
-    </refs>
   </testCase>
 </verification>
 ```
