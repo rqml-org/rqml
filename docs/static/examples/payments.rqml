@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rqml xmlns="https://rqml.org/schema/2.1.0" version="2.1.0" docId="PAY-001" status="review">
+<rqml xmlns="https://rqml.org/schema/2.1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="https://rqml.org/schema/2.1.0 https://rqml.org/schema/rqml-2.1.0.xsd"
+      version="2.1.0" docId="PAY-001" status="review">
   <meta>
     <title>Checkout Payments</title>
     <system>Checkout</system>
@@ -116,7 +119,7 @@
       <from><locator><local id="REQ-AUTH"/></locator></from>
       <to><locator><local id="SCN-CHECKOUT"/></locator></to>
     </edge>
-    <edge id="TR-SEC-CON" type="satisfies">
+    <edge id="TR-SEC-TLS" type="dependsOn">
       <from><locator><local id="REQ-SEC"/></locator></from>
       <to><locator><local id="CON-TLS"/></locator></to>
     </edge>
@@ -125,12 +128,12 @@
       <to><locator><local id="RISK-FRAUD"/></locator></to>
     </edge>
     <edge id="TR-AUTH-TEST" type="verifiedBy">
-      <from><locator><local id="TC-AUTH"/></locator></from>
-      <to><locator><local id="REQ-AUTH"/></locator></to>
+      <from><locator><local id="REQ-AUTH"/></locator></from>
+      <to><locator><local id="TC-AUTH"/></locator></to>
     </edge>
     <edge id="TR-LAT-TEST" type="verifiedBy">
-      <from><locator><local id="TC-LAT"/></locator></from>
-      <to><locator><local id="REQ-LAT"/></locator></to>
+      <from><locator><local id="REQ-LAT"/></locator></from>
+      <to><locator><local id="TC-LAT"/></locator></to>
     </edge>
   </trace>
 </rqml>

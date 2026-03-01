@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rqml xmlns="https://rqml.org/schema/2.1.0" version="2.1.0" docId="RES-API-001" status="draft">
+<rqml xmlns="https://rqml.org/schema/2.1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="https://rqml.org/schema/2.1.0 https://rqml.org/schema/rqml-2.1.0.xsd"
+      version="2.1.0" docId="RES-API-001" status="draft">
   <meta>
     <title>Restaurant Reservation &amp; Waitlist API</title>
     <system>SeatSmart</system>
@@ -102,7 +105,7 @@
       <from><locator><local id="REQ-BOOK"/></locator></from>
       <to><locator><local id="SCN-BOOK"/></locator></to>
     </edge>
-    <edge id="TR-BOOK-ENT" type="refines">
+    <edge id="TR-BOOK-ENT" type="dependsOn">
       <from><locator><local id="REQ-BOOK"/></locator></from>
       <to><locator><local id="ENT-RES"/></locator></to>
     </edge>
@@ -110,13 +113,13 @@
       <from><locator><local id="REQ-CANCEL"/></locator></from>
       <to><locator><local id="SCN-CANCEL"/></locator></to>
     </edge>
-    <edge id="TR-SEC-CON" type="satisfies">
+    <edge id="TR-SEC-HTTPS" type="dependsOn">
       <from><locator><local id="REQ-SEC"/></locator></from>
       <to><locator><local id="CON-HTTPS"/></locator></to>
     </edge>
     <edge id="TR-TEST-BOOK" type="verifiedBy">
-      <from><locator><local id="TC-BOOK"/></locator></from>
-      <to><locator><local id="REQ-BOOK"/></locator></to>
+      <from><locator><local id="REQ-BOOK"/></locator></from>
+      <to><locator><local id="TC-BOOK"/></locator></to>
     </edge>
   </trace>
 </rqml>

@@ -35,6 +35,26 @@ const config: Config = {
     locales: ['en'],
   },
 
+  plugins: [
+    function rqmlLoaderPlugin() {
+      return {
+        name: 'docusaurus-plugin-rqml-loader',
+        configureWebpack() {
+          return {
+            module: {
+              rules: [
+                {
+                  test: /\.rqml$/,
+                  type: 'asset/source',
+                },
+              ],
+            },
+          };
+        },
+      };
+    },
+  ],
+
   presets: [
     [
       'classic',

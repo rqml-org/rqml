@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rqml xmlns="https://rqml.org/schema/2.1.0" version="2.1.0" docId="TELEMED-001" status="review">
+<rqml xmlns="https://rqml.org/schema/2.1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="https://rqml.org/schema/2.1.0 https://rqml.org/schema/rqml-2.1.0.xsd"
+      version="2.1.0" docId="TELEMED-001" status="review">
   <meta>
     <title>Telemedicine Platform</title>
     <system>CareConnect</system>
@@ -118,6 +121,7 @@
 
   <verification>
     <testSuite id="TS-VISIT" title="Visit flows">
+      <description>Integration and security tests for visit scheduling and video.</description>
     </testSuite>
     <testCase id="TC-SCHED" type="integration" title="Schedule visit success">
       <steps>POST /visits with valid slot</steps>
@@ -137,6 +141,10 @@
       <from><locator><local id="REQ-SCHED"/></locator></from>
       <to><locator><local id="SCN-BOOK"/></locator></to>
     </edge>
+    <edge id="TR-SCHED-ENT" type="dependsOn">
+      <from><locator><local id="REQ-SCHED"/></locator></from>
+      <to><locator><local id="ENT-VISIT"/></locator></to>
+    </edge>
     <edge id="TR-VIDEO-SCN" type="satisfies">
       <from><locator><local id="REQ-VIDEO"/></locator></from>
       <to><locator><local id="SCN-CALL"/></locator></to>
@@ -145,7 +153,7 @@
       <from><locator><local id="REQ-VIDEO"/></locator></from>
       <to><locator><local id="REQ-PHI"/></locator></to>
     </edge>
-    <edge id="TR-PHI-POL" type="satisfies">
+    <edge id="TR-PHI-HIPAA" type="satisfies">
       <from><locator><local id="REQ-PHI"/></locator></from>
       <to><locator><local id="POL-HIPAA"/></locator></to>
     </edge>
@@ -153,13 +161,21 @@
       <from><locator><local id="REQ-PRESC"/></locator></from>
       <to><locator><local id="SCN-PRESC"/></locator></to>
     </edge>
+    <edge id="TR-PRESC-ENT" type="dependsOn">
+      <from><locator><local id="REQ-PRESC"/></locator></from>
+      <to><locator><local id="ENT-PRESC"/></locator></to>
+    </edge>
     <edge id="TR-SCHED-TEST" type="verifiedBy">
-      <from><locator><local id="TC-SCHED"/></locator></from>
-      <to><locator><local id="REQ-SCHED"/></locator></to>
+      <from><locator><local id="REQ-SCHED"/></locator></from>
+      <to><locator><local id="TC-SCHED"/></locator></to>
     </edge>
     <edge id="TR-VIDEO-TEST" type="verifiedBy">
-      <from><locator><local id="TC-VIDEO"/></locator></from>
-      <to><locator><local id="REQ-VIDEO"/></locator></to>
+      <from><locator><local id="REQ-VIDEO"/></locator></from>
+      <to><locator><local id="TC-VIDEO"/></locator></to>
+    </edge>
+    <edge id="TR-PHI-TEST" type="verifiedBy">
+      <from><locator><local id="REQ-PHI"/></locator></from>
+      <to><locator><local id="TC-VIDEO"/></locator></to>
     </edge>
   </trace>
 </rqml>

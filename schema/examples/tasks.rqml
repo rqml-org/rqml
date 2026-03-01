@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rqml xmlns="https://rqml.org/schema/2.0.1"
+<rqml xmlns="https://rqml.org/schema/2.1.0"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="https://rqml.org/schema/2.0.1 https://rqml.org/schema/rqml-2.0.1.xsd"
-      version="2.0.1" docId="TASKS-001" status="draft">
+      xsi:schemaLocation="https://rqml.org/schema/2.1.0 https://rqml.org/schema/rqml-2.1.0.xsd"
+      version="2.1.0" docId="TASKS-001" status="draft">
   <meta>
     <title>Personal Task Manager</title>
     <system>Taskie</system>
@@ -44,10 +44,6 @@
             <then>The task is saved with status "open".</then>
           </criterion>
         </acceptance>
-        <refs>
-          <ref ref="ENT-TASK"/>
-          <ref ref="SCN-ADD"/>
-        </refs>
       </req>
       <req id="REQ-COMPLETE" type="FR" title="Complete task" priority="must">
         <statement>The system SHALL allow marking a task as completed.</statement>
@@ -58,9 +54,6 @@
             <then>Status becomes "completed" with timestamp.</then>
           </criterion>
         </acceptance>
-        <refs>
-          <ref ref="SCN-COMPLETE"/>
-        </refs>
       </req>
       <req id="REQ-LIST" type="NFR" title="List performance" priority="should">
         <statement>The task list SHALL render within 150ms for up to 500 tasks.</statement>
@@ -72,14 +65,25 @@
     <testCase id="TC-ADD-1" type="integration" title="Create task success">
       <steps>POST /tasks with title=Buy milk</steps>
       <expected>201 with taskId and status=open</expected>
-      <refs>
-        <ref ref="REQ-ADD"/>
-      </refs>
     </testCase>
   </verification>
 
   <trace>
-    <traceEdge id="TR-ADD" from="REQ-ADD" to="SCN-ADD" type="satisfies"/>
-    <traceEdge id="TR-TEST" from="TC-ADD-1" to="REQ-ADD" type="verifiedBy"/>
+    <edge id="TR-ADD" type="satisfies">
+      <from><locator><local id="REQ-ADD"/></locator></from>
+      <to><locator><local id="SCN-ADD"/></locator></to>
+    </edge>
+    <edge id="TR-ADD-ENT" type="dependsOn">
+      <from><locator><local id="REQ-ADD"/></locator></from>
+      <to><locator><local id="ENT-TASK"/></locator></to>
+    </edge>
+    <edge id="TR-COMPLETE" type="satisfies">
+      <from><locator><local id="REQ-COMPLETE"/></locator></from>
+      <to><locator><local id="SCN-COMPLETE"/></locator></to>
+    </edge>
+    <edge id="TR-TEST" type="verifiedBy">
+      <from><locator><local id="REQ-ADD"/></locator></from>
+      <to><locator><local id="TC-ADD-1"/></locator></to>
+    </edge>
   </trace>
 </rqml>

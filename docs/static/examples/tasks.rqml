@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rqml xmlns="https://rqml.org/schema/2.1.0" version="2.1.0" docId="TASKS-001" status="draft">
+<rqml xmlns="https://rqml.org/schema/2.1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="https://rqml.org/schema/2.1.0 https://rqml.org/schema/rqml-2.1.0.xsd"
+      version="2.1.0" docId="TASKS-001" status="draft">
   <meta>
     <title>Personal Task Manager</title>
     <system>Taskie</system>
@@ -70,7 +73,7 @@
       <from><locator><local id="REQ-ADD"/></locator></from>
       <to><locator><local id="SCN-ADD"/></locator></to>
     </edge>
-    <edge id="TR-ADD-ENT" type="refines">
+    <edge id="TR-ADD-ENT" type="dependsOn">
       <from><locator><local id="REQ-ADD"/></locator></from>
       <to><locator><local id="ENT-TASK"/></locator></to>
     </edge>
@@ -79,8 +82,8 @@
       <to><locator><local id="SCN-COMPLETE"/></locator></to>
     </edge>
     <edge id="TR-TEST" type="verifiedBy">
-      <from><locator><local id="TC-ADD-1"/></locator></from>
-      <to><locator><local id="REQ-ADD"/></locator></to>
+      <from><locator><local id="REQ-ADD"/></locator></from>
+      <to><locator><local id="TC-ADD-1"/></locator></to>
     </edge>
   </trace>
 </rqml>
