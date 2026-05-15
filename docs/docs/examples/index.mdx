@@ -7,70 +7,109 @@ sidebar_position: 4
 
 import CodeBlock from '@theme/CodeBlock';
 import helloworld from '@site/static/examples/helloworld.rqml';
-import payments from '@site/static/examples/payments.rqml';
-import reservations from '@site/static/examples/reservations.rqml';
 import tasks from '@site/static/examples/tasks.rqml';
-import telemedicine from '@site/static/examples/telemedicine.rqml';
+import reservations from '@site/static/examples/reservations.rqml';
+import payments from '@site/static/examples/payments.rqml';
 import warehouse_robots from '@site/static/examples/warehouse_robots.rqml';
+import telemedicine from '@site/static/examples/telemedicine.rqml';
+import carrental from '@site/static/examples/carrental.rqml';
 
-Explore real-world RQML files that illustrate how to model requirements for different domains. Each example is shown with syntax highlighting below — use the copy button to grab the full XML, or download the file directly.
+Explore real-world RQML files that illustrate how to model requirements for different domains. Examples are ordered from simplest to most comprehensive — expand any one to view the source, or download the file directly.
 
 ## Hello World Requirements
 
-This gentle introduction captures the requirements for a tiny "hello world" service: a single endpoint, a single response, and just enough structure to show how RQML expresses actors, flows, and expected outputs.
+A gentle introduction: a tiny "hello world" service with a single endpoint, a single response, and just enough structure to show how RQML expresses actors, flows, and expected outputs.
 
-<CodeBlock language="xml" title="helloworld.rqml" showLineNumbers>
-{helloworld}
-</CodeBlock>
+<details>
+  <summary>View XML (21 lines)</summary>
 
-<a href="pathname:///examples/helloworld.rqml" download>Download helloworld.rqml</a>
+  <CodeBlock language="xml" title="helloworld.rqml" showLineNumbers>
+    {helloworld}
+  </CodeBlock>
+</details>
 
-## Payments Platform
+<a href="/examples/helloworld.rqml" download>Download helloworld.rqml</a>
 
-A payments orchestration system needs strict rules for authorization, settlement, and auditability. This example models the flow from card authorization through settlement and includes requirements for error handling and compliance logging.
+## Task Management Workspace
 
-<CodeBlock language="xml" title="payments.rqml" showLineNumbers>
-{payments}
-</CodeBlock>
+How a collaborative task system handles assignment, prioritization, and state transitions, with a focus on clarity for both end users and automated workflows.
 
-<a href="pathname:///examples/payments.rqml" download>Download payments.rqml</a>
+<details>
+  <summary>View XML (89 lines)</summary>
+
+  <CodeBlock language="xml" title="tasks.rqml" showLineNumbers>
+    {tasks}
+  </CodeBlock>
+</details>
+
+<a href="/examples/tasks.rqml" download>Download tasks.rqml</a>
 
 ## Reservations Engine
 
 From seat inventory to confirmation workflows, this file documents the requirements for a reservation system that must prevent double-booking while keeping latency low during peak demand.
 
-<CodeBlock language="xml" title="reservations.rqml" showLineNumbers>
-{reservations}
-</CodeBlock>
+<details>
+  <summary>View XML (125 lines)</summary>
 
-<a href="pathname:///examples/reservations.rqml" download>Download reservations.rqml</a>
+  <CodeBlock language="xml" title="reservations.rqml" showLineNumbers>
+    {reservations}
+  </CodeBlock>
+</details>
 
-## Task Management Workspace
+<a href="/examples/reservations.rqml" download>Download reservations.rqml</a>
 
-This example captures how a collaborative task system handles assignment, prioritization, and state transitions, with a focus on clarity for both end users and automated workflows.
+## Payments Platform
 
-<CodeBlock language="xml" title="tasks.rqml" showLineNumbers>
-{tasks}
-</CodeBlock>
+A payments orchestration system needs strict rules for authorization, settlement, and auditability. This example models the flow from card authorization through settlement and includes requirements for error handling and compliance logging.
 
-<a href="pathname:///examples/tasks.rqml" download>Download tasks.rqml</a>
+<details>
+  <summary>View XML (139 lines)</summary>
 
-## Telemedicine Triage
+  <CodeBlock language="xml" title="payments.rqml" showLineNumbers>
+    {payments}
+  </CodeBlock>
+</details>
 
-Healthcare workflows demand precision. This RQML file describes requirements for a telemedicine platform, including patient onboarding, clinician routing, and secure data handling.
-
-<CodeBlock language="xml" title="telemedicine.rqml" showLineNumbers>
-{telemedicine}
-</CodeBlock>
-
-<a href="pathname:///examples/telemedicine.rqml" download>Download telemedicine.rqml</a>
+<a href="/examples/payments.rqml" download>Download payments.rqml</a>
 
 ## Warehouse Robotics Fleet
 
 Coordinating robots in a warehouse requires careful requirements around safety zones, task arbitration, and recovery procedures. This example highlights how RQML can capture those operational constraints.
 
-<CodeBlock language="xml" title="warehouse_robots.rqml" showLineNumbers>
-{warehouse_robots}
-</CodeBlock>
+<details>
+  <summary>View XML (158 lines)</summary>
 
-<a href="pathname:///examples/warehouse_robots.rqml" download>Download warehouse_robots.rqml</a>
+  <CodeBlock language="xml" title="warehouse_robots.rqml" showLineNumbers>
+    {warehouse_robots}
+  </CodeBlock>
+</details>
+
+<a href="/examples/warehouse_robots.rqml" download>Download warehouse_robots.rqml</a>
+
+## Telemedicine Triage
+
+Healthcare workflows demand precision. This RQML file describes requirements for a telemedicine platform, including patient onboarding, clinician routing, and secure data handling.
+
+<details>
+  <summary>View XML (181 lines)</summary>
+
+  <CodeBlock language="xml" title="telemedicine.rqml" showLineNumbers>
+    {telemedicine}
+  </CodeBlock>
+</details>
+
+<a href="/examples/telemedicine.rqml" download>Download telemedicine.rqml</a>
+
+## Car Rental Platform
+
+A multi-branch car rental system spanning customer self-service, fleet management, and reservations. This example shows how RQML scales to a full software requirements specification — actors, entities, business rules, compliance profiles (GDPR, PCI-DSS), and traceability across a sizeable feature set.
+
+<details>
+  <summary>View XML (2,470 lines)</summary>
+
+  <CodeBlock language="xml" title="carrental.rqml" showLineNumbers>
+    {carrental}
+  </CodeBlock>
+</details>
+
+<a href="/examples/carrental.rqml" download>Download carrental.rqml</a>

@@ -119,15 +119,15 @@ const config: Config = {
           rel: "noopener noreferrer",
         },
         {
-          href: "/schema/rqml-2.1.0.xsd",
-          label: "Get Schema",
+          href: "https://marketplace.visualstudio.com/items?itemName=rqml.rqml-vscode",
+          label: "Get VSCode extension",
           position: "right",
           className: "navbar__downloadButton",
           target: "_blank",
           rel: "noopener noreferrer",
         },
         {
-          href: 'https://github.com/gudgeirsson/rqml',
+          href: 'https://github.com/rqml-org/rqml',
           position: 'right',
           className: 'header-github-link',
           'aria-label': 'GitHub repository',
@@ -147,16 +147,19 @@ const config: Config = {
         {
           title: 'Links',
           items: [
-            { label: 'GitHub', href: 'https://github.com/gudgeirsson/rqml' },
+            { label: 'RQML on GitHub', href: 'https://github.com/rqml-org/rqml' },
+            { label: 'RQML VSCode extension on GitHub', href: 'https://github.com/rqml-org/rqml-vscode' },
+            { label: 'RQML Agent Skill on GitHub', href: 'https://github.com/rqml-org/rqml-skill' },
             { label: 'rqml.org', href: 'https://rqml.org' },
+            { label: 'rqml.dev', href: 'https://rqml.org' },
           ],
         },
         {
           title: 'Legal',
           items: [
-            { label: 'License', href: 'https://github.com/gudgeirsson/rqml/blob/main/LICENSE' },
-            { label: 'Trademark', href: 'https://github.com/gudgeirsson/rqml/blob/main/TRADEMARK.md' },
-            { label: 'Notice', href: 'https://github.com/gudgeirsson/rqml/blob/main/NOTICE' },
+            { label: 'License', href: 'https://github.com/rqml-org/rqml/blob/main/LICENSE' },
+            { label: 'Trademark', href: 'https://github.com/rqml-org/rqml/blob/main/TRADEMARK.md' },
+            { label: 'Notice', href: 'https://github.com/rqml-org/rqml/blob/main/NOTICE' },
           ],
         },
       ],

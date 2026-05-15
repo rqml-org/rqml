@@ -1,0 +1,2470 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rqml xmlns="https://rqml.org/schema/2.1.0"
+      version="2.1.0"
+      docId="CARRENTAL-SPEC"
+      status="draft">
+
+  <!-- ============================================================
+       1. META
+       ============================================================ -->
+  <meta>
+    <title>DriveEasy Car Rental Platform - Software Requirements Specification</title>
+    <system>DriveEasy</system>
+    <summary>
+      This document specifies the requirements for the DriveEasy car rental
+      platform, a web-based system that allows customers to search for, reserve,
+      pick up, and return rental vehicles across multiple branch locations.
+      The platform supports online self-service for customers, fleet management
+      for branch staff, and reporting dashboards for management.
+    </summary>
+    <authors>
+      <author>
+        <name>Anna Sigurdsson</name>
+        <role>Product Owner</role>
+        <org>DriveEasy ehf.</org>
+        <contact>anna@driveeasy.example</contact>
+      </author>
+      <author>
+        <name>Bjarki Thorsson</name>
+        <role>Lead Architect</role>
+        <org>DriveEasy ehf.</org>
+        <contact>bjarki@driveeasy.example</contact>
+      </author>
+    </authors>
+    <dates>
+      <created>2026-01-15</created>
+      <updated>2026-02-20</updated>
+      <targetRelease>v1.0.0 - 2026-Q3</targetRelease>
+    </dates>
+    <conventions>
+      <normativeKeywords>
+        The keywords "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", and "MAY"
+        in this document are to be interpreted as described in RFC 2119.
+        "SHALL" and "MUST" denote absolute requirements. "SHOULD" denotes a
+        recommendation. "MAY" denotes an option.
+      </normativeKeywords>
+      <idConventions>
+        IDs follow the pattern PREFIX-AREA-NNN where PREFIX indicates the
+        element type (REQ, GOAL, TC, ENT, etc.), AREA indicates the functional
+        area (RES for reservations, VEH for vehicles, PAY for payments, etc.),
+        and NNN is a zero-padded sequence number.
+      </idConventions>
+    </conventions>
+    <profiles>
+      <profile id="PROF-GDPR" type="compliance">
+        <description>
+          GDPR compliance profile. All personal data processing must comply
+          with EU General Data Protection Regulation 2016/679.
+        </description>
+      </profile>
+      <profile id="PROF-PCI" type="compliance">
+        <description>
+          PCI-DSS compliance profile. Payment card handling must conform to
+          PCI Data Security Standard v4.0.
+        </description>
+      </profile>
+    </profiles>
+  </meta>
+
+  <!-- ============================================================
+       2. CATALOGS
+       ============================================================ -->
+  <catalogs>
+
+    <!-- Glossary -->
+    <glossary>
+      <term id="TERM-RESERVATION">
+        <name>Reservation</name>
+        <definition>
+          A confirmed booking that allocates a vehicle category for a customer
+          during a specific date range at a designated branch location.
+        </definition>
+        <synonyms><synonym>Booking</synonym></synonyms>
+      </term>
+      <term id="TERM-RENTAL-AGREEMENT">
+        <name>Rental Agreement</name>
+        <definition>
+          The legally binding contract created at vehicle pick-up that governs
+          the terms and conditions of the rental period, including insurance
+          coverage, mileage limits, and liability.
+        </definition>
+        <synonyms><synonym>Rental Contract</synonym></synonyms>
+      </term>
+      <term id="TERM-VEHICLE-CATEGORY">
+        <name>Vehicle Category</name>
+        <definition>
+          A classification grouping vehicles by size and features, following
+          ACRISS codes. Examples: Economy (ECMR), Compact (CCMR),
+          Full-Size (FCMR), SUV (SFMR), Luxury (LCMR).
+        </definition>
+        <synonyms><synonym>Car Class</synonym><synonym>Vehicle Class</synonym></synonyms>
+      </term>
+      <term id="TERM-BRANCH">
+        <name>Branch</name>
+        <definition>
+          A physical location where vehicles are stored, picked up, and returned.
+          Each branch has an address, operating hours, and an assigned fleet.
+        </definition>
+        <synonyms><synonym>Location</synonym><synonym>Station</synonym></synonyms>
+      </term>
+      <term id="TERM-CDW">
+        <name>CDW</name>
+        <definition>
+          Collision Damage Waiver - an optional insurance product that limits the
+          customer's financial liability for damage to the rental vehicle to
+          the deductible amount stated in the waiver.
+        </definition>
+      </term>
+      <term id="TERM-ONE-WAY">
+        <name>One-Way Rental</name>
+        <definition>
+          A rental where the vehicle is returned to a different branch than the
+          pick-up location, incurring an additional one-way fee.
+        </definition>
+      </term>
+    </glossary>
+
+    <!-- Actors -->
+    <actors>
+      <actor id="ACT-CUSTOMER" name="Customer" type="human">
+        <description>
+          A person who searches for vehicles, makes reservations, picks up and
+          returns rental cars. May be authenticated (registered) or a guest.
+        </description>
+      </actor>
+      <actor id="ACT-BRANCH-AGENT" name="Branch Agent" type="human">
+        <description>
+          An employee at a branch location who handles vehicle check-out,
+          check-in, damage inspections, and walk-in reservations.
+        </description>
+      </actor>
+      <actor id="ACT-FLEET-MANAGER" name="Fleet Manager" type="human">
+        <description>
+          A manager responsible for vehicle acquisition, disposal, maintenance
+          scheduling, and fleet distribution across branches.
+        </description>
+      </actor>
+      <actor id="ACT-ADMIN" name="System Administrator" type="human">
+        <description>
+          An IT administrator who manages user accounts, system configuration,
+          pricing rules, and branch settings.
+        </description>
+      </actor>
+      <actor id="ACT-PAYMENT-GW" name="Payment Gateway" type="system">
+        <description>
+          External payment processing system (Stripe) that handles credit card
+          authorizations, captures, and refunds.
+        </description>
+      </actor>
+      <actor id="ACT-EMAIL-SVC" name="Email Service" type="system">
+        <description>
+          External email delivery service used for reservation confirmations,
+          reminders, receipts, and account notifications.
+        </description>
+      </actor>
+    </actors>
+
+    <!-- Stakeholders -->
+    <stakeholders>
+      <stakeholder id="STK-PRODUCT" name="Product Management" org="DriveEasy ehf.">
+        <concerns>
+          Feature completeness, customer satisfaction, conversion rates,
+          competitive parity with industry leaders.
+        </concerns>
+      </stakeholder>
+      <stakeholder id="STK-OPS" name="Operations Team" org="DriveEasy ehf.">
+        <concerns>
+          Fleet utilization rates, branch efficiency, maintenance scheduling,
+          real-time vehicle availability accuracy.
+        </concerns>
+      </stakeholder>
+      <stakeholder id="STK-FINANCE" name="Finance Department" org="DriveEasy ehf.">
+        <concerns>
+          Revenue recognition, pricing accuracy, payment reconciliation,
+          financial reporting and audit compliance.
+        </concerns>
+      </stakeholder>
+      <stakeholder id="STK-LEGAL" name="Legal and Compliance" org="DriveEasy ehf.">
+        <concerns>
+          GDPR compliance for personal data, PCI-DSS for payment data, rental
+          agreement enforceability, insurance liability terms.
+        </concerns>
+      </stakeholder>
+      <stakeholder id="STK-SECURITY" name="Information Security" org="DriveEasy ehf.">
+        <concerns>
+          Data protection, access control, vulnerability management, incident
+          response, secure software development lifecycle.
+        </concerns>
+      </stakeholder>
+    </stakeholders>
+
+    <!-- Constraints -->
+    <constraints>
+      <constraint id="CON-CLOUD" severity="blocking">
+        <statement>
+          The system SHALL be deployed on AWS eu-west-1 (Ireland) to satisfy
+          EU data residency requirements.
+        </statement>
+        <source>Data Residency Policy - DriveEasy IT Governance</source>
+      </constraint>
+      <constraint id="CON-LANG" severity="high">
+        <statement>
+          The backend SHALL be implemented in Java 21 LTS using Spring Boot 3.x
+          to align with the existing technology stack and team skills.
+        </statement>
+        <source>Technology Standards - DriveEasy Platform Engineering</source>
+      </constraint>
+      <constraint id="CON-DB" severity="high">
+        <statement>
+          PostgreSQL 16 SHALL be used as the primary relational database.
+        </statement>
+        <source>Technology Standards - DriveEasy Platform Engineering</source>
+      </constraint>
+      <constraint id="CON-BROWSER" severity="medium">
+        <statement>
+          The web frontend SHALL support the latest two major versions of
+          Chrome, Firefox, Safari, and Edge.
+        </statement>
+        <source>UX Guidelines - DriveEasy Design Team</source>
+      </constraint>
+    </constraints>
+
+    <!-- Policies -->
+    <policies>
+      <policy id="POL-GDPR-CONSENT" source="GDPR Art. 6, Art. 7">
+        <obligation>
+          Personal data SHALL only be processed with a valid legal basis.
+          Consent must be freely given, specific, informed, and unambiguous.
+          Customers SHALL be able to withdraw consent at any time.
+        </obligation>
+        <evidence>
+          Consent records with timestamp, version of privacy notice accepted,
+          and mechanism used. Annual consent audit report.
+        </evidence>
+      </policy>
+      <policy id="POL-GDPR-ERASURE" source="GDPR Art. 17">
+        <obligation>
+          The system SHALL support the right to erasure. Customer personal data
+          SHALL be deleted or anonymized within 30 days of a verified request,
+          except where retention is required by law.
+        </obligation>
+        <evidence>
+          Erasure request log, confirmation of data removal, retention
+          justification for any data not erased.
+        </evidence>
+      </policy>
+      <policy id="POL-PCI-STORAGE" source="PCI-DSS v4.0 Req 3.4">
+        <obligation>
+          Primary Account Numbers (PANs) SHALL be rendered unreadable anywhere
+          they are stored. The system SHALL NOT store CVV, full magnetic stripe,
+          or PIN data after authorization.
+        </obligation>
+        <evidence>
+          Quarterly scan reports, tokenization audit, no PAN in logs or backups.
+        </evidence>
+      </policy>
+    </policies>
+
+    <!-- Decisions -->
+    <decisions>
+      <decision id="DEC-PAYMENT-TOKEN" status="approved">
+        <context>
+          The system needs to handle recurring payments for rental extensions and
+          damage charges after the initial rental. Storing full card numbers
+          is prohibited by PCI-DSS.
+        </context>
+        <decision>
+          Use Stripe payment tokenization. Card details are collected via Stripe
+          Elements on the frontend and never touch our servers. A reusable
+          payment token is stored for post-rental charges.
+        </decision>
+        <alternatives>
+          1. Build PCI-compliant card vault in-house - rejected due to cost and
+             compliance burden.
+          2. Use PayPal - rejected due to lower conversion rates in target markets.
+          3. Use Adyen - viable alternative but Stripe offers better developer
+             experience and documentation.
+        </alternatives>
+        <consequences>
+          Positive: PCI scope is minimized (SAQ-A level). Negative: Vendor lock-in
+          to Stripe; migration would require re-tokenizing all stored payment methods.
+        </consequences>
+      </decision>
+      <decision id="DEC-PRICING-ENGINE" status="approved">
+        <context>
+          Rental pricing varies by vehicle category, season, branch, rental
+          duration, and demand. The business needs to adjust prices frequently
+          without code deployments.
+        </context>
+        <decision>
+          Implement a rule-based pricing engine with configurable pricing rules
+          stored in the database. Rules are evaluated in priority order with the
+          first matching rule applied.
+        </decision>
+        <alternatives>
+          1. Hard-coded pricing tables - rejected; too inflexible.
+          2. External pricing SaaS - rejected; latency concerns and cost.
+        </alternatives>
+        <consequences>
+          Positive: Business can adjust pricing via admin UI. Negative: Complex
+          rule evaluation logic; requires thorough testing of rule interactions.
+        </consequences>
+      </decision>
+    </decisions>
+
+    <!-- Risks -->
+    <risks>
+      <risk id="RISK-FRAUD" severity="high">
+        <statement>
+          Fraudulent reservations using stolen credit cards could result in
+          financial loss and vehicle theft. Car rental is a high-risk industry
+          for card-not-present fraud.
+        </statement>
+        <mitigation>
+          Implement 3D-Secure for online payments, require identity verification
+          at pick-up with matching driver's license, pre-authorization hold on
+          card at reservation time. See REQ-SEC-001, REQ-SEC-002.
+        </mitigation>
+      </risk>
+      <risk id="RISK-OVERBOOKING" severity="high">
+        <statement>
+          Insufficient fleet availability due to simultaneous reservations or
+          late returns could lead to customers being unable to pick up reserved
+          vehicles, causing reputational damage and compensation costs.
+        </statement>
+        <mitigation>
+          Maintain a configurable overbooking buffer per category per branch.
+          Implement real-time availability checks with pessimistic locking during
+          reservation creation. See REQ-RES-003.
+        </mitigation>
+      </risk>
+      <risk id="RISK-DATA-BREACH" severity="critical">
+        <statement>
+          A data breach exposing customer personal data (driver's licenses,
+          payment information, addresses) would result in regulatory fines,
+          legal liability, and severe reputational harm.
+        </statement>
+        <mitigation>
+          Encrypt data at rest and in transit, implement least-privilege access
+          controls, conduct regular penetration testing, maintain incident
+          response plan. See REQ-SEC-003, REQ-SEC-004.
+        </mitigation>
+      </risk>
+      <risk id="RISK-VENDOR-LOCK" severity="medium">
+        <statement>
+          Deep integration with Stripe for payments could make migration to an
+          alternative provider costly and time-consuming.
+        </statement>
+        <mitigation>
+          Abstract payment operations behind a PaymentGateway interface to
+          isolate vendor-specific code. See DEC-PAYMENT-TOKEN.
+        </mitigation>
+      </risk>
+    </risks>
+
+  </catalogs>
+
+  <!-- ============================================================
+       3. DOMAIN
+       ============================================================ -->
+  <domain>
+    <overview>
+      The DriveEasy domain models the core concepts of a car rental business:
+      customers make reservations for vehicle categories at branch locations,
+      vehicles are assigned at pick-up time, rental agreements govern the
+      active rental period, and payments are processed for rental charges,
+      extras, and damage claims.
+    </overview>
+
+    <entities>
+      <!-- Customer -->
+      <entity id="ENT-CUSTOMER" name="Customer">
+        <description>
+          A person who rents vehicles. Holds personal information, driver's
+          license details, and linked payment methods.
+        </description>
+        <attr id="ATTR-CUST-ID" name="customerId" type="uuid" required="true">
+          <description>Unique customer identifier.</description>
+        </attr>
+        <attr id="ATTR-CUST-EMAIL" name="email" type="email" required="true">
+          <description>Customer's email address, used as login identifier.</description>
+          <constraints>Must be a valid email per RFC 5322. Unique across all customers.</constraints>
+        </attr>
+        <attr id="ATTR-CUST-FIRST" name="firstName" type="string" required="true">
+          <description>Customer's first name.</description>
+          <constraints>1-100 characters.</constraints>
+        </attr>
+        <attr id="ATTR-CUST-LAST" name="lastName" type="string" required="true">
+          <description>Customer's last name.</description>
+          <constraints>1-100 characters.</constraints>
+        </attr>
+        <attr id="ATTR-CUST-PHONE" name="phone" type="string" required="false">
+          <description>Contact phone number in E.164 format.</description>
+          <constraints>Must match E.164 pattern: +[country][number], max 15 digits.</constraints>
+        </attr>
+        <attr id="ATTR-CUST-DOB" name="dateOfBirth" type="ISO8601-date" required="true">
+          <description>Date of birth, used for age eligibility verification.</description>
+          <constraints>Customer must be at least 21 years old at rental start.</constraints>
+        </attr>
+        <attr id="ATTR-CUST-LICENSE" name="driverLicenseNumber" type="string" required="true">
+          <description>Driver's license number.</description>
+        </attr>
+        <attr id="ATTR-CUST-LICENSE-EXP" name="driverLicenseExpiry" type="ISO8601-date" required="true">
+          <description>Driver's license expiration date.</description>
+          <constraints>Must not be expired at time of pick-up.</constraints>
+        </attr>
+        <attr id="ATTR-CUST-CREATED" name="createdAt" type="ISO8601-timestamp" required="true">
+          <description>Account creation timestamp.</description>
+        </attr>
+      </entity>
+
+      <!-- Vehicle -->
+      <entity id="ENT-VEHICLE" name="Vehicle">
+        <description>
+          A physical car in the fleet. Assigned to a branch and belongs to a
+          vehicle category. Tracks mileage, maintenance status, and availability.
+        </description>
+        <attr id="ATTR-VEH-ID" name="vehicleId" type="uuid" required="true">
+          <description>Unique vehicle identifier.</description>
+        </attr>
+        <attr id="ATTR-VEH-PLATE" name="licensePlate" type="string" required="true">
+          <description>Vehicle license plate number.</description>
+          <constraints>Unique across all vehicles. Format varies by country.</constraints>
+        </attr>
+        <attr id="ATTR-VEH-VIN" name="vin" type="string" required="true">
+          <description>Vehicle Identification Number (17 characters).</description>
+          <constraints>Exactly 17 alphanumeric characters per ISO 3779.</constraints>
+        </attr>
+        <attr id="ATTR-VEH-MAKE" name="make" type="string" required="true">
+          <description>Vehicle manufacturer (e.g., Toyota, Volkswagen).</description>
+        </attr>
+        <attr id="ATTR-VEH-MODEL" name="model" type="string" required="true">
+          <description>Vehicle model name (e.g., Corolla, Golf).</description>
+        </attr>
+        <attr id="ATTR-VEH-YEAR" name="year" type="integer" required="true">
+          <description>Model year.</description>
+          <constraints>Must be within last 5 years for active fleet.</constraints>
+        </attr>
+        <attr id="ATTR-VEH-CAT" name="categoryId" type="uuid" required="true">
+          <description>Reference to vehicle category (ACRISS code grouping).</description>
+        </attr>
+        <attr id="ATTR-VEH-BRANCH" name="branchId" type="uuid" required="true">
+          <description>Branch where the vehicle is currently assigned.</description>
+        </attr>
+        <attr id="ATTR-VEH-MILEAGE" name="currentMileage" type="integer" required="true">
+          <description>Current odometer reading in kilometers.</description>
+          <constraints>Non-negative. Updated at each check-in.</constraints>
+        </attr>
+        <attr id="ATTR-VEH-STATUS" name="status" type="enum:available,rented,maintenance,retired" required="true">
+          <description>Current operational status of the vehicle.</description>
+        </attr>
+      </entity>
+
+      <!-- Reservation -->
+      <entity id="ENT-RESERVATION" name="Reservation">
+        <description>
+          A booking for a vehicle category at a branch for a date range.
+          A specific vehicle is assigned at pick-up time, not at reservation.
+        </description>
+        <attr id="ATTR-RES-ID" name="reservationId" type="uuid" required="true">
+          <description>Unique reservation identifier.</description>
+        </attr>
+        <attr id="ATTR-RES-CONF" name="confirmationCode" type="string" required="true">
+          <description>Human-readable confirmation code (e.g., DE-A1B2C3).</description>
+          <constraints>Format: DE-[A-Z0-9]{6}. Unique across all reservations.</constraints>
+        </attr>
+        <attr id="ATTR-RES-CUST" name="customerId" type="uuid" required="true">
+          <description>Reference to the customer who made this reservation.</description>
+        </attr>
+        <attr id="ATTR-RES-CAT" name="categoryId" type="uuid" required="true">
+          <description>Requested vehicle category.</description>
+        </attr>
+        <attr id="ATTR-RES-PICKUP-BRANCH" name="pickupBranchId" type="uuid" required="true">
+          <description>Branch where the vehicle will be picked up.</description>
+        </attr>
+        <attr id="ATTR-RES-RETURN-BRANCH" name="returnBranchId" type="uuid" required="true">
+          <description>Branch where the vehicle will be returned.</description>
+        </attr>
+        <attr id="ATTR-RES-PICKUP-DATE" name="pickupDate" type="ISO8601-timestamp" required="true">
+          <description>Scheduled pick-up date and time.</description>
+          <constraints>Must be at least 1 hour in the future at time of booking.</constraints>
+        </attr>
+        <attr id="ATTR-RES-RETURN-DATE" name="returnDate" type="ISO8601-timestamp" required="true">
+          <description>Scheduled return date and time.</description>
+          <constraints>Must be after pickupDate. Maximum rental duration: 90 days.</constraints>
+        </attr>
+        <attr id="ATTR-RES-STATUS" name="status" type="enum:pending,confirmed,checked-out,completed,cancelled,no-show" required="true">
+          <description>Current reservation lifecycle status.</description>
+        </attr>
+        <attr id="ATTR-RES-TOTAL" name="totalPrice" type="decimal" required="false">
+          <description>Total estimated price at time of reservation.</description>
+          <constraints>Non-negative. Currency is EUR.</constraints>
+        </attr>
+      </entity>
+
+      <!-- Branch -->
+      <entity id="ENT-BRANCH" name="Branch">
+        <description>
+          A physical rental location with an address, operating hours, and fleet.
+        </description>
+        <attr id="ATTR-BR-ID" name="branchId" type="uuid" required="true">
+          <description>Unique branch identifier.</description>
+        </attr>
+        <attr id="ATTR-BR-NAME" name="name" type="string" required="true">
+          <description>Branch display name (e.g., "Keflavik Airport").</description>
+        </attr>
+        <attr id="ATTR-BR-CODE" name="branchCode" type="string" required="true">
+          <description>Short branch code (e.g., KEF, REK, AKU).</description>
+          <constraints>2-5 uppercase alphanumeric characters. Unique.</constraints>
+        </attr>
+        <attr id="ATTR-BR-ADDR" name="address" type="string" required="true">
+          <description>Full street address of the branch.</description>
+        </attr>
+        <attr id="ATTR-BR-LAT" name="latitude" type="decimal" required="true">
+          <description>GPS latitude coordinate.</description>
+          <constraints>Range: -90.0 to 90.0.</constraints>
+        </attr>
+        <attr id="ATTR-BR-LON" name="longitude" type="decimal" required="true">
+          <description>GPS longitude coordinate.</description>
+          <constraints>Range: -180.0 to 180.0.</constraints>
+        </attr>
+        <attr id="ATTR-BR-ACTIVE" name="active" type="boolean" required="true">
+          <description>Whether the branch is currently operational.</description>
+        </attr>
+      </entity>
+
+      <!-- Payment -->
+      <entity id="ENT-PAYMENT" name="Payment">
+        <description>
+          A financial transaction associated with a reservation. Covers
+          pre-authorization, rental charges, extras, fuel, and damage fees.
+        </description>
+        <attr id="ATTR-PAY-ID" name="paymentId" type="uuid" required="true">
+          <description>Unique payment identifier.</description>
+        </attr>
+        <attr id="ATTR-PAY-RES" name="reservationId" type="uuid" required="true">
+          <description>Reference to the associated reservation.</description>
+        </attr>
+        <attr id="ATTR-PAY-AMOUNT" name="amount" type="decimal" required="true">
+          <description>Payment amount in EUR.</description>
+          <constraints>Positive value. Two decimal places.</constraints>
+        </attr>
+        <attr id="ATTR-PAY-TYPE" name="type" type="enum:pre-auth,charge,refund" required="true">
+          <description>Type of payment transaction.</description>
+        </attr>
+        <attr id="ATTR-PAY-STATUS" name="status" type="enum:pending,authorized,captured,failed,refunded" required="true">
+          <description>Payment processing status.</description>
+        </attr>
+        <attr id="ATTR-PAY-STRIPE" name="stripePaymentIntentId" type="string" required="false">
+          <description>Stripe PaymentIntent ID for reconciliation.</description>
+        </attr>
+        <attr id="ATTR-PAY-CREATED" name="createdAt" type="ISO8601-timestamp" required="true">
+          <description>Timestamp when the payment was initiated.</description>
+        </attr>
+      </entity>
+    </entities>
+
+    <businessRules>
+      <rule id="BR-AGE">
+        <statement>
+          A customer must be at least 21 years of age at the start of the
+          rental period to rent any vehicle. Customers under 25 incur a
+          young driver surcharge of EUR 15 per day.
+        </statement>
+        <examples>
+          Customer born 2005-06-15, rental starting 2026-06-14: REJECTED (age 20).
+          Customer born 2005-06-15, rental starting 2026-06-15: ACCEPTED (age 21).
+          Customer born 2002-03-01, rental starting 2026-06-01: ACCEPTED, surcharge applied (age 24).
+        </examples>
+      </rule>
+      <rule id="BR-LICENSE-VALID">
+        <statement>
+          The customer's driver's license must be valid (not expired) on both
+          the pick-up date and the scheduled return date.
+        </statement>
+        <examples>
+          License expires 2026-07-01, rental 2026-06-15 to 2026-06-30: ACCEPTED.
+          License expires 2026-06-20, rental 2026-06-15 to 2026-06-30: REJECTED.
+        </examples>
+      </rule>
+      <rule id="BR-CANCEL-POLICY">
+        <statement>
+          Free cancellation is permitted up to 48 hours before the scheduled
+          pick-up time. Cancellations within 48 hours incur a fee equal to
+          one day's rental charge. No-shows are charged the full rental amount.
+        </statement>
+        <examples>
+          Pick-up at 2026-07-10 14:00, cancel at 2026-07-08 13:59: FREE.
+          Pick-up at 2026-07-10 14:00, cancel at 2026-07-08 14:01: one day fee.
+          No-show on 2026-07-10: full rental charged.
+        </examples>
+      </rule>
+      <rule id="BR-LATE-RETURN">
+        <statement>
+          Returns within 59 minutes after the scheduled time incur no penalty
+          (grace period). Returns 1-4 hours late are charged a half-day rate.
+          Returns more than 4 hours late are charged a full additional day.
+        </statement>
+        <examples>
+          Due 14:00, returned 14:45: no extra charge (grace period).
+          Due 14:00, returned 16:30: half-day charge applied.
+          Due 14:00, returned 19:00: full additional day charged.
+        </examples>
+      </rule>
+      <rule id="BR-ONE-WAY-FEE">
+        <statement>
+          When the return branch differs from the pick-up branch, a one-way
+          fee is charged. The fee is determined by the distance between
+          branches: EUR 50 for same-region, EUR 150 for cross-region.
+        </statement>
+      </rule>
+      <rule id="BR-FUEL-POLICY">
+        <statement>
+          Vehicles are provided with a full tank. Customers must return the
+          vehicle with a full tank or pay a refueling charge at EUR 2.50
+          per liter of fuel required to fill the tank, plus a EUR 30 service fee.
+        </statement>
+      </rule>
+    </businessRules>
+  </domain>
+
+  <!-- ============================================================
+       4. GOALS
+       ============================================================ -->
+  <goals>
+    <!-- Business Goals -->
+    <goal id="GOAL-ONLINE-BOOKING" title="Enable Online Self-Service Booking"
+          priority="must" status="approved" ownerRef="STK-PRODUCT">
+      <statement>
+        Achieve a fully digital reservation flow so that customers can search
+        for, compare, and book rental vehicles online without needing to call
+        or visit a branch.
+      </statement>
+      <rationale>
+        Industry data shows 78% of car rentals are researched online.
+        An online booking channel reduces branch workload and enables 24/7
+        reservation capability, increasing booking volume.
+      </rationale>
+    </goal>
+
+    <goal id="GOAL-FLEET-UTIL" title="Maximize Fleet Utilization"
+          priority="must" status="approved" ownerRef="STK-OPS">
+      <statement>
+        Maintain an average fleet utilization rate of at least 75% across all
+        branches during peak season and 55% during off-peak.
+      </statement>
+      <rationale>
+        Each idle vehicle costs approximately EUR 40/day in depreciation and
+        insurance. Maximizing utilization directly improves profitability.
+      </rationale>
+    </goal>
+
+    <goal id="GOAL-REVENUE" title="Increase Revenue per Rental"
+          priority="should" status="approved" ownerRef="STK-FINANCE">
+      <statement>
+        Achieve a 15% increase in average revenue per rental through upselling
+        of vehicle upgrades, insurance products, and extras.
+      </statement>
+      <rationale>
+        Extras and upgrades typically carry higher margins than base rental
+        rates. Intelligent upselling at reservation and check-out improves
+        average ticket value.
+      </rationale>
+    </goal>
+
+    <goal id="GOAL-COMPLIANCE" title="Maintain Regulatory Compliance"
+          priority="must" status="approved" ownerRef="STK-LEGAL">
+      <statement>
+        Ensure full compliance with GDPR for personal data processing and
+        PCI-DSS for payment card handling at all times.
+      </statement>
+      <rationale>
+        Non-compliance carries fines of up to 4% of annual turnover (GDPR)
+        and loss of card processing privileges (PCI). Compliance is
+        non-negotiable.
+      </rationale>
+    </goal>
+
+    <goal id="GOAL-CUST-SAT" title="Achieve High Customer Satisfaction"
+          priority="should" status="approved" ownerRef="STK-PRODUCT">
+      <statement>
+        Achieve and maintain a customer satisfaction score (CSAT) of at least
+        4.2 out of 5.0 for the digital booking and rental experience.
+      </statement>
+      <rationale>
+        High customer satisfaction drives repeat business and positive reviews,
+        which are critical for growth in the competitive car rental market.
+      </rationale>
+    </goal>
+
+    <!-- Quality Goals -->
+    <qgoal id="QGOAL-AVAILABILITY" title="High Availability"
+           priority="must" status="approved">
+      <statement>
+        The booking platform SHALL maintain high availability to support
+        24/7 online reservations.
+      </statement>
+      <metric>99.9% uptime measured monthly, excluding planned maintenance windows.</metric>
+    </qgoal>
+
+    <qgoal id="QGOAL-LATENCY" title="Low Latency Search and Booking"
+           priority="should" status="approved">
+      <statement>
+        Vehicle search and reservation operations SHALL be responsive to
+        ensure a smooth user experience.
+      </statement>
+      <metric>
+        Vehicle search: p95 latency under 500ms.
+        Reservation creation: p95 latency under 1000ms.
+        Page load (above the fold): under 2 seconds on 4G connection.
+      </metric>
+    </qgoal>
+
+    <qgoal id="QGOAL-SCALABILITY" title="Scalability for Peak Demand"
+           priority="should" status="approved">
+      <statement>
+        The system SHALL scale to handle peak booking periods (summer season,
+        holiday weekends) without degradation.
+      </statement>
+      <metric>
+        Support 500 concurrent users and 50 reservation transactions per second
+        during peak load.
+      </metric>
+    </qgoal>
+
+    <qgoal id="QGOAL-SECURITY" title="Strong Security Posture"
+           priority="must" status="approved">
+      <statement>
+        The system SHALL protect customer data and resist common attack vectors.
+      </statement>
+      <metric>
+        Zero critical or high-severity vulnerabilities in production.
+        OWASP Top 10 coverage in security testing.
+        Annual penetration test with all findings remediated within 30 days.
+      </metric>
+    </qgoal>
+
+    <!-- Obstacles -->
+    <obstacle id="OBS-LATE-RETURNS" title="Late Vehicle Returns"
+              likelihood="high" severity="high">
+      <statement>
+        Customers frequently return vehicles late, causing cascading
+        availability problems for subsequent reservations at the same branch.
+      </statement>
+      <mitigation>
+        Send automated reminders 24h and 2h before return. Enforce late fees.
+        Build buffer time between consecutive reservations. Allow agents to
+        reassign vehicles from nearby branches.
+      </mitigation>
+    </obstacle>
+
+    <obstacle id="OBS-PAYMENT-FAILURE" title="Payment Processing Failures"
+              likelihood="medium" severity="high">
+      <statement>
+        Payment gateway outages or card declines during reservation could
+        cause lost bookings and revenue.
+      </statement>
+      <mitigation>
+        Implement retry logic with exponential backoff. Hold reservation
+        for 15 minutes during payment retry. Support multiple payment
+        methods as fallback.
+      </mitigation>
+    </obstacle>
+
+    <obstacle id="OBS-SEASONAL-DEMAND" title="Extreme Seasonal Demand Spikes"
+              likelihood="high" severity="medium">
+      <statement>
+        Summer tourism season in Iceland creates 5-10x demand spikes that
+        could overwhelm the system and deplete fleet availability.
+      </statement>
+      <mitigation>
+        Auto-scaling infrastructure, aggressive caching for search queries,
+        rate limiting for API endpoints, advance fleet planning based on
+        historical booking data.
+      </mitigation>
+    </obstacle>
+
+    <!-- Goal Links -->
+    <goalLink id="GL-BOOKING-SAT" from="GOAL-ONLINE-BOOKING" to="GOAL-CUST-SAT"
+              type="refines" confidence="0.8"/>
+    <goalLink id="GL-UTIL-REVENUE" from="GOAL-FLEET-UTIL" to="GOAL-REVENUE"
+              type="refines" confidence="0.7"/>
+    <goalLink id="GL-LATE-UTIL" from="OBS-LATE-RETURNS" to="GOAL-FLEET-UTIL"
+              type="threatens" confidence="0.9"/>
+    <goalLink id="GL-PAYFAIL-BOOKING" from="OBS-PAYMENT-FAILURE" to="GOAL-ONLINE-BOOKING"
+              type="threatens" confidence="0.7"/>
+    <goalLink id="GL-SEASONAL-AVAIL" from="OBS-SEASONAL-DEMAND" to="QGOAL-AVAILABILITY"
+              type="threatens" confidence="0.8"/>
+    <goalLink id="GL-SECURITY-COMPLIANCE" from="QGOAL-SECURITY" to="GOAL-COMPLIANCE"
+              type="refines" confidence="0.9"/>
+  </goals>
+
+  <!-- ============================================================
+       5. SCENARIOS
+       ============================================================ -->
+  <scenarios>
+    <!-- Use Cases -->
+    <scenario id="SCN-SEARCH" title="Search for Available Vehicles" actorRef="ACT-CUSTOMER">
+      <narrative>
+        1. Customer opens the DriveEasy website or mobile app.
+        2. Customer enters pick-up location, pick-up date/time, and return date/time.
+        3. Optionally, customer selects a different return location for one-way rental.
+        4. System validates dates (pick-up in future, return after pick-up, max 90 days).
+        5. System queries available vehicle categories for the given criteria.
+        6. System displays available categories with photos, features, and daily prices.
+        7. Customer can filter by category type, transmission, fuel, and sort by price.
+        8. Customer selects a vehicle category to proceed to reservation.
+      </narrative>
+    </scenario>
+
+    <scenario id="SCN-RESERVE" title="Make an Online Reservation" actorRef="ACT-CUSTOMER">
+      <narrative>
+        1. Customer selects a vehicle category from search results.
+        2. System displays pricing breakdown (base rate, taxes, fees).
+        3. System offers optional extras (CDW, GPS, child seat, additional driver).
+        4. Customer selects desired extras.
+        5. System updates total price with extras.
+        6. Customer enters personal details or logs in to existing account.
+        7. Customer enters payment information via Stripe Elements widget.
+        8. System creates a pre-authorization hold on the customer's card.
+        9. System confirms availability with pessimistic lock and creates reservation.
+        10. System generates a confirmation code and sends confirmation email.
+        11. Customer sees confirmation page with reservation details and code.
+      </narrative>
+    </scenario>
+
+    <scenario id="SCN-PICKUP" title="Vehicle Pick-Up at Branch" actorRef="ACT-BRANCH-AGENT">
+      <narrative>
+        1. Customer arrives at branch and presents confirmation code and driver's license.
+        2. Agent looks up reservation by confirmation code.
+        3. System verifies customer identity against reservation and license validity.
+        4. Agent selects an available vehicle matching the reserved category.
+        5. System assigns the vehicle to the reservation and changes status to checked-out.
+        6. Agent performs walk-around inspection with customer, noting pre-existing damage.
+        7. Agent records vehicle mileage and fuel level.
+        8. Customer signs the rental agreement digitally on the agent's tablet.
+        9. System captures the pre-authorization and generates the rental agreement.
+        10. Agent hands over keys and vehicle documents to customer.
+      </narrative>
+    </scenario>
+
+    <scenario id="SCN-RETURN" title="Vehicle Return at Branch" actorRef="ACT-BRANCH-AGENT">
+      <narrative>
+        1. Customer returns vehicle to the designated branch.
+        2. Agent scans vehicle or enters license plate to locate the reservation.
+        3. Agent records return mileage and fuel level.
+        4. Agent performs damage inspection and documents any new damage with photos.
+        5. System calculates final charges: base rental, extras, fuel surcharge,
+           late fees, one-way fee, and damage assessment if applicable.
+        6. System processes final payment (capture remaining amount or refund excess).
+        7. System updates reservation status to completed.
+        8. System marks vehicle as available (or routes to maintenance if damaged).
+        9. System sends receipt email to customer.
+      </narrative>
+    </scenario>
+
+    <scenario id="SCN-CANCEL" title="Cancel a Reservation" actorRef="ACT-CUSTOMER">
+      <narrative>
+        1. Customer logs in and navigates to "My Reservations".
+        2. Customer selects the reservation to cancel.
+        3. System displays cancellation policy and any applicable fee.
+        4. Customer confirms cancellation.
+        5. System releases the pre-authorization hold on the customer's card.
+        6. If within 48 hours of pick-up, system charges the cancellation fee.
+        7. System updates reservation status to cancelled.
+        8. System sends cancellation confirmation email.
+        9. System releases the reserved capacity for the vehicle category.
+      </narrative>
+    </scenario>
+
+    <scenario id="SCN-MANAGE-FLEET" title="Manage Fleet Vehicles" actorRef="ACT-FLEET-MANAGER">
+      <narrative>
+        1. Fleet manager logs into the admin dashboard.
+        2. Fleet manager views fleet overview: vehicles by branch, category, and status.
+        3. Fleet manager adds a new vehicle with VIN, plate, make, model, and category.
+        4. Fleet manager assigns or transfers vehicles between branches.
+        5. Fleet manager schedules vehicles for maintenance, changing status.
+        6. Fleet manager retires old vehicles from active service.
+        7. System updates availability counts in real-time.
+      </narrative>
+    </scenario>
+
+    <!-- Misuse Cases -->
+    <misuseCase id="SCN-FRAUD-CARD" title="Fraudulent Booking with Stolen Card" actorRef="ACT-CUSTOMER">
+      <narrative>
+        1. Attacker obtains stolen credit card details from dark web.
+        2. Attacker creates an account with fake identity details.
+        3. Attacker makes a reservation using stolen card for an expensive vehicle.
+        4. If payment succeeds, attacker picks up vehicle using a forged license.
+        5. Attacker does not return the vehicle, resulting in vehicle theft.
+
+        COUNTERMEASURES:
+        - 3D-Secure authentication for all online payments.
+        - Pre-authorization hold captures funds and validates card.
+        - Identity verification at pick-up: license must match reservation name.
+        - Fraud scoring on reservations based on behavioral patterns.
+        - GPS tracking on all vehicles with geofence alerts.
+      </narrative>
+    </misuseCase>
+
+    <misuseCase id="SCN-ACCOUNT-TAKEOVER" title="Customer Account Takeover" actorRef="ACT-CUSTOMER">
+      <narrative>
+        1. Attacker obtains customer credentials via phishing or credential stuffing.
+        2. Attacker logs in as the customer.
+        3. Attacker changes email and phone to attacker-controlled addresses.
+        4. Attacker makes a reservation using the customer's stored payment method.
+        5. Attacker picks up vehicle under stolen identity.
+
+        COUNTERMEASURES:
+        - MFA required for login and for changing contact information.
+        - Rate limiting on login attempts with account lockout.
+        - Notification to original email when contact details are changed.
+        - Re-authentication required for sensitive operations.
+      </narrative>
+    </misuseCase>
+
+    <!-- Edge Cases -->
+    <edgeCase id="SCN-EDGE-NO-VEHICLES" title="No Vehicles Available at Pick-Up">
+      <narrative>
+        1. Customer arrives for pick-up but no vehicles of the reserved category
+           are available (e.g., all vehicles in maintenance or previous rentals
+           not yet returned).
+        2. System displays alert to branch agent.
+        3. Agent offers a free upgrade to the next available category.
+        4. If no vehicles at all are available, agent arranges transfer from
+           nearest branch or offers full refund plus compensation voucher.
+        5. System logs the incident for fleet planning analysis.
+      </narrative>
+    </edgeCase>
+
+    <edgeCase id="SCN-EDGE-PAYMENT-TIMEOUT" title="Payment Gateway Timeout During Booking">
+      <narrative>
+        1. Customer completes reservation form and submits payment.
+        2. Stripe API call times out after 30 seconds.
+        3. System holds the reservation in "pending" status for 15 minutes.
+        4. System displays message: "Payment is being processed. You will
+           receive a confirmation email shortly."
+        5. System retries payment via webhook reconciliation.
+        6. If payment succeeds, reservation is confirmed and email sent.
+        7. If payment fails after 3 retries, reservation is cancelled and
+           customer is notified via email.
+      </narrative>
+    </edgeCase>
+
+    <edgeCase id="SCN-EDGE-DOUBLE-BOOK" title="Simultaneous Booking for Last Vehicle">
+      <narrative>
+        1. Two customers simultaneously attempt to book the last available
+           vehicle in a category at the same branch for overlapping dates.
+        2. System uses database-level pessimistic locking on availability count.
+        3. First transaction to acquire the lock succeeds; reservation is created.
+        4. Second transaction finds availability exhausted and receives an error:
+           "This category is no longer available for your dates."
+        5. System suggests alternative dates or nearby branches to the second customer.
+      </narrative>
+    </edgeCase>
+  </scenarios>
+
+  <!-- ============================================================
+       6. REQUIREMENTS
+       ============================================================ -->
+  <requirements>
+
+    <!-- ===== Reservation Package ===== -->
+    <reqPackage id="PKG-RES" title="Reservation Management" ownerRef="STK-PRODUCT">
+      <description>
+        Requirements for the reservation lifecycle: searching, creating,
+        modifying, and cancelling vehicle reservations.
+      </description>
+
+      <req id="REQ-RES-001" type="FR" title="Vehicle Availability Search"
+           status="approved" priority="must" appliesTo="ENT-RESERVATION">
+        <statement>
+          The system SHALL allow customers to search for available vehicle
+          categories by specifying pick-up branch, return branch, pick-up
+          date/time, and return date/time.
+        </statement>
+        <rationale>Core functionality for online self-service booking.</rationale>
+        <acceptance>
+          <criterion id="AC-RES-001-1">
+            <given>The customer is on the search page.</given>
+            <when>The customer enters valid pick-up/return locations and dates and submits.</when>
+            <then>The system displays all available vehicle categories with daily prices, sorted by price ascending.</then>
+          </criterion>
+          <criterion id="AC-RES-001-2">
+            <given>The customer enters dates where no vehicles are available.</given>
+            <when>The search is submitted.</when>
+            <then>The system displays a message "No vehicles available for your dates" and suggests nearby dates or branches.</then>
+          </criterion>
+        </acceptance>
+      </req>
+
+      <req id="REQ-RES-002" type="FR" title="Create Reservation"
+           status="approved" priority="must" appliesTo="ENT-RESERVATION">
+        <statement>
+          The system SHALL allow authenticated customers to create a reservation
+          for a selected vehicle category, with optional extras, and process
+          payment pre-authorization.
+        </statement>
+        <rationale>Enables online booking without branch interaction.</rationale>
+        <acceptance>
+          <criterion id="AC-RES-002-1">
+            <given>An authenticated customer has selected a vehicle category and extras.</given>
+            <when>The customer submits payment details and confirms the reservation.</when>
+            <then>The system creates the reservation with status "confirmed", generates a confirmation code, pre-authorizes the card, and sends a confirmation email.</then>
+          </criterion>
+        </acceptance>
+      </req>
+
+      <req id="REQ-RES-003" type="FR" title="Concurrency-Safe Availability Check"
+           status="approved" priority="must" appliesTo="ENT-RESERVATION">
+        <statement>
+          The system SHALL use pessimistic locking when creating a reservation
+          to prevent overbooking of the last available vehicle in a category.
+        </statement>
+        <rationale>Prevents double-booking race conditions under concurrent load.</rationale>
+        <notes>See edge case SCN-EDGE-DOUBLE-BOOK for the expected behavior.</notes>
+        <acceptance>
+          <criterion id="AC-RES-003-1">
+            <given>Only one vehicle remains in a category at a branch for the requested dates.</given>
+            <when>Two customers simultaneously attempt to reserve that category.</when>
+            <then>Exactly one reservation succeeds; the other receives a "not available" error.</then>
+          </criterion>
+        </acceptance>
+      </req>
+
+      <req id="REQ-RES-004" type="FR" title="Cancel Reservation"
+           status="approved" priority="must" appliesTo="ENT-RESERVATION">
+        <statement>
+          The system SHALL allow customers to cancel a reservation. Cancellation
+          fees SHALL be applied according to business rule BR-CANCEL-POLICY.
+        </statement>
+        <acceptance>
+          <criterion id="AC-RES-004-1">
+            <given>A customer has a confirmed reservation with pick-up more than 48 hours away.</given>
+            <when>The customer cancels the reservation.</when>
+            <then>The reservation is cancelled with no fee, the pre-authorization is released, and a cancellation email is sent.</then>
+          </criterion>
+          <criterion id="AC-RES-004-2">
+            <given>A customer has a confirmed reservation with pick-up less than 48 hours away.</given>
+            <when>The customer cancels the reservation.</when>
+            <then>The reservation is cancelled, a one-day cancellation fee is charged, the remaining pre-authorization is released, and an email is sent.</then>
+          </criterion>
+        </acceptance>
+      </req>
+
+      <req id="REQ-RES-005" type="FR" title="Reservation Confirmation Email"
+           status="approved" priority="must">
+        <statement>
+          The system SHALL send a confirmation email within 60 seconds of
+          reservation creation, containing the confirmation code, rental
+          details, pick-up instructions, and cancellation policy.
+        </statement>
+      </req>
+
+      <req id="REQ-RES-006" type="FR" title="Reservation Modification"
+           status="approved" priority="should" appliesTo="ENT-RESERVATION">
+        <statement>
+          The system SHALL allow customers to modify the dates, branch, or
+          extras of a confirmed reservation, subject to availability. Price
+          differences SHALL be reflected in the updated pre-authorization.
+        </statement>
+        <acceptance>
+          <criterion id="AC-RES-006-1">
+            <given>A customer has a confirmed reservation.</given>
+            <when>The customer changes the return date to a later date and availability exists.</when>
+            <then>The reservation is updated, the price is recalculated, and a modified confirmation email is sent.</then>
+          </criterion>
+        </acceptance>
+      </req>
+    </reqPackage>
+
+    <!-- ===== Vehicle and Fleet Package ===== -->
+    <reqPackage id="PKG-VEH" title="Vehicle and Fleet Management" ownerRef="STK-OPS">
+      <description>
+        Requirements for fleet tracking, vehicle lifecycle, and branch operations.
+      </description>
+
+      <req id="REQ-VEH-001" type="FR" title="Vehicle Check-Out"
+           status="approved" priority="must" appliesTo="ENT-VEHICLE">
+        <statement>
+          The system SHALL allow branch agents to check out a vehicle to a
+          customer by assigning a specific vehicle to a confirmed reservation,
+          recording mileage, fuel level, and any pre-existing damage.
+        </statement>
+        <acceptance>
+          <criterion id="AC-VEH-001-1">
+            <given>A branch agent has a confirmed reservation and an available vehicle of the correct category.</given>
+            <when>The agent completes the check-out process.</when>
+            <then>The vehicle status changes to "rented", the reservation status changes to "checked-out", mileage and fuel are recorded, and the rental agreement is generated.</then>
+          </criterion>
+        </acceptance>
+      </req>
+
+      <req id="REQ-VEH-002" type="FR" title="Vehicle Check-In"
+           status="approved" priority="must" appliesTo="ENT-VEHICLE">
+        <statement>
+          The system SHALL allow branch agents to check in a returned vehicle,
+          recording return mileage, fuel level, and any new damage, and
+          calculate final charges including late fees per BR-LATE-RETURN
+          and fuel surcharge per BR-FUEL-POLICY.
+        </statement>
+      </req>
+
+      <req id="REQ-VEH-003" type="FR" title="Fleet Dashboard"
+           status="approved" priority="should" appliesTo="ENT-VEHICLE">
+        <statement>
+          The system SHALL provide a fleet management dashboard showing
+          vehicle counts by branch, category, and status, with the ability
+          to filter and search.
+        </statement>
+      </req>
+
+      <req id="REQ-VEH-004" type="FR" title="Vehicle Transfer Between Branches"
+           status="approved" priority="should" appliesTo="ENT-VEHICLE">
+        <statement>
+          The system SHALL allow fleet managers to initiate vehicle transfers
+          between branches, updating the vehicle's assigned branch and
+          tracking the transfer status.
+        </statement>
+      </req>
+    </reqPackage>
+
+    <!-- ===== Payment Package ===== -->
+    <reqPackage id="PKG-PAY" title="Payment Processing" ownerRef="STK-FINANCE">
+      <description>
+        Requirements for payment authorization, capture, refunds, and reconciliation.
+      </description>
+
+      <req id="REQ-PAY-001" type="FR" title="Pre-Authorization at Booking"
+           status="approved" priority="must" appliesTo="ENT-PAYMENT">
+        <statement>
+          The system SHALL create a pre-authorization hold on the customer's
+          payment card for the estimated rental amount at the time of
+          reservation confirmation.
+        </statement>
+        <acceptance>
+          <criterion id="AC-PAY-001-1">
+            <given>A customer confirms a reservation with a valid payment card.</given>
+            <when>The reservation is submitted.</when>
+            <then>A pre-authorization hold for the estimated total is placed on the card via Stripe, and the payment record is created with status "authorized".</then>
+          </criterion>
+        </acceptance>
+      </req>
+
+      <req id="REQ-PAY-002" type="FR" title="Payment Capture at Return"
+           status="approved" priority="must" appliesTo="ENT-PAYMENT">
+        <statement>
+          The system SHALL capture the final rental amount upon vehicle return,
+          adjusting the pre-authorization to the actual charges.
+        </statement>
+      </req>
+
+      <req id="REQ-PAY-003" type="FR" title="Refund Processing"
+           status="approved" priority="must" appliesTo="ENT-PAYMENT">
+        <statement>
+          The system SHALL process refunds for cancelled reservations and
+          overpayments within 5 business days, using the original payment method.
+        </statement>
+      </req>
+    </reqPackage>
+
+    <!-- ===== Non-Functional Requirements ===== -->
+    <reqPackage id="PKG-NFR" title="Non-Functional Requirements">
+
+      <req id="REQ-NFR-001" type="NFR" title="API Response Time"
+           status="approved" priority="must">
+        <statement>
+          The system SHALL respond to API requests within 500ms at the 95th
+          percentile under normal load (up to 200 concurrent users).
+        </statement>
+      </req>
+
+      <req id="REQ-NFR-002" type="NFR" title="System Availability"
+           status="approved" priority="must">
+        <statement>
+          The system SHALL maintain 99.9% availability measured monthly,
+          with planned maintenance windows not exceeding 4 hours per month
+          during off-peak hours (02:00-06:00 UTC).
+        </statement>
+      </req>
+
+      <req id="REQ-NFR-003" type="NFR" title="Horizontal Scalability"
+           status="approved" priority="should">
+        <statement>
+          The system SHALL support horizontal scaling by adding application
+          server instances behind a load balancer without requiring
+          architectural changes.
+        </statement>
+      </req>
+    </reqPackage>
+
+    <!-- ===== Interface Requirements ===== -->
+    <reqPackage id="PKG-IR" title="Interface Requirements">
+
+      <req id="REQ-IR-001" type="IR" title="REST API Standard"
+           status="approved" priority="must">
+        <statement>
+          The system SHALL expose a RESTful API conforming to OpenAPI 3.1
+          specification, using JSON request and response bodies, standard
+          HTTP status codes, and HATEOAS links for resource navigation.
+        </statement>
+      </req>
+
+      <req id="REQ-IR-002" type="IR" title="Stripe Payment Integration"
+           status="approved" priority="must">
+        <statement>
+          The system SHALL integrate with Stripe API v2024-06 for payment
+          processing, using PaymentIntents for pre-authorization and capture,
+          and Stripe Elements for PCI-compliant card collection.
+        </statement>
+      </req>
+
+      <req id="REQ-IR-003" type="IR" title="Email Service Integration"
+           status="approved" priority="must">
+        <statement>
+          The system SHALL integrate with an SMTP-compatible email service
+          for sending transactional emails (confirmations, receipts, reminders).
+          Emails SHALL use HTML templates with plain-text fallback.
+        </statement>
+      </req>
+    </reqPackage>
+
+    <!-- ===== Data Requirements ===== -->
+    <reqPackage id="PKG-DR" title="Data Requirements">
+
+      <req id="REQ-DR-001" type="DR" title="Data Validation"
+           status="approved" priority="must">
+        <statement>
+          The system SHALL validate all input data at the API boundary:
+          email addresses per RFC 5322, phone numbers per E.164, dates per
+          ISO 8601, and VINs per ISO 3779. Invalid input SHALL be rejected
+          with a 400 response and descriptive error messages.
+        </statement>
+      </req>
+
+      <req id="REQ-DR-002" type="DR" title="Data Retention"
+           status="approved" priority="must">
+        <statement>
+          Completed rental records SHALL be retained for 7 years to comply
+          with financial audit requirements. Customer personal data SHALL
+          be anonymized after 3 years of account inactivity unless an active
+          rental agreement exists.
+        </statement>
+      </req>
+
+      <req id="REQ-DR-003" type="DR" title="Database Backup"
+           status="approved" priority="must">
+        <statement>
+          The system SHALL perform automated daily database backups with
+          point-in-time recovery capability. Backups SHALL be encrypted
+          and stored in a separate AWS availability zone.
+        </statement>
+      </req>
+    </reqPackage>
+
+    <!-- ===== Security Requirements ===== -->
+    <reqPackage id="PKG-SEC" title="Security Requirements" ownerRef="STK-SECURITY">
+
+      <req id="REQ-SEC-001" type="SR" title="Authentication"
+           status="approved" priority="must">
+        <statement>
+          The system SHALL authenticate customers using email and password
+          with optional TOTP-based multi-factor authentication. Passwords
+          SHALL be hashed using bcrypt with a cost factor of at least 12.
+        </statement>
+        <acceptance>
+          <criterion id="AC-SEC-001-1">
+            <given>A registered customer with MFA enabled.</given>
+            <when>The customer enters correct email and password.</when>
+            <then>The system prompts for a TOTP code before granting access.</then>
+          </criterion>
+        </acceptance>
+      </req>
+
+      <req id="REQ-SEC-002" type="SR" title="3D-Secure for Online Payments"
+           status="approved" priority="must">
+        <statement>
+          The system SHALL enforce 3D-Secure (SCA) authentication for all
+          online card payments to reduce fraud risk per PSD2 requirements.
+        </statement>
+      </req>
+
+      <req id="REQ-SEC-003" type="SR" title="Encryption at Rest"
+           status="approved" priority="must">
+        <statement>
+          All customer personal data and payment tokens SHALL be encrypted
+          at rest using AES-256. Database encryption SHALL use AWS RDS
+          encryption with customer-managed KMS keys.
+        </statement>
+      </req>
+
+      <req id="REQ-SEC-004" type="SR" title="Encryption in Transit"
+           status="approved" priority="must">
+        <statement>
+          All network communication SHALL use TLS 1.2 or higher. The system
+          SHALL NOT accept connections over unencrypted HTTP.
+        </statement>
+      </req>
+
+      <req id="REQ-SEC-005" type="SR" title="Role-Based Access Control"
+           status="approved" priority="must">
+        <statement>
+          The system SHALL enforce role-based access control (RBAC) with
+          the following roles: customer, branch-agent, fleet-manager, admin.
+          Each API endpoint SHALL declare its required role(s).
+        </statement>
+      </req>
+
+      <req id="REQ-SEC-006" type="SR" title="Audit Logging"
+           status="approved" priority="must">
+        <statement>
+          The system SHALL log all security-relevant events: login attempts,
+          permission changes, payment operations, data access, and
+          administrative actions. Logs SHALL be immutable and retained for
+          1 year.
+        </statement>
+      </req>
+    </reqPackage>
+
+    <!-- ===== Constraint Requirements ===== -->
+    <req id="REQ-CR-001" type="CR" title="Deployment Platform"
+         status="approved" priority="must">
+      <statement>
+        The system SHALL be deployable as Docker containers orchestrated by
+        Amazon ECS on AWS eu-west-1, conforming to constraint CON-CLOUD.
+      </statement>
+    </req>
+
+    <req id="REQ-CR-002" type="CR" title="Technology Stack"
+         status="approved" priority="must">
+      <statement>
+        The backend SHALL be implemented in Java 21 with Spring Boot 3.x
+        and PostgreSQL 16, conforming to constraints CON-LANG and CON-DB.
+      </statement>
+    </req>
+
+    <!-- ===== Policy/Compliance Requirements ===== -->
+    <req id="REQ-PR-001" type="PR" title="GDPR Right to Erasure"
+         status="approved" priority="must">
+      <statement>
+        The system SHALL provide an automated mechanism for customers to
+        request deletion of their personal data. Verified erasure requests
+        SHALL be fulfilled within 30 days per GDPR Art. 17.
+      </statement>
+      <acceptance>
+        <criterion id="AC-PR-001-1">
+          <given>A customer submits a verified data erasure request.</given>
+          <when>30 days have elapsed.</when>
+          <then>All personal data is deleted or anonymized, except records required for legal retention, and the customer receives confirmation.</then>
+        </criterion>
+      </acceptance>
+    </req>
+
+    <req id="REQ-PR-002" type="PR" title="Cookie Consent"
+         status="approved" priority="must">
+      <statement>
+        The system SHALL display a cookie consent banner on first visit,
+        allowing granular opt-in to analytics and marketing cookies.
+        Only essential cookies SHALL be set before consent is given.
+      </statement>
+    </req>
+
+    <!-- ===== UX Requirements ===== -->
+    <req id="REQ-UXR-001" type="UXR" title="Responsive Design"
+         status="approved" priority="must">
+      <statement>
+        The web frontend SHALL be fully responsive, providing an optimized
+        layout for mobile (320px-767px), tablet (768px-1023px), and
+        desktop (1024px+) viewports.
+      </statement>
+    </req>
+
+    <req id="REQ-UXR-002" type="UXR" title="Accessibility"
+         status="approved" priority="should">
+      <statement>
+        The web frontend SHALL conform to WCAG 2.1 Level AA accessibility
+        guidelines, including keyboard navigation, screen reader support,
+        sufficient color contrast, and focus indicators.
+      </statement>
+    </req>
+
+    <req id="REQ-UXR-003" type="UXR" title="Multi-Language Support"
+         status="approved" priority="should">
+      <statement>
+        The system SHALL support English and Icelandic, with the ability
+        to add additional languages. All user-facing text SHALL be
+        externalized into translation files.
+      </statement>
+    </req>
+
+    <!-- ===== Operational Requirements ===== -->
+    <req id="REQ-OR-001" type="OR" title="Structured Logging"
+         status="approved" priority="must">
+      <statement>
+        The system SHALL emit structured JSON logs to stdout, including
+        correlation IDs, timestamps, log level, service name, and relevant
+        business context. Logs SHALL be collected by AWS CloudWatch.
+      </statement>
+    </req>
+
+    <req id="REQ-OR-002" type="OR" title="Health Check Endpoints"
+         status="approved" priority="must">
+      <statement>
+        The system SHALL expose /health/live and /health/ready endpoints
+        returning HTTP 200 when the service is alive and ready to serve
+        traffic, respectively. The readiness probe SHALL verify database
+        and Stripe connectivity.
+      </statement>
+    </req>
+
+    <req id="REQ-OR-003" type="OR" title="Metrics and Monitoring"
+         status="approved" priority="should">
+      <statement>
+        The system SHALL expose application metrics in Prometheus format at
+        /metrics, including request rates, error rates, latencies, active
+        reservations, and fleet utilization by branch.
+      </statement>
+    </req>
+
+  </requirements>
+
+  <!-- ============================================================
+       7. BEHAVIOR
+       ============================================================ -->
+  <behavior>
+
+    <!-- Reservation Lifecycle State Machine -->
+    <stateMachine id="SM-RESERVATION" name="Reservation Lifecycle"
+                  entityRef="ENT-RESERVATION" initial="ST-RES-PENDING">
+      <description>
+        Models the lifecycle of a rental reservation from creation through
+        completion or cancellation.
+      </description>
+
+      <state id="ST-RES-PENDING" name="Pending" type="initial">
+        <description>Reservation created, awaiting payment authorization.</description>
+        <onEntry>Generate confirmation code. Start 15-minute payment timeout.</onEntry>
+        <invariant>Payment authorization is in progress or not yet attempted.</invariant>
+      </state>
+
+      <state id="ST-RES-CONFIRMED" name="Confirmed" type="normal">
+        <description>Payment authorized, reservation is active and waiting for pick-up.</description>
+        <onEntry>Send confirmation email. Schedule pick-up reminder for 24h before.</onEntry>
+        <invariant>Pre-authorization hold is active on customer's payment card.</invariant>
+      </state>
+
+      <state id="ST-RES-CHECKED-OUT" name="CheckedOut" type="normal">
+        <description>Vehicle has been picked up by the customer. Rental is active.</description>
+        <onEntry>Assign vehicle. Update vehicle status to rented. Generate rental agreement.</onEntry>
+        <invariant>Exactly one vehicle is assigned. Vehicle status is "rented".</invariant>
+      </state>
+
+      <state id="ST-RES-COMPLETED" name="Completed" type="final">
+        <description>Vehicle returned, final payment processed, rental is closed.</description>
+        <onEntry>Release vehicle. Process final payment. Send receipt email.</onEntry>
+      </state>
+
+      <state id="ST-RES-CANCELLED" name="Cancelled" type="final">
+        <description>Reservation cancelled by customer or system before pick-up.</description>
+        <onEntry>Release pre-authorization. Apply cancellation fee if applicable. Send cancellation email.</onEntry>
+      </state>
+
+      <state id="ST-RES-NO-SHOW" name="NoShow" type="final">
+        <description>Customer did not pick up the vehicle within the grace period.</description>
+        <onEntry>Charge full rental amount per BR-CANCEL-POLICY. Send no-show notification.</onEntry>
+      </state>
+
+      <!-- Transitions -->
+      <transition id="TR-RES-CONFIRM" from="ST-RES-PENDING" to="ST-RES-CONFIRMED"
+                  event="paymentAuthorized">
+        <description>Payment authorization succeeds.</description>
+        <guard>Stripe pre-authorization returns success. Vehicle category still available.</guard>
+        <action>Persist reservation with status confirmed. Decrement available inventory count.</action>
+      </transition>
+
+      <transition id="TR-RES-PAY-FAIL" from="ST-RES-PENDING" to="ST-RES-CANCELLED"
+                  event="paymentFailed">
+        <description>Payment authorization fails after retries or timeout.</description>
+        <guard>Maximum retry attempts exhausted or 15-minute timeout expired.</guard>
+        <action>Log payment failure. Notify customer. Release held inventory.</action>
+      </transition>
+
+      <transition id="TR-RES-CHECKOUT" from="ST-RES-CONFIRMED" to="ST-RES-CHECKED-OUT"
+                  event="vehiclePickedUp">
+        <description>Branch agent checks out vehicle to customer.</description>
+        <guard>Customer identity verified. Driver's license valid per BR-LICENSE-VALID. Vehicle assigned and inspected.</guard>
+        <action>Record starting mileage and fuel level. Capture initial payment. Generate signed rental agreement.</action>
+      </transition>
+
+      <transition id="TR-RES-CANCEL-FREE" from="ST-RES-CONFIRMED" to="ST-RES-CANCELLED"
+                  event="customerCancelled">
+        <description>Customer cancels more than 48 hours before pick-up.</description>
+        <guard>Current time is more than 48 hours before scheduled pick-up.</guard>
+        <action>Release pre-authorization in full. Increment available inventory.</action>
+      </transition>
+
+      <transition id="TR-RES-CANCEL-FEE" from="ST-RES-CONFIRMED" to="ST-RES-CANCELLED"
+                  event="customerCancelledLate">
+        <description>Customer cancels within 48 hours of pick-up.</description>
+        <guard>Current time is within 48 hours of scheduled pick-up.</guard>
+        <action>Charge one-day cancellation fee. Release remaining pre-authorization. Increment available inventory.</action>
+      </transition>
+
+      <transition id="TR-RES-NO-SHOW" from="ST-RES-CONFIRMED" to="ST-RES-NO-SHOW"
+                  event="pickupWindowExpired">
+        <description>Customer does not arrive within the pick-up grace period (2 hours after scheduled time).</description>
+        <guard>Current time exceeds scheduled pick-up time by more than 2 hours.</guard>
+        <action>Charge full rental amount. Increment available inventory. Send no-show notification.</action>
+      </transition>
+
+      <transition id="TR-RES-RETURN" from="ST-RES-CHECKED-OUT" to="ST-RES-COMPLETED"
+                  event="vehicleReturned">
+        <description>Customer returns the vehicle to a branch.</description>
+        <guard>Return inspection completed. Final charges calculated.</guard>
+        <action>Record return mileage and fuel level. Calculate final charges per BR-LATE-RETURN and BR-FUEL-POLICY. Capture final payment. Release vehicle back to fleet.</action>
+      </transition>
+    </stateMachine>
+
+    <!-- Vehicle Status State Machine -->
+    <stateMachine id="SM-VEHICLE" name="Vehicle Status Lifecycle"
+                  entityRef="ENT-VEHICLE" initial="ST-VEH-AVAILABLE">
+      <description>
+        Models the operational status of a vehicle in the fleet.
+      </description>
+
+      <state id="ST-VEH-AVAILABLE" name="Available" type="initial">
+        <description>Vehicle is at a branch and available for rental.</description>
+        <invariant>Vehicle has passed most recent inspection. No outstanding maintenance.</invariant>
+      </state>
+
+      <state id="ST-VEH-RENTED" name="Rented" type="normal">
+        <description>Vehicle is currently rented to a customer.</description>
+        <invariant>Vehicle is assigned to exactly one active reservation.</invariant>
+      </state>
+
+      <state id="ST-VEH-MAINTENANCE" name="Maintenance" type="normal">
+        <description>Vehicle is undergoing scheduled or unscheduled maintenance.</description>
+        <onEntry>Create maintenance work order. Remove from available inventory.</onEntry>
+        <onExit>Record maintenance completion. Update mileage if applicable.</onExit>
+      </state>
+
+      <state id="ST-VEH-RETIRED" name="Retired" type="final">
+        <description>Vehicle has been permanently removed from the active fleet.</description>
+        <onEntry>Archive vehicle record. Remove from all inventory counts.</onEntry>
+      </state>
+
+      <transition id="TR-VEH-RENT" from="ST-VEH-AVAILABLE" to="ST-VEH-RENTED"
+                  event="assignedToReservation">
+        <guard>Reservation is confirmed and customer has been verified.</guard>
+        <action>Link vehicle to reservation. Record check-out mileage.</action>
+      </transition>
+
+      <transition id="TR-VEH-RETURN" from="ST-VEH-RENTED" to="ST-VEH-AVAILABLE"
+                  event="returnedClean">
+        <description>Vehicle returned with no damage requiring repair.</description>
+        <guard>Return inspection shows no damage beyond normal wear.</guard>
+        <action>Unlink from reservation. Update mileage. Clean and refuel.</action>
+      </transition>
+
+      <transition id="TR-VEH-RETURN-DMG" from="ST-VEH-RENTED" to="ST-VEH-MAINTENANCE"
+                  event="returnedDamaged">
+        <description>Vehicle returned with damage requiring repair.</description>
+        <guard>Return inspection identifies damage beyond normal wear.</guard>
+        <action>Log damage details with photos. Create repair work order. Initiate damage charge to customer.</action>
+      </transition>
+
+      <transition id="TR-VEH-SCHEDULE-MAINT" from="ST-VEH-AVAILABLE" to="ST-VEH-MAINTENANCE"
+                  event="maintenanceScheduled">
+        <guard>Mileage threshold reached or time-based service interval due.</guard>
+        <action>Create maintenance work order.</action>
+      </transition>
+
+      <transition id="TR-VEH-MAINT-DONE" from="ST-VEH-MAINTENANCE" to="ST-VEH-AVAILABLE"
+                  event="maintenanceCompleted">
+        <guard>All work order items completed and signed off.</guard>
+        <action>Close work order. Mark vehicle available.</action>
+      </transition>
+
+      <transition id="TR-VEH-RETIRE-AVAIL" from="ST-VEH-AVAILABLE" to="ST-VEH-RETIRED"
+                  event="vehicleRetired">
+        <guard>Fleet manager approves retirement. No future reservations depend on this vehicle.</guard>
+        <action>Archive vehicle record.</action>
+      </transition>
+
+      <transition id="TR-VEH-RETIRE-MAINT" from="ST-VEH-MAINTENANCE" to="ST-VEH-RETIRED"
+                  event="vehicleRetired">
+        <guard>Repair cost exceeds economic threshold. Fleet manager approves retirement.</guard>
+        <action>Close work order. Archive vehicle record.</action>
+      </transition>
+    </stateMachine>
+
+  </behavior>
+
+  <!-- ============================================================
+       8. INTERFACES
+       ============================================================ -->
+  <interfaces>
+
+    <!-- Customer-Facing API -->
+    <api id="API-CUSTOMER" name="Customer API" protocol="https" auth="jwt">
+      <description>
+        Public-facing REST API for the customer web and mobile applications.
+        Requires JWT bearer token for authenticated endpoints. Vehicle search
+        is available without authentication.
+      </description>
+
+      <endpoint id="EP-SEARCH" method="GET" path="/api/v1/vehicles/search">
+        <summary>Search for available vehicle categories.</summary>
+        <request>
+          Query parameters:
+          - pickupBranchId (uuid, required)
+          - returnBranchId (uuid, required)
+          - pickupDate (ISO 8601 datetime, required)
+          - returnDate (ISO 8601 datetime, required)
+          - category (string, optional) - filter by ACRISS category
+          - sort (string, optional) - "price_asc" (default), "price_desc", "category"
+          - page (int, optional, default 1)
+          - size (int, optional, default 20, max 50)
+        </request>
+        <response>
+          200 OK: Paginated list of available vehicle categories.
+          Each entry includes: categoryId, categoryName, acrissCode,
+          dailyRate, totalEstimate, features, imageUrl, availableCount.
+        </response>
+        <errors>
+          400 Bad Request: Invalid date range, missing parameters.
+          422 Unprocessable Entity: Pick-up date in the past, return before pick-up.
+        </errors>
+      </endpoint>
+
+      <endpoint id="EP-CREATE-RES" method="POST" path="/api/v1/reservations">
+        <summary>Create a new reservation.</summary>
+        <request>
+          JSON body:
+          {
+            "categoryId": "uuid",
+            "pickupBranchId": "uuid",
+            "returnBranchId": "uuid",
+            "pickupDate": "ISO 8601",
+            "returnDate": "ISO 8601",
+            "extras": ["cdw", "gps", "child-seat"],
+            "paymentMethodId": "Stripe payment method ID"
+          }
+          Requires: authenticated customer.
+        </request>
+        <response>
+          201 Created: Reservation object with confirmationCode, status, totalPrice.
+          Location header: /api/v1/reservations/{reservationId}
+        </response>
+        <errors>
+          400 Bad Request: Validation errors.
+          402 Payment Required: Payment authorization failed.
+          409 Conflict: Vehicle category no longer available for requested dates.
+        </errors>
+      </endpoint>
+
+      <endpoint id="EP-GET-RES" method="GET" path="/api/v1/reservations/{reservationId}">
+        <summary>Retrieve reservation details.</summary>
+        <response>
+          200 OK: Full reservation object including status, vehicle (if assigned),
+          pricing breakdown, and cancellation policy.
+        </response>
+        <errors>
+          404 Not Found: Reservation does not exist or belongs to another customer.
+        </errors>
+      </endpoint>
+
+      <endpoint id="EP-CANCEL-RES" method="POST" path="/api/v1/reservations/{reservationId}/cancel">
+        <summary>Cancel a reservation.</summary>
+        <response>
+          200 OK: Updated reservation with status "cancelled", cancellation fee details.
+        </response>
+        <errors>
+          400 Bad Request: Reservation not in cancellable state.
+          404 Not Found: Reservation not found.
+        </errors>
+      </endpoint>
+
+      <endpoint id="EP-MODIFY-RES" method="PATCH" path="/api/v1/reservations/{reservationId}">
+        <summary>Modify a confirmed reservation (dates, branch, extras).</summary>
+        <request>
+          JSON body with fields to update:
+          {
+            "returnDate": "ISO 8601 (optional)",
+            "returnBranchId": "uuid (optional)",
+            "extras": ["cdw", "gps"] (optional, replaces current extras)
+          }
+        </request>
+        <response>
+          200 OK: Updated reservation with recalculated pricing.
+        </response>
+        <errors>
+          400 Bad Request: Invalid modifications.
+          409 Conflict: Requested changes not available.
+        </errors>
+      </endpoint>
+
+      <endpoint id="EP-LIST-BRANCHES" method="GET" path="/api/v1/branches">
+        <summary>List all active branches.</summary>
+        <response>
+          200 OK: Array of branch objects with id, name, code, address, coordinates,
+          operating hours.
+        </response>
+      </endpoint>
+    </api>
+
+    <!-- Branch Agent API -->
+    <api id="API-AGENT" name="Branch Agent API" protocol="https" auth="jwt">
+      <description>
+        API for branch operations: vehicle check-out, check-in, damage recording,
+        and walk-in reservations. Requires branch-agent or admin role.
+      </description>
+
+      <endpoint id="EP-CHECKOUT" method="POST" path="/api/v1/agent/reservations/{reservationId}/checkout">
+        <summary>Check out a vehicle to a customer.</summary>
+        <request>
+          JSON body:
+          {
+            "vehicleId": "uuid",
+            "mileage": 45230,
+            "fuelLevel": 100,
+            "damageNotes": "Small scratch on rear bumper (pre-existing)",
+            "customerLicenseVerified": true
+          }
+        </request>
+        <response>
+          200 OK: Updated reservation with status "checked-out" and assigned vehicle.
+          Includes generated rental agreement PDF URL.
+        </response>
+        <errors>
+          400 Bad Request: Missing required fields.
+          409 Conflict: Vehicle not available or reservation not in confirmed state.
+        </errors>
+      </endpoint>
+
+      <endpoint id="EP-CHECKIN" method="POST" path="/api/v1/agent/reservations/{reservationId}/checkin">
+        <summary>Check in a returned vehicle.</summary>
+        <request>
+          JSON body:
+          {
+            "mileage": 45890,
+            "fuelLevel": 75,
+            "damageReport": {
+              "hasDamage": true,
+              "description": "Dent on front passenger door",
+              "photoUrls": ["https://..."]
+            }
+          }
+        </request>
+        <response>
+          200 OK: Final charge breakdown, updated reservation with status "completed".
+        </response>
+        <errors>
+          400 Bad Request: Missing required fields.
+          409 Conflict: Reservation not in checked-out state.
+        </errors>
+      </endpoint>
+    </api>
+
+    <!-- Fleet Management API -->
+    <api id="API-FLEET" name="Fleet Management API" protocol="https" auth="jwt">
+      <description>
+        API for fleet management: vehicle CRUD, transfers, and reporting.
+        Requires fleet-manager or admin role.
+      </description>
+
+      <endpoint id="EP-ADD-VEHICLE" method="POST" path="/api/v1/fleet/vehicles">
+        <summary>Add a new vehicle to the fleet.</summary>
+        <request>
+          JSON body with vehicle details: vin, licensePlate, make, model, year,
+          categoryId, branchId, currentMileage.
+        </request>
+        <response>
+          201 Created: Vehicle object with generated vehicleId.
+        </response>
+        <errors>
+          400 Bad Request: Validation errors.
+          409 Conflict: VIN or license plate already exists.
+        </errors>
+      </endpoint>
+
+      <endpoint id="EP-LIST-VEHICLES" method="GET" path="/api/v1/fleet/vehicles">
+        <summary>List fleet vehicles with filtering.</summary>
+        <request>
+          Query parameters: branchId, categoryId, status, page, size.
+        </request>
+        <response>
+          200 OK: Paginated list of vehicles.
+        </response>
+      </endpoint>
+
+      <endpoint id="EP-TRANSFER" method="POST" path="/api/v1/fleet/vehicles/{vehicleId}/transfer">
+        <summary>Transfer a vehicle to a different branch.</summary>
+        <request>
+          JSON body: { "targetBranchId": "uuid" }
+        </request>
+        <response>
+          200 OK: Updated vehicle with new branchId.
+        </response>
+        <errors>
+          409 Conflict: Vehicle is currently rented or in maintenance.
+        </errors>
+      </endpoint>
+    </api>
+
+    <!-- Events -->
+    <event id="EVT-RESERVATION-CONFIRMED" name="ReservationConfirmed">
+      <description>
+        Emitted when a reservation is successfully confirmed after payment
+        authorization. Triggers confirmation email and inventory update.
+      </description>
+      <payload>
+        {
+          "reservationId": "uuid",
+          "confirmationCode": "string",
+          "customerId": "uuid",
+          "customerEmail": "string",
+          "categoryName": "string",
+          "pickupBranch": "string",
+          "pickupDate": "ISO 8601",
+          "returnDate": "ISO 8601",
+          "totalPrice": "decimal",
+          "timestamp": "ISO 8601"
+        }
+      </payload>
+    </event>
+
+    <event id="EVT-RESERVATION-CANCELLED" name="ReservationCancelled">
+      <description>
+        Emitted when a reservation is cancelled. Triggers cancellation email
+        and inventory release.
+      </description>
+      <payload>
+        {
+          "reservationId": "uuid",
+          "confirmationCode": "string",
+          "customerId": "uuid",
+          "cancellationFee": "decimal",
+          "reason": "customer_requested | payment_failed | no_show",
+          "timestamp": "ISO 8601"
+        }
+      </payload>
+    </event>
+
+    <event id="EVT-VEHICLE-CHECKED-OUT" name="VehicleCheckedOut">
+      <description>
+        Emitted when a vehicle is checked out to a customer. Updates fleet
+        availability dashboards.
+      </description>
+      <payload>
+        {
+          "reservationId": "uuid",
+          "vehicleId": "uuid",
+          "licensePlate": "string",
+          "branchId": "uuid",
+          "mileageAtCheckout": "integer",
+          "timestamp": "ISO 8601"
+        }
+      </payload>
+    </event>
+
+    <event id="EVT-VEHICLE-RETURNED" name="VehicleReturned">
+      <description>
+        Emitted when a vehicle is returned. Triggers receipt email, fleet
+        update, and potential maintenance scheduling.
+      </description>
+      <payload>
+        {
+          "reservationId": "uuid",
+          "vehicleId": "uuid",
+          "branchId": "uuid",
+          "mileageAtReturn": "integer",
+          "fuelLevel": "integer",
+          "hasDamage": "boolean",
+          "finalCharge": "decimal",
+          "timestamp": "ISO 8601"
+        }
+      </payload>
+    </event>
+
+    <event id="EVT-PAYMENT-PROCESSED" name="PaymentProcessed">
+      <description>
+        Emitted when a payment transaction completes (authorization, capture,
+        or refund). Used for financial reconciliation.
+      </description>
+      <payload>
+        {
+          "paymentId": "uuid",
+          "reservationId": "uuid",
+          "type": "pre-auth | charge | refund",
+          "amount": "decimal",
+          "currency": "EUR",
+          "stripePaymentIntentId": "string",
+          "status": "authorized | captured | failed | refunded",
+          "timestamp": "ISO 8601"
+        }
+      </payload>
+    </event>
+
+  </interfaces>
+
+  <!-- ============================================================
+       9. VERIFICATION
+       ============================================================ -->
+  <verification>
+
+    <testSuite id="TS-RESERVATION" title="Reservation Test Suite">
+      <description>
+        Tests for the reservation lifecycle: search, create, modify, cancel,
+        and edge cases around availability and concurrency.
+      </description>
+    </testSuite>
+
+    <testSuite id="TS-PAYMENT" title="Payment Processing Test Suite">
+      <description>
+        Tests for payment authorization, capture, refund, and failure handling.
+      </description>
+    </testSuite>
+
+    <testSuite id="TS-SECURITY" title="Security Test Suite">
+      <description>
+        Security tests covering authentication, authorization, injection,
+        and data protection.
+      </description>
+    </testSuite>
+
+    <testSuite id="TS-PERFORMANCE" title="Performance Test Suite">
+      <description>
+        Load and stress tests for API response times, concurrent users,
+        and scalability.
+      </description>
+    </testSuite>
+
+    <!-- Acceptance Tests -->
+    <testCase id="TC-RES-001" type="acceptance" title="Search returns available categories">
+      <purpose>Verify that vehicle search returns correct available categories for valid criteria.</purpose>
+      <steps>
+        1. Set up test data: 3 branches, 5 categories, 20 vehicles with known availability.
+        2. Send GET /api/v1/vehicles/search with pickupBranchId=KEF, dates=2026-07-01 to 2026-07-05.
+        3. Verify response contains categories with available vehicles at KEF for those dates.
+        4. Verify each category includes dailyRate, totalEstimate, and availableCount.
+        5. Verify results are sorted by price ascending by default.
+      </steps>
+      <expected>
+        Response is 200 OK with a paginated list of available categories.
+        Categories with zero availability are excluded. Prices are accurate.
+      </expected>
+    </testCase>
+
+    <testCase id="TC-RES-002" type="acceptance" title="Create reservation with valid data">
+      <purpose>Verify end-to-end reservation creation with payment authorization.</purpose>
+      <steps>
+        1. Authenticate as test customer.
+        2. POST /api/v1/reservations with valid categoryId, branches, dates, and Stripe test card.
+        3. Verify response is 201 with confirmationCode.
+        4. Verify reservation status is "confirmed" in database.
+        5. Verify Stripe pre-authorization was created for correct amount.
+        6. Verify confirmation email was sent.
+      </steps>
+      <expected>
+        Reservation created with unique confirmation code. Pre-authorization
+        matches total estimated price. Email delivered within 60 seconds.
+      </expected>
+    </testCase>
+
+    <testCase id="TC-RES-003" type="acceptance" title="Cancel reservation with free cancellation">
+      <purpose>Verify free cancellation more than 48 hours before pick-up.</purpose>
+      <steps>
+        1. Create a confirmed reservation with pick-up 5 days from now.
+        2. POST /api/v1/reservations/{id}/cancel.
+        3. Verify reservation status changes to "cancelled".
+        4. Verify Stripe pre-authorization is released (no charge).
+        5. Verify cancellation email is sent with zero fee.
+      </steps>
+      <expected>
+        Reservation cancelled. No cancellation fee charged. Pre-authorization
+        fully released. Availability count restored.
+      </expected>
+    </testCase>
+
+    <!-- Integration Tests -->
+    <testCase id="TC-PAY-001" type="integration" title="Stripe pre-authorization flow">
+      <purpose>Verify integration with Stripe PaymentIntents for pre-authorization.</purpose>
+      <steps>
+        1. Create PaymentIntent with Stripe test API key and amount EUR 350.00.
+        2. Confirm PaymentIntent with test card 4242424242424242.
+        3. Verify PaymentIntent status is "requires_capture".
+        4. Capture PaymentIntent for final amount EUR 320.00.
+        5. Verify captured amount and remaining is released.
+      </steps>
+      <expected>
+        Pre-authorization hold of EUR 350.00 created successfully.
+        Final capture of EUR 320.00 succeeds. Remaining EUR 30.00 released.
+      </expected>
+    </testCase>
+
+    <testCase id="TC-PAY-002" type="integration" title="Payment failure handling">
+      <purpose>Verify graceful handling of Stripe payment failures.</purpose>
+      <steps>
+        1. Attempt reservation with Stripe test decline card 4000000000000002.
+        2. Verify PaymentIntent fails with "card_declined".
+        3. Verify reservation moves to "cancelled" state.
+        4. Verify customer receives appropriate error message.
+        5. Verify no charge was made to the card.
+      </steps>
+      <expected>
+        Payment failure is handled gracefully. Reservation is cancelled.
+        Customer sees "Payment declined" message with suggestion to try
+        a different card.
+      </expected>
+    </testCase>
+
+    <!-- Unit Tests -->
+    <testCase id="TC-UNIT-001" type="unit" title="Cancellation fee calculation">
+      <purpose>Verify cancellation fee logic per BR-CANCEL-POLICY.</purpose>
+      <steps>
+        1. Test cancel at 49 hours before pick-up: expect zero fee.
+        2. Test cancel at 48 hours exactly before pick-up: expect zero fee.
+        3. Test cancel at 47 hours 59 minutes before pick-up: expect one-day fee.
+        4. Test cancel at 1 hour before pick-up: expect one-day fee.
+        5. Test no-show: expect full rental charge.
+      </steps>
+      <expected>
+        Fee calculation correctly applies the 48-hour boundary.
+        One-day fee equals the daily rate of the reserved category.
+      </expected>
+    </testCase>
+
+    <testCase id="TC-UNIT-002" type="unit" title="Late return charge calculation">
+      <purpose>Verify late return surcharge per BR-LATE-RETURN.</purpose>
+      <steps>
+        1. Return 30 minutes late: expect no extra charge (grace period).
+        2. Return 59 minutes late: expect no extra charge (grace period).
+        3. Return 1 hour 1 minute late: expect half-day charge.
+        4. Return 3 hours 59 minutes late: expect half-day charge.
+        5. Return 4 hours 1 minute late: expect full-day charge.
+        6. Return 8 hours late: expect full-day charge.
+      </steps>
+      <expected>
+        Grace period, half-day, and full-day thresholds applied correctly.
+      </expected>
+    </testCase>
+
+    <testCase id="TC-UNIT-003" type="unit" title="Age eligibility validation">
+      <purpose>Verify age checks per BR-AGE.</purpose>
+      <steps>
+        1. Customer age 20 at rental start: expect rejection.
+        2. Customer age 21 at rental start: expect acceptance, no surcharge.
+        3. Customer age 24 at rental start: expect acceptance, young driver surcharge.
+        4. Customer age 25 at rental start: expect acceptance, no surcharge.
+      </steps>
+      <expected>
+        Under-21 customers are rejected. Age 21-24 incur EUR 15/day surcharge.
+        Age 25+ have no surcharge.
+      </expected>
+    </testCase>
+
+    <!-- Security Tests -->
+    <testCase id="TC-SEC-001" type="security" title="Authentication bypass attempt">
+      <purpose>Verify that unauthenticated requests to protected endpoints are rejected.</purpose>
+      <steps>
+        1. Send POST /api/v1/reservations without Authorization header.
+        2. Send POST /api/v1/reservations with expired JWT.
+        3. Send POST /api/v1/reservations with tampered JWT payload.
+        4. Send POST /api/v1/reservations with JWT signed by wrong key.
+      </steps>
+      <expected>
+        All requests return 401 Unauthorized. No reservation is created.
+        Response does not leak internal details.
+      </expected>
+    </testCase>
+
+    <testCase id="TC-SEC-002" type="security" title="Authorization - cross-customer access">
+      <purpose>Verify that customers cannot access other customers' reservations.</purpose>
+      <steps>
+        1. Create reservation as Customer A.
+        2. Authenticate as Customer B.
+        3. GET /api/v1/reservations/{customerA_reservationId} as Customer B.
+        4. POST /api/v1/reservations/{customerA_reservationId}/cancel as Customer B.
+      </steps>
+      <expected>
+        Both requests return 404 Not Found (not 403, to avoid information leakage).
+      </expected>
+    </testCase>
+
+    <testCase id="TC-SEC-003" type="security" title="SQL injection in search parameters">
+      <purpose>Verify search endpoint is not vulnerable to SQL injection.</purpose>
+      <steps>
+        1. Send GET /api/v1/vehicles/search?pickupBranchId='; DROP TABLE reservations;--
+        2. Send GET /api/v1/vehicles/search?pickupDate=2026-01-01' OR '1'='1
+        3. Verify database integrity after each request.
+      </steps>
+      <expected>
+        Requests return 400 Bad Request. Database is not affected.
+        No SQL error details are exposed in responses.
+      </expected>
+    </testCase>
+
+    <!-- Performance Tests -->
+    <testCase id="TC-PERF-001" type="performance" title="Vehicle search latency under load">
+      <purpose>Verify search endpoint meets p95 latency target under load.</purpose>
+      <steps>
+        1. Seed database with 50 branches, 10 categories, 5000 vehicles.
+        2. Run k6 load test: 200 virtual users, 5-minute duration.
+        3. Each user performs vehicle search with random branch and dates.
+        4. Collect response time percentiles.
+      </steps>
+      <expected>
+        p50 latency under 200ms. p95 latency under 500ms.
+        Error rate below 0.1%. Zero 5xx responses.
+      </expected>
+    </testCase>
+
+    <testCase id="TC-PERF-002" type="performance" title="Concurrent reservation creation">
+      <purpose>Verify reservation creation under concurrent load without overbooking.</purpose>
+      <steps>
+        1. Set up a branch with exactly 10 vehicles in one category.
+        2. Launch 50 concurrent reservation requests for overlapping dates.
+        3. Verify exactly 10 reservations succeed.
+        4. Verify remaining 40 receive 409 Conflict.
+        5. Verify no overbooking occurred.
+      </steps>
+      <expected>
+        Concurrency control prevents overbooking. 10 reservations created,
+        40 correctly rejected. No data inconsistency.
+      </expected>
+    </testCase>
+
+    <!-- Inspection -->
+    <testCase id="TC-INSP-001" type="inspection" title="GDPR compliance review">
+      <purpose>Verify system handles personal data in compliance with GDPR requirements.</purpose>
+      <steps>
+        1. Review data flow diagrams for personal data processing.
+        2. Verify consent collection mechanism on registration and booking.
+        3. Verify data erasure endpoint and process.
+        4. Verify data retention periods match policy POL-GDPR-ERASURE.
+        5. Review privacy notice for completeness.
+      </steps>
+      <expected>
+        All personal data processing has a valid legal basis. Erasure
+        mechanism works within 30-day SLA. Retention periods enforced.
+      </expected>
+    </testCase>
+
+  </verification>
+
+  <!-- ============================================================
+       10. TRACE
+       ============================================================ -->
+  <trace>
+
+    <!-- === satisfies: Requirements satisfy Goals === -->
+    <edge id="TRC-001" type="satisfies" confidence="1.0"
+          status="approved" createdBy="bjarki" createdAt="2026-02-10T10:00:00Z">
+      <from><locator><local id="REQ-RES-001"/></locator></from>
+      <to><locator><local id="GOAL-ONLINE-BOOKING"/></locator></to>
+      <notes>Vehicle search is the entry point for online self-service booking.</notes>
+    </edge>
+
+    <edge id="TRC-002" type="satisfies" confidence="1.0" status="approved">
+      <from><locator><local id="REQ-RES-002"/></locator></from>
+      <to><locator><local id="GOAL-ONLINE-BOOKING"/></locator></to>
+    </edge>
+
+    <edge id="TRC-003" type="satisfies" confidence="0.9" status="approved">
+      <from><locator><local id="REQ-RES-003"/></locator></from>
+      <to><locator><local id="GOAL-FLEET-UTIL"/></locator></to>
+      <notes>Concurrency-safe availability prevents overbooking and fleet mismanagement.</notes>
+    </edge>
+
+    <edge id="TRC-004" type="satisfies" confidence="1.0" status="approved">
+      <from><locator><local id="REQ-NFR-002"/></locator></from>
+      <to><locator><local id="QGOAL-AVAILABILITY"/></locator></to>
+    </edge>
+
+    <edge id="TRC-005" type="satisfies" confidence="1.0" status="approved">
+      <from><locator><local id="REQ-NFR-001"/></locator></from>
+      <to><locator><local id="QGOAL-LATENCY"/></locator></to>
+    </edge>
+
+    <edge id="TRC-006" type="satisfies" confidence="0.8" status="approved">
+      <from><locator><local id="REQ-NFR-003"/></locator></from>
+      <to><locator><local id="QGOAL-SCALABILITY"/></locator></to>
+    </edge>
+
+    <edge id="TRC-007" type="satisfies" confidence="1.0" status="approved">
+      <from><locator><local id="REQ-SEC-001"/></locator></from>
+      <to><locator><local id="QGOAL-SECURITY"/></locator></to>
+    </edge>
+
+    <edge id="TRC-008" type="satisfies" confidence="1.0" status="approved">
+      <from><locator><local id="REQ-PR-001"/></locator></from>
+      <to><locator><local id="GOAL-COMPLIANCE"/></locator></to>
+    </edge>
+
+    <edge id="TRC-009" type="satisfies" confidence="0.7" status="approved">
+      <from><locator><local id="REQ-RES-006"/></locator></from>
+      <to><locator><local id="GOAL-CUST-SAT"/></locator></to>
+      <notes>Modification flexibility improves customer satisfaction.</notes>
+    </edge>
+
+    <!-- === mitigates: Requirements mitigate Risks === -->
+    <edge id="TRC-010" type="mitigates" confidence="0.9" status="approved">
+      <from><locator><local id="REQ-SEC-002"/></locator></from>
+      <to><locator><local id="RISK-FRAUD"/></locator></to>
+      <notes>3D-Secure reduces card-not-present fraud significantly.</notes>
+    </edge>
+
+    <edge id="TRC-011" type="mitigates" confidence="0.8" status="approved">
+      <from><locator><local id="REQ-SEC-001"/></locator></from>
+      <to><locator><local id="RISK-FRAUD"/></locator></to>
+    </edge>
+
+    <edge id="TRC-012" type="mitigates" confidence="0.9" status="approved">
+      <from><locator><local id="REQ-RES-003"/></locator></from>
+      <to><locator><local id="RISK-OVERBOOKING"/></locator></to>
+    </edge>
+
+    <edge id="TRC-013" type="mitigates" confidence="0.95" status="approved" tags="security">
+      <from><locator><local id="REQ-SEC-003"/></locator></from>
+      <to><locator><local id="RISK-DATA-BREACH"/></locator></to>
+    </edge>
+
+    <edge id="TRC-014" type="mitigates" confidence="0.95" status="approved" tags="security">
+      <from><locator><local id="REQ-SEC-004"/></locator></from>
+      <to><locator><local id="RISK-DATA-BREACH"/></locator></to>
+    </edge>
+
+    <!-- === verifiedBy: Requirements verified by Test Cases === -->
+    <edge id="TRC-020" type="verifiedBy" confidence="1.0" status="approved">
+      <from><locator><local id="REQ-RES-001"/></locator></from>
+      <to><locator><local id="TC-RES-001"/></locator></to>
+    </edge>
+
+    <edge id="TRC-021" type="verifiedBy" confidence="1.0" status="approved">
+      <from><locator><local id="REQ-RES-002"/></locator></from>
+      <to><locator><local id="TC-RES-002"/></locator></to>
+    </edge>
+
+    <edge id="TRC-022" type="verifiedBy" confidence="1.0" status="approved">
+      <from><locator><local id="REQ-RES-004"/></locator></from>
+      <to><locator><local id="TC-RES-003"/></locator></to>
+    </edge>
+
+    <edge id="TRC-023" type="verifiedBy" confidence="1.0" status="approved">
+      <from><locator><local id="REQ-PAY-001"/></locator></from>
+      <to><locator><local id="TC-PAY-001"/></locator></to>
+    </edge>
+
+    <edge id="TRC-024" type="verifiedBy" confidence="1.0" status="approved">
+      <from><locator><local id="REQ-SEC-001"/></locator></from>
+      <to><locator><local id="TC-SEC-001"/></locator></to>
+    </edge>
+
+    <edge id="TRC-025" type="verifiedBy" confidence="1.0" status="approved">
+      <from><locator><local id="REQ-SEC-005"/></locator></from>
+      <to><locator><local id="TC-SEC-002"/></locator></to>
+    </edge>
+
+    <edge id="TRC-026" type="verifiedBy" confidence="1.0" status="approved">
+      <from><locator><local id="REQ-NFR-001"/></locator></from>
+      <to><locator><local id="TC-PERF-001"/></locator></to>
+    </edge>
+
+    <edge id="TRC-027" type="verifiedBy" confidence="1.0" status="approved">
+      <from><locator><local id="REQ-RES-003"/></locator></from>
+      <to><locator><local id="TC-PERF-002"/></locator></to>
+    </edge>
+
+    <edge id="TRC-028" type="verifiedBy" confidence="1.0" status="approved">
+      <from><locator><local id="REQ-PR-001"/></locator></from>
+      <to><locator><local id="TC-INSP-001"/></locator></to>
+    </edge>
+
+    <!-- === covers: Test cases cover test suites === -->
+    <edge id="TRC-030" type="covers" confidence="1.0" status="approved">
+      <from><locator><local id="TC-RES-001"/></locator></from>
+      <to><locator><local id="TS-RESERVATION"/></locator></to>
+    </edge>
+
+    <edge id="TRC-031" type="covers" confidence="1.0" status="approved">
+      <from><locator><local id="TC-RES-002"/></locator></from>
+      <to><locator><local id="TS-RESERVATION"/></locator></to>
+    </edge>
+
+    <edge id="TRC-032" type="covers" confidence="1.0" status="approved">
+      <from><locator><local id="TC-PAY-001"/></locator></from>
+      <to><locator><local id="TS-PAYMENT"/></locator></to>
+    </edge>
+
+    <edge id="TRC-033" type="covers" confidence="1.0" status="approved">
+      <from><locator><local id="TC-SEC-001"/></locator></from>
+      <to><locator><local id="TS-SECURITY"/></locator></to>
+    </edge>
+
+    <edge id="TRC-034" type="covers" confidence="1.0" status="approved">
+      <from><locator><local id="TC-PERF-001"/></locator></from>
+      <to><locator><local id="TS-PERFORMANCE"/></locator></to>
+    </edge>
+
+    <!-- === dependsOn: Requirements depend on other requirements === -->
+    <edge id="TRC-040" type="dependsOn" confidence="1.0" status="approved">
+      <from><locator><local id="REQ-RES-002"/></locator></from>
+      <to><locator><local id="REQ-PAY-001"/></locator></to>
+      <notes>Reservation creation requires payment pre-authorization.</notes>
+    </edge>
+
+    <edge id="TRC-041" type="dependsOn" confidence="1.0" status="approved">
+      <from><locator><local id="REQ-VEH-002"/></locator></from>
+      <to><locator><local id="REQ-PAY-002"/></locator></to>
+      <notes>Vehicle check-in triggers final payment capture.</notes>
+    </edge>
+
+    <edge id="TRC-042" type="dependsOn" confidence="1.0" status="approved">
+      <from><locator><local id="REQ-PAY-001"/></locator></from>
+      <to><locator><local id="REQ-IR-002"/></locator></to>
+      <notes>Payment pre-authorization depends on Stripe integration.</notes>
+    </edge>
+
+    <!-- === conformsTo: Requirements conform to external standards === -->
+    <edge id="TRC-050" type="conformsTo" confidence="1.0" status="approved" tags="compliance">
+      <from><locator><local id="REQ-PR-001"/></locator></from>
+      <to><locator><external uri="urn:gdpr:article:17" kind="regulation" title="GDPR Art. 17 - Right to Erasure"/></locator></to>
+    </edge>
+
+    <edge id="TRC-051" type="conformsTo" confidence="1.0" status="approved" tags="compliance">
+      <from><locator><local id="REQ-SEC-003"/></locator></from>
+      <to><locator><external uri="urn:pci-dss:v4.0:req:3.4" kind="standard" title="PCI-DSS v4.0 Requirement 3.4"/></locator></to>
+    </edge>
+
+    <edge id="TRC-052" type="conformsTo" confidence="1.0" status="approved" tags="compliance">
+      <from><locator><local id="REQ-SEC-002"/></locator></from>
+      <to><locator><external uri="urn:psd2:sca" kind="regulation" title="PSD2 Strong Customer Authentication"/></locator></to>
+    </edge>
+
+    <edge id="TRC-053" type="conformsTo" confidence="1.0" status="approved">
+      <from><locator><local id="REQ-UXR-002"/></locator></from>
+      <to><locator><external uri="https://www.w3.org/TR/WCAG21/" kind="standard" title="WCAG 2.1 Level AA"/></locator></to>
+    </edge>
+
+    <!-- === cross-document trace (doc locator) === -->
+    <edge id="TRC-060" type="dependsOn" confidence="0.8" status="draft" tags="cross-system">
+      <from><locator><local id="REQ-IR-002"/></locator></from>
+      <to><locator><doc uri="payment-gateway-spec.rqml" docId="PAYMENT-GW-SPEC" id="REQ-PG-API-001" version="1.0.0"/></locator></to>
+      <notes>Stripe integration depends on payment gateway interface spec maintained by the payments team.</notes>
+    </edge>
+
+    <!-- === implements: Code implements requirements (external locator) === -->
+    <edge id="TRC-070" type="implements" confidence="0.9" status="draft"
+          createdBy="bjarki" createdAt="2026-02-15T14:30:00Z" tags="backend">
+      <from><locator><external uri="file:src/main/java/com/driveeasy/reservation/ReservationService.java#L45-L120" kind="source-code" title="ReservationService.createReservation()"/></locator></from>
+      <to><locator><local id="REQ-RES-002"/></locator></to>
+      <notes>Primary implementation of reservation creation logic.</notes>
+    </edge>
+
+    <edge id="TRC-071" type="implements" confidence="0.9" status="draft" tags="backend">
+      <from><locator><external uri="file:src/main/java/com/driveeasy/payment/StripePaymentGateway.java" kind="source-code" title="StripePaymentGateway"/></locator></from>
+      <to><locator><local id="REQ-IR-002"/></locator></to>
+    </edge>
+
+    <!-- === consumesInterface / providesInterface === -->
+    <edge id="TRC-080" type="consumesInterface" confidence="1.0" status="approved">
+      <from><locator><local id="REQ-IR-002"/></locator></from>
+      <to><locator><external uri="https://docs.stripe.com/api/payment_intents" kind="api" title="Stripe PaymentIntents API"/></locator></to>
+      <notes>DriveEasy consumes the Stripe PaymentIntents API for payment processing.</notes>
+    </edge>
+
+    <edge id="TRC-081" type="providesInterface" confidence="1.0" status="approved">
+      <from><locator><local id="API-CUSTOMER"/></locator></from>
+      <to><locator><external uri="file:docs/openapi/customer-api.yaml" kind="api-spec" title="Customer API OpenAPI Spec"/></locator></to>
+    </edge>
+
+    <!-- === threatens (risk to goal via trace, complementing goalLinks) === -->
+    <edge id="TRC-090" type="threatens" confidence="0.7" status="approved">
+      <from><locator><local id="RISK-VENDOR-LOCK"/></locator></from>
+      <to><locator><local id="GOAL-REVENUE"/></locator></to>
+      <notes>Vendor lock-in could constrain future payment optimization opportunities.</notes>
+    </edge>
+
+  </trace>
+
+  <!-- ============================================================
+       11. GOVERNANCE
+       ============================================================ -->
+  <governance>
+
+    <!-- Open Issues -->
+    <issue id="ISS-PRICING-COMPLEXITY" status="review" owner="Anna Sigurdsson">
+      <statement>
+        The rule-based pricing engine (DEC-PRICING-ENGINE) may become difficult
+        to maintain as the number of pricing rules grows. Need to evaluate
+        whether a dedicated pricing service or third-party solution would be
+        more appropriate for the long term.
+      </statement>
+      <notes>
+        Scheduled for architecture review in Sprint 4. Current plan is to
+        proceed with the rule engine for v1.0 and re-evaluate based on
+        operational experience after 6 months.
+      </notes>
+    </issue>
+
+    <issue id="ISS-DAMAGE-WORKFLOW" status="draft" owner="Bjarki Thorsson">
+      <statement>
+        The damage assessment and claims workflow at vehicle return needs
+        further clarification. Questions: How are damage charges disputed?
+        What is the appeals process? How are insurance claims (CDW) integrated
+        with the damage workflow?
+      </statement>
+      <notes>
+        Meeting scheduled with operations team for 2026-03-01 to map out
+        the complete damage claims process. May result in additional
+        requirements in PKG-VEH.
+      </notes>
+    </issue>
+
+    <issue id="ISS-LOYALTY-PROGRAM" status="draft" owner="Anna Sigurdsson">
+      <statement>
+        Stakeholders have requested a loyalty/rewards program for repeat
+        customers. This is currently out of scope for v1.0 but needs to be
+        considered in the data model and architecture to avoid costly
+        refactoring later.
+      </statement>
+      <notes>
+        Decision deferred to v1.1 planning. ENT-CUSTOMER should be designed
+        with extensibility for loyalty tier and points balance.
+      </notes>
+    </issue>
+
+    <!-- Approvals -->
+    <approval id="APR-PRODUCT" role="Product Owner" status="approved">
+      <description>
+        Product Owner approval of functional requirements (PKG-RES, PKG-VEH,
+        PKG-PAY) and UX requirements. Approved by Anna Sigurdsson on 2026-02-18.
+      </description>
+    </approval>
+
+    <approval id="APR-SECURITY" role="Security Architect" status="review">
+      <description>
+        Security review of requirements in PKG-SEC and data protection
+        measures. Pending review by Information Security team.
+      </description>
+    </approval>
+
+    <approval id="APR-LEGAL" role="Legal Counsel" status="review">
+      <description>
+        Legal review of compliance requirements (REQ-PR-001, REQ-PR-002),
+        rental agreement terms, and data processing agreements.
+      </description>
+    </approval>
+
+    <approval id="APR-ARCHITECTURE" role="Lead Architect" status="approved">
+      <description>
+        Architecture approval of technology stack (CON-LANG, CON-DB, CON-CLOUD),
+        integration decisions (DEC-PAYMENT-TOKEN), and non-functional
+        requirements (PKG-NFR). Approved by Bjarki Thorsson on 2026-02-15.
+      </description>
+    </approval>
+
+  </governance>
+
+</rqml>

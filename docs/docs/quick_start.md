@@ -30,6 +30,13 @@ sidebar_position: 2
 - Ask your LLM to implement the requirements
 - Test and repeat.
 
+# Recommended tooling
+
+Two optional add-ons that make working with RQML noticeably smoother:
+
+- **[Install the RQML VS Code extension](https://marketplace.visualstudio.com/items?itemName=rqml.rqml-vscode)** — adds first-class editor support for `.rqml` files in VS Code, so writing and reviewing specs feels native.
+- **[Install the RQML Agent Skill](https://github.com/rqml-org/rqml-skill)** — drop it into Claude Code or any other skill-compatible coding agent, and your agent will understand RQML and the spec-first workflow out of the box, with no extra prompting required.
+
 # Example AGENTS.md
 
 Download the <a href="/AGENTS.md" target="_blank">AGENTS.md template</a> and copy it to your project root. Adjust the **Strictness** level to match your project needs.
