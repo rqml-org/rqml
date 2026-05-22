@@ -1,0 +1,99 @@
+.explorer {
+  display: grid;
+  grid-template-columns: 17rem minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+@media (max-width: 996px) {
+  .explorer {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tabList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+@media (max-width: 996px) {
+  .tabList {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .tabList {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tabItem {
+  margin: 0;
+}
+
+.tab {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid var(--ifm-toc-border-color);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.tab:hover {
+  background: rgba(133, 104, 171, 0.1);
+  border-color: var(--ifm-color-primary);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--ifm-color-primary);
+  outline-offset: 2px;
+}
+
+.tabActive {
+  background: rgba(133, 104, 171, 0.22);
+  border-color: var(--ifm-color-primary);
+}
+
+.tabActive:hover {
+  background: rgba(133, 104, 171, 0.28);
+}
+
+.tabName {
+  font-family: var(--ifm-font-family-monospace);
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1.2;
+}
+
+.tabDescription {
+  font-size: 0.78rem;
+  opacity: 0.78;
+  margin-top: 0.2rem;
+  line-height: 1.3;
+}
+
+.snippet {
+  min-width: 0;
+}
+
+.snippet :global(.theme-code-block) {
+  margin: 0;
+}

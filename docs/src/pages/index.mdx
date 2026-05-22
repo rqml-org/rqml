@@ -5,11 +5,13 @@ slug: /
 ---
 
 import Heading from '@theme/Heading';
+import CodeBlock from '@theme/CodeBlock';
+import RqmlTagExplorer from '@site/src/components/RqmlTagExplorer';
 import styles from './index.module.css';
 
 <div className={styles.page}>
 
-  {/* HERO 0 */}
+  {/* HERO: first */}
   <header className={`hero ${styles.hero}`}>
     <div className="container">
 
@@ -30,7 +32,7 @@ import styles from './index.module.css';
     </div>
   </header>
 
-  {/* HERO 1: Workflow */}
+  {/* HERO: Workflow */}
   <section id="workflow" className={`container ${styles.section}`}>
     <div className="container">
       <Heading as="h1" className={styles.centerHeader}>
@@ -49,8 +51,26 @@ import styles from './index.module.css';
     </div>
   </section>
 
-  {/* HERO 2: Features */}
-  <section id="features" className={`hero ${styles.hero}`}>
+  {/* HERO: examples */}
+  <section id="examples" className={`${styles.hero}`}>
+    <div className="container">
+      <Heading as="h1" className={styles.centerHeader}>
+        An RQML document is organized into 11 (mostly optional) sections each capturing a different aspect of your requirements
+      </Heading>
+      <p size="lg" className={styles.heroSubtitleCenter}>
+        Browse examples below.
+      </p>
+      <RqmlTagExplorer />
+    </div>
+    <div className={styles.heroCtas}>
+      <a className="button button--primary button--lg" href="/docs/introduction">Read the docs</a>
+      <a className="button button--secondary button--lg" href="https://marketplace.visualstudio.com/items?itemName=rqml.rqml-vscode">Get the VSCode extension</a>
+    </div>
+  </section>  
+
+  {/* HERO: Features */}
+  {/*
+  <section id="features" className={`container ${styles.section}`}>
     <div className="container">
       <Heading as="h1" className={styles.centerHeader}>
         RQML is requirements engineering done properly - benefiting LLMs and humans alike.
@@ -68,9 +88,10 @@ import styles from './index.module.css';
       </div>
     </div>
   </section>
+  */}
 
-  {/* HERO 4: WHY NOW */}
-  {/*
+  {/* HERO: WHY NOW */}
+  {/* 
   <section className={`container ${styles.section}`}>
     <div className={styles.twoCol}>
       <div>
@@ -129,7 +150,7 @@ import styles from './index.module.css';
   </section>
   */}
 
-  {/* HERO 5: WHAT IT CHANGES */}
+  {/* HERO: WHAT IT CHANGES */}
   {/*
   <section className={`${styles.sectionAlt}`}>
     <div className="container">
@@ -189,7 +210,7 @@ import styles from './index.module.css';
   </section>
   */}
 
-  {/* HERO 6: HOW */}
+  {/* HERO: HOW */}
   <section className={`container ${styles.section}`}>
     <div className={styles.twoCol}>
       <div>
@@ -218,7 +239,7 @@ import styles from './index.module.css';
       <div className={`card ${styles.snippetCard}`}>
         <div className="card__body">
           <Heading as="h3" className={styles.cardTitle}>Hello world RQML example</Heading>
-          <pre className={styles.pre}>
+          <CodeBlock language="xml">
 {`<rqml xmlns="https://rqml.org/schema/2.1.0"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="https://rqml.org/schema/2.1.0
@@ -238,7 +259,7 @@ import styles from './index.module.css';
     </req>
   </requirements>
 </rqml>`}
-          </pre>
+          </CodeBlock>
         </div>
       </div>
     </div>
