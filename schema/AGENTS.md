@@ -16,7 +16,7 @@ This project uses **RQML** as the single source of truth for system intent. Fami
 **Specification file:** Specification lives in a single .rqml file in the root of the project - convention is `requirements.rqml`
 
 **Schema file:**
-The RQML XSD schema is at https://rqml.org/schema/rqml-x.x.x.xsd (insert correct version number). Make sure to adhere to the schema at all times and follow guidelines in schema comments. Use as much of the RQML tagset as is necessary to capture and describe high quality requirements.
+The RQML XSD schema is at https://rqml.org/schema/rqml-2.1.0.xsd (insert correct version number). Make sure to adhere to the schema at all times and follow guidelines in schema comments. Use as much of the RQML tagset as is necessary to capture and describe high quality requirements.
 
 ---
 
@@ -93,13 +93,13 @@ The `.rqml` file must remain valid XML conforming to the version of RQML referen
 
 **To validate:** Try xmllint first (pre-installed on macOS/Linux):
 ```bash
-xmllint --schema https://rqml.org/schema/rqml-x.x.x.xsd <rqml-file-name> --noout
+xmllint --schema https://rqml.org/schema/rqml-2.1.0.xsd <rqml-file-name> --noout
 ```
 
 If xmllint is unavailable, use Python with lxml:
 ```bash
 pip install lxml
-python -c "from lxml import etree; s=etree.XMLSchema(etree.parse('https://rqml.org/schema/rqml-x.x.x.xsd')); print('Valid' if s.validate(etree.parse('<rqml-file-name>')) else s.error_log)"
+python -c "from lxml import etree; s=etree.XMLSchema(etree.parse('https://rqml.org/schema/rqml-2.1.0.xsd')); print('Valid' if s.validate(etree.parse('<rqml-file-name>')) else s.error_log)"
 ```
 
 **IDE validation:** If the `.rqml` file includes `xsi:schemaLocation`, XML-aware editors (VS Code with XML extension, IntelliJ) validate automatically.
