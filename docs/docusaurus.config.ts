@@ -147,8 +147,8 @@ const config: Config = {
             { label: 'RQML on GitHub', href: 'https://github.com/rqml-org/rqml' },
             { label: 'RQML VS Code extension on GitHub', href: 'https://github.com/rqml-org/rqml-vscode' },
             { label: 'RQML Agent Skill on GitHub', href: 'https://github.com/rqml-org/rqml-skill' },
-            { label: 'rqml.org', href: 'https://rqml.org' },
-            { label: 'rqml.dev', href: 'https://rqml.org' },
+            { label: 'Standard on rqml.org', href: 'https://rqml.org' },
+            { label: 'Tooling on rqml.dev', href: 'https://rqml.dev' },
           ],
         },
         {
