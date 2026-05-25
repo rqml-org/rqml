@@ -22,7 +22,7 @@ const config: Config = {
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'Stakkar analytics', // Usually your GitHub org/user name.
+  organizationName: 'rqml-org', // Usually your GitHub org/user name.
   projectName: 'RQML', // Usually your repo name.
 
   onBrokenLinks: 'throw',
@@ -110,6 +110,7 @@ const config: Config = {
           label: 'Documentation',
         },
         {to: '/why-rqml', label: 'Why RQML', position: 'left'},
+        {to: '/why-xml', label: 'Why XML', position: 'left'},
         {
           type: 'html',
           position: 'right',
