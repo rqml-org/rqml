@@ -13,7 +13,7 @@
 
 This project uses **RQML** as the single source of truth for system intent. Familiarize yourself with the documentation at https://rqml.org/docs/user-guide/
 
-**Specification file:** Specification lives in a single .rqml file in the root of the project - convention is `requirements.rqml`
+**Specification file:** Specification lives in a single .rqml file in the root of the project - convention is `requirements.rqml`. Multiple .rqml files may be employed in multirepo projects, in such cases a .rqml spec applies to everything that is higher in the project tree, unless overridden by another .rqml file.
 
 **Schema file:**
 The RQML XSD schema is at https://rqml.org/schema/rqml-2.1.0.xsd (insert correct version number). Make sure to adhere to the schema at all times and follow guidelines in schema comments. Use as much of the RQML tagset as is necessary to capture and describe high quality requirements.
