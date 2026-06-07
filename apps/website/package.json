@@ -1,10 +1,10 @@
 {
-  "name": "rqml-docs",
+  "name": "@rqml/website",
   "version": "0.0.0",
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",
-    "copy-assets": "cp ../schema/AGENTS.md static/AGENTS.md",
+    "copy-assets": "cp ../../packages/schema/templates/AGENTS.md static/AGENTS.md && mkdir -p static/schema && cp ../../packages/schema/versions/2.0.1/rqml-2.0.1.xsd static/schema/rqml-2.0.1.xsd && cp ../../packages/schema/versions/2.1.0/rqml-2.1.0.xsd static/schema/rqml-2.1.0.xsd",
     "start": "npm run copy-assets && docusaurus start",
     "build": "npm run copy-assets && docusaurus build",
     "swizzle": "docusaurus swizzle",
