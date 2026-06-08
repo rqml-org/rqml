@@ -36,3 +36,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # setup-node's registry-url writes _authToken=${NODE_AUTH_TOKEN} into the
+          # .npmrc it activates via NPM_CONFIG_USERCONFIG, so the token must be
+          # exposed under this name or npm publishes with a placeholder (E404).
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
