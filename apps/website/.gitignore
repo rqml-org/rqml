@@ -1,10 +1,9 @@
 # Dependencies
 /node_modules
 
-# Firebase
+# Firebase (deploy cache only; firebase.json + .firebaserc are tracked so
+# the GitHub Actions deploy can find them — see .github/workflows/firebase-*.yml)
 .firebase/
-.firebaserc
-firebase.json
 
 # Github (for actions)
 .github
