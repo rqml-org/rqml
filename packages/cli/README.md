@@ -1,0 +1,34 @@
+# rqml
+
+The RQML command-line interface — the universal substrate every RQML integration
+can invoke. Backed entirely by `@rqml/core`, so its verdicts match the engine and
+the `@rqml/mcp` server.
+
+```
+rqml <command> [spec.rqml] [options]
+
+  init [path]      Scaffold a starter spec and AGENTS.md project marker
+  validate [path]  XML well-formedness, XSD, and referential integrity
+  status [path]    Spec, coverage, and lint summary
+  check [path]     Deterministic enforcement gate (validation + coverage + drift)
+
+  --json                 Machine-readable output (REQ-CLI-JSON)
+  --strictness <level>   relaxed | standard | strict | certified
+  --base-dir <dir>       Resolve the spec and implements code links against <dir>
+```
+
+When no spec path is given, the lone `*.rqml` in the working directory is used
+(preferring `requirements.rqml`).
+
+## Exit codes (stable — REQ-CLI-EXIT-CODES)
+
+| Code | Meaning |
+|------|---------|
+| 0 | success |
+| 1 | validation failure (not well-formed, schema-invalid, or integrity error) |
+| 2 | check gate failure (blocking drift or coverage) |
+| 64 | usage error |
+
+`rqml check` exits non-zero only when the document is invalid or has blocking
+drift/coverage, so it works as a CI and editor-save gate. It invokes no language
+model: identical inputs yield identical verdicts (REQ-ENFORCE-DETERMINISM).

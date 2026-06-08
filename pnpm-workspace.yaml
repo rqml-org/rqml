@@ -1,0 +1,6 @@
+# The documentation site (apps/website) is intentionally NOT a pnpm workspace
+# member: it is a private, independently deployed Docusaurus app with its own
+# npm lockfile and Firebase deploy. It consumes @rqml/schema assets by relative
+# path at build time (see its copy-assets script), not as a workspace dependency.
+packages:
+  - "packages/*"

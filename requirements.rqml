@@ -1,0 +1,1793 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  requirements.rqml — RQML specified in RQML.
+
+  This document is the canonical self-description of the Requirements Markup
+  Language (RQML) 2.1.0, written in RQML itself. It reverse-engineers the
+  language's intent, structure, controlled vocabularies, traceability model,
+  and lifecycle from the published XSD schema, the rqml.org documentation
+  (why-rqml, why-xml, about), the changelog, and RFC-0002.
+
+  The "system" being specified here is the RQML language and format — not an
+  application. Domain entities therefore model the RQML metamodel (the shape
+  of an RQML document), and requirements are normative statements about what a
+  conforming RQML document and toolchain MUST do.
+-->
+<rqml xmlns="https://rqml.org/schema/2.1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="https://rqml.org/schema/2.1.0 https://rqml.org/schema/rqml-2.1.0.xsd"
+      version="2.1.0" docId="RQML-SELF-001" status="review">
+
+  <!-- ============================================================= -->
+  <!-- META                                                          -->
+  <!-- ============================================================= -->
+  <meta>
+    <title>RQML — The Requirements Markup Language (Self-Specification)</title>
+    <system>RQML</system>
+    <summary>
+      An LLM-first, human-readable XML standard for capturing software
+      requirements as the primary, traceable, machine-checkable artifact of a
+      project. This RQML document specifies RQML itself: its document model,
+      controlled vocabularies, traceability graph, behavior model, and the
+      spec-first development process it enables. It is the ultimate dogfood —
+      RQML described in RQML. As of 2026-06 this document also specifies the
+      RQML reference toolchain — the TypeScript monorepo housing the @rqml/core
+      engine, the rqml CLI, and the @rqml/mcp server — and the deterministic,
+      spec-first control loop those tools enable.
+    </summary>
+    <authors>
+      <author>
+        <name>Garðar Guðgeirsson</name>
+        <role>RQML Maintainer</role>
+        <org>rqml.org</org>
+        <contact>https://github.com/gudgeirsson</contact>
+      </author>
+    </authors>
+    <dates>
+      <created>2026-02-01</created>
+      <updated>2026-06-07</updated>
+      <targetRelease>RQML 2.1.0</targetRelease>
+    </dates>
+    <conventions>
+      <normativeKeywords>
+        The key words MUST, MUST NOT, SHALL, SHALL NOT, SHOULD, SHOULD NOT,
+        and MAY in this document are to be interpreted as described in RFC 2119
+        / RFC 8174, mapped to the RQML PriorityType vocabulary (must / should / may).
+      </normativeKeywords>
+      <idConventions>
+        IDs follow the RQML recommended patterns: REQ-&lt;AREA&gt;-NNN for
+        requirements, GOAL-&lt;NAME&gt; for goals, QGOAL-&lt;NAME&gt; for quality
+        goals, ENT-&lt;NAME&gt; for entities, SM-&lt;NAME&gt; / ST-&lt;NAME&gt; /
+        TR-&lt;NAME&gt; for behavior, TC-&lt;NAME&gt; for tests, DEC-&lt;NAME&gt;
+        for decisions, and RISK-&lt;NAME&gt; for risks.
+      </idConventions>
+    </conventions>
+    <profiles>
+      <profile id="PROF-LLM-NATIVE" type="llm-guidance">
+        <description>
+          Viewpoint optimizing the specification for consumption by LLM coding
+          agents: explicit tag semantics, normative statements, and dense
+          traceability so generation is "code from a specification," not
+          "code from a prompt."
+        </description>
+      </profile>
+    </profiles>
+  </meta>
+
+  <!-- ============================================================= -->
+  <!-- CATALOGS                                                      -->
+  <!-- ============================================================= -->
+  <catalogs>
+    <glossary>
+      <term id="TERM-REQUIREMENT">
+        <name>Requirement</name>
+        <definition>
+          A single, atomic, normative statement of what the system must do or
+          how well it must do it, classified by type and expressed with RFC 2119
+          keywords.
+        </definition>
+      </term>
+      <term id="TERM-TRACE">
+        <name>Traceability</name>
+        <definition>
+          The directed graph of typed relationships (edges) between RQML
+          artifacts, enabling impact analysis ("what breaks if this changes?")
+          and coverage analysis ("is this goal satisfied?").
+        </definition>
+      </term>
+      <term id="TERM-GOAL">
+        <name>Goal</name>
+        <definition>
+          An intentional statement of why the system exists — a desired state of
+          the world — as opposed to an operational statement of how to achieve it.
+        </definition>
+      </term>
+      <term id="TERM-SCENARIO">
+        <name>Scenario</name>
+        <definition>
+          A narrative description of system usage. Positive use cases, negative
+          misuse cases, and boundary edge cases each drive distinct requirement types.
+        </definition>
+      </term>
+      <term id="TERM-ENTITY">
+        <name>Entity</name>
+        <definition>
+          A core concept in the problem domain with attributes, forming part of
+          the ubiquitous language and the basis for generated data models.
+        </definition>
+      </term>
+      <term id="TERM-SM">
+        <name>State Machine</name>
+        <definition>
+          A flat finite state machine formalizing an entity or process lifecycle
+          as states and transitions with optional guards and actions.
+        </definition>
+      </term>
+      <term id="TERM-LOCATOR">
+        <name>Locator</name>
+        <definition>
+          A trace endpoint reference of one of three kinds: local (same
+          document, keyref-validated), doc (another RQML document, optionally
+          version/git-pinned), or external (any URI).
+        </definition>
+      </term>
+      <term id="TERM-MIXED">
+        <name>Mixed Content</name>
+        <definition>
+          Natural-language prose interrupted by structured elements within a
+          single text block — the core reason RQML is a document format, not a
+          data format.
+        </definition>
+        <synonyms>
+          <synonym>rich text content</synonym>
+        </synonyms>
+      </term>
+      <term id="TERM-GHOST">
+        <name>Ghost feature</name>
+        <definition>
+          Implemented behavior in code that has no corresponding approved
+          requirement in the spec. Tolerance for ghost features varies by
+          strictness level.
+        </definition>
+      </term>
+      <term id="TERM-NORMATIVE">
+        <name>Normative keyword</name>
+        <definition>
+          An RFC 2119 modal verb (MUST/SHALL, SHOULD, MAY) that establishes the
+          obligation level of a requirement statement.
+        </definition>
+      </term>
+    </glossary>
+
+    <actors>
+      <actor id="ACT-LLM" name="LLM Coding Agent" type="system">
+        <description>
+          An AI assistant that both authors RQML (elicitation, normalization,
+          ambiguity detection) and consumes it (code, test, and architecture
+          generation). The primary intended reader of an RQML document.
+        </description>
+      </actor>
+      <actor id="ACT-AUTHOR" name="Requirements Author" type="human">
+        <description>
+          A human engineer, product owner, or analyst who captures intent,
+          reviews LLM-drafted requirements, and owns the specification.
+        </description>
+      </actor>
+      <actor id="ACT-VALIDATOR" name="Schema Validator" type="system">
+        <description>
+          Tooling that validates an RQML document against the XSD: ID
+          uniqueness, trace referential integrity, and state-machine well-formedness.
+        </description>
+      </actor>
+      <actor id="ACT-TOOLING" name="RQML Tooling" type="system">
+        <description>
+          The RQML VS Code extension, the agent skill, CI checks, and
+          generators that read and write RQML documents.
+        </description>
+      </actor>
+      <actor id="ACT-CONTROL-LOOP" name="Enforcement Control Loop" type="system">
+        <description>
+          The deterministic harness — editor save hooks, agent session hooks, and
+          CI jobs — that invokes the rqml toolchain to keep an agent working from
+          the spec without relying on the model remembering to. The agent-specific
+          harness is specified in downstream integration repositories; this
+          document specifies the primitives it consumes.
+        </description>
+      </actor>
+      <actor id="ACT-DEVELOPER" name="Toolchain User" type="human">
+        <description>
+          A developer who runs the rqml CLI locally and in CI to validate,
+          inspect, and gate an RQML-governed project.
+        </description>
+      </actor>
+    </actors>
+
+    <stakeholders>
+      <stakeholder id="STK-MAINTAINER" name="RQML Maintainer" org="rqml.org">
+        <concerns>
+          A coherent, backward-compatible standard that stays small, legible,
+          and faithful to requirements-engineering theory.
+        </concerns>
+      </stakeholder>
+      <stakeholder id="STK-TEAMS" name="Adopting Teams">
+        <concerns>
+          Low-ceremony requirements that materially improve LLM-assisted
+          development without becoming a second job to maintain.
+        </concerns>
+      </stakeholder>
+      <stakeholder id="STK-TOOLBUILDERS" name="Tool Builders">
+        <concerns>
+          A stable, validatable, extensible schema they can build editors,
+          validators, and generators against.
+        </concerns>
+      </stakeholder>
+    </stakeholders>
+
+    <constraints>
+      <constraint id="CON-XML" severity="blocking">
+        <statement>RQML documents MUST be well-formed XML 1.0.</statement>
+        <source>RQML design principle: documents, not data.</source>
+      </constraint>
+      <constraint id="CON-XSD" severity="blocking">
+        <statement>
+          A conforming RQML document MUST validate against the published XSD for
+          its declared version (namespace https://rqml.org/schema/2.1.0).
+        </statement>
+        <source>schema/xsd/rqml-2.1.0.xsd</source>
+      </constraint>
+      <constraint id="CON-HUMAN-READABLE" severity="high">
+        <statement>
+          The format MUST remain human-readable and diff-friendly so teams will
+          actually adopt and review it in pull requests.
+        </statement>
+        <source>why-rqml: low ongoing effort.</source>
+      </constraint>
+      <constraint id="CON-BACKWARD-COMPAT" severity="high">
+        <statement>
+          Minor version increments MUST be additive and backward compatible:
+          documents valid under an earlier 2.x version MUST remain valid.
+        </statement>
+        <source>RFC-0002 compatibility section; changelog.</source>
+      </constraint>
+      <constraint id="CON-TYPESCRIPT" severity="high">
+        <statement>
+          The reference toolchain (core, CLI, MCP) SHALL be implemented in
+          TypeScript on Node.js.
+        </statement>
+        <source>Architecture decision DEC-MONOREPO.</source>
+      </constraint>
+      <constraint id="CON-OFFLINE" severity="high">
+        <statement>
+          Validation and checking SHALL operate with no network access; the schema
+          SHALL be resolved from a bundled copy, not fetched at runtime.
+        </statement>
+        <source>Reliability requirement for editor- and CI-time execution.</source>
+      </constraint>
+      <constraint id="CON-DETERMINISTIC-GATE" severity="blocking">
+        <statement>
+          The enforcement gate SHALL be deterministic: it SHALL NOT depend on a
+          language model or any other nondeterministic component for its verdict.
+        </statement>
+        <source>Architecture decision DEC-DETERMINISTIC-CHECK.</source>
+      </constraint>
+    </constraints>
+
+    <policies>
+      <policy id="POL-RFC2119" source="RFC 2119 / RFC 8174">
+        <obligation>
+          Normative statements MUST use RFC 2119 keywords with their standard
+          interpretation, surfaced through the RQML PriorityType vocabulary.
+        </obligation>
+        <evidence>meta/conventions/normativeKeywords; PriorityType enumeration.</evidence>
+      </policy>
+      <policy id="POL-SEMVER" source="Semantic Versioning 2.0.0">
+        <obligation>
+          Schema versions MUST follow semantic versioning: additive changes bump
+          the minor version; breaking changes bump the major version.
+        </obligation>
+        <evidence>changelog: 2.0.1 -&gt; 2.1.0 (additive trace + behavior changes).</evidence>
+      </policy>
+    </policies>
+
+    <decisions>
+      <decision id="DEC-XML" status="approved">
+        <context>
+          The format must be read carefully and reliably by LLM coding agents
+          and remain legible to humans at multi-thousand-requirement scale.
+        </context>
+        <decision>
+          Use XML. Tag pairs are explicit, tag names carry semantic weight, and
+          XML is heavily represented in foundation-model training corpora, so
+          LLMs read it more reliably than JSON or YAML.
+        </decision>
+        <alternatives>
+          JSON/YAML/TOML — rejected: they model data records, not documents, and
+          cannot cleanly represent mixed content.
+        </alternatives>
+        <consequences>
+          More verbose for tiny examples; closing tags cost tokens. These costs
+          are paid up front and amortized over the artifact's life. Gains:
+          schema validation, namespaces, comments, and clean diffs.
+        </consequences>
+      </decision>
+      <decision id="DEC-DOCUMENT-ORIENTED" status="approved">
+        <context>
+          A requirements spec is long-form natural language with structured
+          metadata, cross-references, scenarios, and rationale.
+        </context>
+        <decision>
+          Treat RQML as a document format (like DocBook, DITA, OOXML, ePub),
+          centering mixed content rather than flat typed records.
+        </decision>
+        <consequences>Statements can interleave prose and structured elements.</consequences>
+      </decision>
+      <decision id="DEC-MIXED-CONTENT" status="approved">
+        <context>
+          Requirement statements need embedded references and measurements
+          inside prose without losing either the structure or the sentence.
+        </context>
+        <decision>
+          Model narrative-bearing elements as a mixed TextBlockType that allows
+          text interleaved with lax-processed child elements.
+        </decision>
+        <consequences>
+          Authors and tools can embed inline references/units; JSON/YAML could
+          not express this cleanly.
+        </consequences>
+      </decision>
+      <decision id="DEC-TRACE-ENDPOINTS" status="approved">
+        <context>
+          Traceability must support same-document, cross-document, and external
+          targets, with immutability for cross-document references.
+        </context>
+        <decision>
+          In 2.1.0, model trace as edge elements with structured from/to
+          endpoints, each holding a locator of kind local, doc, or external;
+          doc locators support version and git pinning.
+        </decision>
+        <alternatives>
+          The 2.0.1 traceEdge with flat from/to attributes plus fromUri/toUri —
+          superseded for weaker cross-document and external semantics.
+        </alternatives>
+        <consequences>
+          Local locators are keyref-validated; doc and external locators are not
+          schema-validated but enable cross-project and tool integration.
+        </consequences>
+      </decision>
+      <decision id="DEC-BEHAVIOR-FLAT" status="approved">
+        <context>
+          Many entities have well-defined lifecycles that prose specifies
+          ambiguously, blocking reliable code and test generation (RFC-0002).
+        </context>
+        <decision>
+          Add an optional behavior section with flat finite state machines
+          (states + transitions, guards, actions), deliberately excluding full
+          UML statechart semantics.
+        </decision>
+        <alternatives>
+          Embedding states in entities, reusing scenarios, full UML statecharts,
+          or external SCXML/XState references — all rejected in RFC-0002.
+        </alternatives>
+        <consequences>
+          Flat, LLM-interpretable lifecycles; hierarchical/parallel states are
+          deferred to a future RFC.
+        </consequences>
+      </decision>
+      <decision id="DEC-MONOREPO" status="review">
+        <context>
+          The schema, documentation, and a reference implementation (validation,
+          CLI, and agent integration) must evolve together while remaining
+          independently consumable.
+        </context>
+        <decision>
+          Develop the toolchain as a single TypeScript pnpm workspace in the rqml
+          repository, with publishable packages @rqml/core, the rqml CLI, and
+          @rqml/mcp under packages/, the canonical XSDs in a schema package, and
+          the documentation site as an app.
+        </decision>
+        <alternatives>
+          Separate repositories per component (rejected: cross-cutting schema
+          changes would ripple across repos); a single bundled package (rejected:
+          editors and agent integrations would inherit CLI and MCP dependencies).
+        </alternatives>
+        <consequences>
+          One source of truth and atomic changes, at the cost of workspace
+          tooling. @rqml/core is kept dependency-clean so it can be embedded
+          without the CLI or MCP SDK.
+        </consequences>
+      </decision>
+      <decision id="DEC-DETERMINISTIC-CHECK" status="review">
+        <context>
+          Earlier tooling compared the spec to code using a language model. A
+          nondeterministic comparison cannot serve as a reproducible enforcement
+          gate or as audit evidence, and is too slow to run on every save.
+        </context>
+        <decision>
+          Make validation, coverage, and drift detection fully deterministic in
+          @rqml/core. Confine language-model assistance to authoring and proposing
+          content; the model proposes, the toolchain disposes.
+        </decision>
+        <alternatives>
+          A model-backed gate (rejected: not reproducible, not auditable, slow,
+          costly per turn).
+        </alternatives>
+        <consequences>
+          Identical inputs yield identical verdicts, enabling trustworthy gates
+          and append-only audit trails; semantic fidelity checks become an
+          optional, pluggable pass rather than the load-bearing comparison.
+        </consequences>
+      </decision>
+      <decision id="DEC-EXPLICIT-TRACE" status="review">
+        <context>
+          Deterministic drift detection requires machine-resolvable links between
+          requirements and the code that realizes them.
+        </context>
+        <decision>
+          Represent implementation links explicitly as implements trace edges
+          whose endpoints use external locators (file, symbol, or test URIs),
+          rather than inferring the mapping semantically.
+        </decision>
+        <consequences>
+          Coverage and drift become graph, filesystem, and AST operations the
+          engine can compute offline and reproducibly.
+        </consequences>
+      </decision>
+      <decision id="DEC-SCHEMA-PACKAGE" status="review">
+        <context>
+          The XSD is consumed by the engine, bundled by the CLI and MCP server,
+          and published to stable rqml.org URLs referenced by every document's
+          schemaLocation.
+        </context>
+        <decision>
+          Keep a single canonical copy of every schema version in the schema
+          package; all consumers obtain it from there, and the documentation site
+          publishes it to its stable versioned URLs.
+        </decision>
+        <consequences>
+          No hand-maintained duplicate schemas can drift from the canonical
+          source; the published-URL contract is generated, not copied.
+        </consequences>
+      </decision>
+      <decision id="DEC-VERSION-DECOUPLE" status="review">
+        <context>
+          The RQML language version (e.g. 2.1.0) and the npm package versions of
+          the toolchain change at very different rates.
+        </context>
+        <decision>
+          Version the RQML spec independently of the toolchain package versions;
+          the schema package may hold several spec versions simultaneously.
+        </decision>
+        <consequences>
+          Engine patches do not perturb the language version, and old documents
+          keep validating after new schema versions ship.
+        </consequences>
+      </decision>
+    </decisions>
+
+    <risks>
+      <risk id="RISK-DRIFT" severity="high">
+        <statement>
+          The specification drifts out of sync with the implementation, becoming
+          stale documentation that no one trusts.
+        </statement>
+        <mitigation>
+          Spec-first process, traceability to code, CI sync checks, and diffable
+          PR review keep the artifact alive.
+        </mitigation>
+      </risk>
+      <risk id="RISK-VERBOSITY" severity="medium">
+        <statement>
+          XML verbosity discourages adoption, especially for small specs.
+        </statement>
+        <mitigation>
+          Only meta and requirements are mandatory; authoring tooling (VS Code
+          extension) and LLM assistance reduce mechanical friction.
+        </mitigation>
+      </risk>
+      <risk id="RISK-AMBIGUITY" severity="high">
+        <statement>
+          Free-text statements and guards remain ambiguous, letting LLMs fill
+          gaps with incorrect assumptions.
+        </statement>
+        <mitigation>
+          Glossary terms, normative keywords, acceptance criteria, and metrics
+          on quality goals reduce interpretive latitude.
+        </mitigation>
+      </risk>
+      <risk id="RISK-LLM-GATE" severity="high">
+        <statement>
+          Relying on a nondeterministic language model to decide whether code
+          matches the spec yields an unreliable, unauditable, and slow gate.
+        </statement>
+        <mitigation>Deterministic engine (REQ-CORE-NO-LLM); model confined to authoring.</mitigation>
+      </risk>
+      <risk id="RISK-SCHEMA-COPY" severity="medium">
+        <statement>
+          Hand-maintained duplicate copies of the XSD in multiple packages drift
+          from the canonical schema, causing inconsistent validation.
+        </statement>
+        <mitigation>Single canonical schema package (REQ-SCHEMA-CANONICAL).</mitigation>
+      </risk>
+      <risk id="RISK-CORE-BLOAT" severity="medium">
+        <statement>
+          @rqml/core accretes CLI or MCP dependencies, becoming too heavy to embed
+          in editors and agent integrations.
+        </statement>
+        <mitigation>Dependency-clean core boundary (REQ-CORE-DEPS).</mitigation>
+      </risk>
+    </risks>
+  </catalogs>
+
+  <!-- ============================================================= -->
+  <!-- DOMAIN — the RQML metamodel (shape of an RQML document)       -->
+  <!-- ============================================================= -->
+  <domain>
+    <overview>
+      The RQML "domain" is the structure of an RQML document itself. The
+      entities below model the metamodel: the document root and its principal
+      element types. Business rules capture the invariants the XSD enforces.
+    </overview>
+    <entities>
+      <entity id="ENT-DOC" name="RqmlDocument">
+        <description>The root rqml element and container for all sections.</description>
+        <attr id="ATTR-DOC-VERSION" name="version" type="enum:2.1.0" required="true">
+          <description>Schema version.</description>
+          <constraints>Fixed to "2.1.0" for this schema generation.</constraints>
+        </attr>
+        <attr id="ATTR-DOC-ID" name="docId" type="string" required="true">
+          <description>Stable, unique document identifier.</description>
+          <constraints>Matches IdType: [A-Za-z][A-Za-z0-9._-]*, length 2–80.</constraints>
+        </attr>
+        <attr id="ATTR-DOC-STATUS" name="status" type="enum:draft,review,approved,deprecated" required="true">
+          <description>Document lifecycle state.</description>
+        </attr>
+      </entity>
+      <entity id="ENT-REQ" name="Requirement">
+        <description>The fundamental normative unit, classified by ReqType.</description>
+        <attr id="ATTR-REQ-TYPE" name="type" type="enum:FR,NFR,IR,DR,SR,CR,PR,UXR,OR" required="true">
+          <description>Requirement classification.</description>
+        </attr>
+        <attr id="ATTR-REQ-PRIORITY" name="priority" type="enum:must,should,may" required="false">
+          <description>MoSCoW priority.</description>
+        </attr>
+        <attr id="ATTR-REQ-STATEMENT" name="statement" type="TextBlock" required="true">
+          <description>The normative statement, using RFC 2119 keywords.</description>
+        </attr>
+      </entity>
+      <entity id="ENT-GOAL" name="Goal">
+        <description>An intentional objective the system exists to achieve.</description>
+        <attr id="ATTR-GOAL-STATEMENT" name="statement" type="TextBlock" required="true">
+          <description>Desired state of the world.</description>
+        </attr>
+      </entity>
+      <entity id="ENT-SM" name="StateMachine">
+        <description>A flat finite state machine over an entity or process.</description>
+        <attr id="ATTR-SM-INITIAL" name="initial" type="IdRef" required="true">
+          <description>Reference to the single initial state.</description>
+        </attr>
+      </entity>
+      <entity id="ENT-STATE" name="State">
+        <description>A mutually exclusive condition in a lifecycle.</description>
+        <attr id="ATTR-STATE-KIND" name="type" type="enum:initial,normal,final" required="false">
+          <description>State kind; defaults to normal.</description>
+        </attr>
+      </entity>
+      <entity id="ENT-TRANSITION" name="Transition">
+        <description>A valid directed movement between two states.</description>
+        <attr id="ATTR-TR-FROM" name="from" type="IdRef" required="true">
+          <description>Source state.</description>
+        </attr>
+        <attr id="ATTR-TR-TO" name="to" type="IdRef" required="true">
+          <description>Target state.</description>
+        </attr>
+      </entity>
+      <entity id="ENT-TRACE-EDGE" name="TraceEdge">
+        <description>A typed, directed relationship between two endpoints.</description>
+        <attr id="ATTR-EDGE-TYPE" name="type" type="TraceType" required="true">
+          <description>Relationship type (15 values).</description>
+        </attr>
+        <attr id="ATTR-EDGE-CONFIDENCE" name="confidence" type="decimal" required="false">
+          <description>Strength of the relationship, 0.0–1.0.</description>
+        </attr>
+      </entity>
+      <entity id="ENT-LOCATOR" name="Locator">
+        <description>An endpoint reference: local, doc, or external.</description>
+        <attr id="ATTR-LOC-KIND" name="kind" type="enum:local,doc,external" required="true">
+          <description>Which locator variant is used.</description>
+        </attr>
+      </entity>
+      <entity id="ENT-CRITERION" name="AcceptanceCriterion">
+        <description>A given/when/then testable condition for a requirement.</description>
+        <attr id="ATTR-CRIT-THEN" name="then" type="TextBlock" required="true">
+          <description>The verifiable expected outcome.</description>
+        </attr>
+      </entity>
+      <entity id="ENT-CORE" name="Core Engine">
+        <description>The @rqml/core library: parsing, validation, trace graph, coverage, and drift.</description>
+        <attr id="ATTR-CORE-PURE" name="dependencyClean" type="boolean" required="true">
+          <description>Carries no CLI or MCP runtime dependencies.</description>
+        </attr>
+      </entity>
+      <entity id="ENT-CLI" name="Command-Line Interface">
+        <description>The rqml executable: init, validate, status, and check commands.</description>
+        <attr id="ATTR-CLI-EXIT" name="exitCode" type="integer" required="true">
+          <description>Documented, stable process exit code per outcome class.</description>
+        </attr>
+      </entity>
+      <entity id="ENT-MCP" name="MCP Server">
+        <description>The @rqml/mcp server exposing core capabilities as agent tools.</description>
+      </entity>
+      <entity id="ENT-CHECK-REPORT" name="Check Report">
+        <description>The deterministic result of rqml check: validity, coverage, and drift findings, in stable JSON.</description>
+        <attr id="ATTR-REPORT-VERDICT" name="verdict" type="enum:pass,fail" required="true">
+          <description>Whether the project passes the enforcement gate.</description>
+        </attr>
+      </entity>
+      <entity id="ENT-IMPL-LINK" name="Implementation Link">
+        <description>An implements trace edge from a code artifact to the requirement it realizes.</description>
+        <attr id="ATTR-LINK-TARGET" name="targetUri" type="anyURI" required="true">
+          <description>External locator of the implementing artifact (file, symbol, or test).</description>
+        </attr>
+      </entity>
+    </entities>
+    <businessRules>
+      <rule id="BR-UNIQUE-ID">
+        <statement>Every @id in a document MUST be unique across all elements.</statement>
+        <examples>The XSD allIds key enforces this over every referenceable element.</examples>
+      </rule>
+      <rule id="BR-TRACE-INTEGRITY">
+        <statement>
+          Every local trace locator MUST reference a declared @id in the same document.
+        </statement>
+        <examples>
+          traceFromRef / traceToRef keyrefs fail validation for dangling local references.
+        </examples>
+      </rule>
+      <rule id="BR-REQUIRED-SECTIONS">
+        <statement>A document MUST contain meta and requirements; all other sections are optional.</statement>
+      </rule>
+      <rule id="BR-SECTION-ORDER">
+        <statement>
+          Sections MUST appear in the fixed order: meta, catalogs, domain, goals,
+          scenarios, requirements, behavior, interfaces, verification, trace, governance.
+        </statement>
+      </rule>
+      <rule id="BR-SINGLE-INITIAL">
+        <statement>
+          A state machine MUST declare exactly one initial state, referenced by @initial.
+        </statement>
+        <examples>smInitialRef keyref resolves @initial to a declared state.</examples>
+      </rule>
+      <rule id="BR-FINAL-NO-OUT">
+        <statement>States of type "final" MUST NOT have outgoing transitions.</statement>
+      </rule>
+      <rule id="BR-VERSION-FIXED">
+        <statement>The root @version MUST equal the schema generation ("2.1.0").</statement>
+      </rule>
+      <rule id="BR-CORE-PURE">
+        <statement>@rqml/core MUST NOT declare CLI argument-parsing or MCP SDK packages as runtime dependencies.</statement>
+        <examples>Verified by inspecting the published package's dependency tree.</examples>
+      </rule>
+      <rule id="BR-CHECK-DETERMINISTIC">
+        <statement>Running rqml check twice on the same document and codebase MUST produce the same verdict and findings.</statement>
+      </rule>
+      <rule id="BR-GATE-EXIT">
+        <statement>rqml check MUST exit zero only when the document is valid and no blocking drift or coverage violation exists.</statement>
+      </rule>
+    </businessRules>
+  </domain>
+
+  <!-- ============================================================= -->
+  <!-- GOALS                                                         -->
+  <!-- ============================================================= -->
+  <goals>
+    <goal id="GOAL-PRIMARY-ARTIFACT" title="Requirements as the primary artifact" priority="must" ownerRef="STK-MAINTAINER">
+      <statement>
+        Make requirements — not code — the authoritative, durable source of
+        truth for system intent.
+      </statement>
+      <rationale>
+        Code derived from a stable specification is calmer, more consistent, and
+        easier to evolve and verify than code generated from a chat thread.
+      </rationale>
+    </goal>
+    <goal id="GOAL-LLM-CONTEXT" title="Legible long-term LLM context" priority="must" ownerRef="STK-TEAMS">
+      <statement>
+        Package project context so generation is "code from a specification,"
+        reducing invented assumptions and missed non-functional requirements.
+      </statement>
+      <rationale>
+        LLMs amplify weak requirements; explicit, structured context grounds them.
+      </rationale>
+    </goal>
+    <goal id="GOAL-LOW-CEREMONY" title="Low-ceremony requirements engineering" priority="must" ownerRef="STK-TEAMS">
+      <statement>
+        Make good requirements cheap enough to be worth doing — enough discipline
+        to be useful without becoming a second job.
+      </statement>
+      <rationale>
+        Teams shortcut RE when the perceived cost exceeds the benefit; lowering
+        cost is the central economic thesis of RQML.
+      </rationale>
+    </goal>
+    <goal id="GOAL-TRACEABILITY" title="End-to-end traceability" priority="must" ownerRef="STK-MAINTAINER">
+      <statement>
+        Connect goals to requirements to behavior to verification to code so
+        teams can prove what they built matches intent.
+      </statement>
+      <rationale>Traceability enables impact analysis and coverage analysis.</rationale>
+    </goal>
+    <goal id="GOAL-RE-OPERATIONALIZE" title="Operationalize RE best practice" priority="should" ownerRef="STK-MAINTAINER">
+      <statement>
+        Reflect IEEE 29148, ISO/IEC 25010, KAOS/i*, Volere, and BDD practices in
+        a format both humans and tools can reliably process.
+      </statement>
+    </goal>
+
+    <goal id="GOAL-ENFORCEMENT" title="Deterministic spec enforcement" priority="must" ownerRef="STK-TEAMS">
+      <statement>
+        Make the spec-first process enforceable by deterministic tooling so a
+        coding agent keeps working from the RQML spec for the life of a project
+        without relying on the model remembering to.
+      </statement>
+      <rationale>
+        Agents drift because the process is voluntary; moving enforcement into
+        deterministic checks removes reliance on attention and memory.
+      </rationale>
+    </goal>
+    <goal id="GOAL-REUSABLE-ENGINE" title="One reusable engine" priority="must" ownerRef="STK-TOOLBUILDERS">
+      <statement>
+        Provide a single validation, trace, and check engine that the CLI, the
+        MCP server, editors, and agent integrations all reuse.
+      </statement>
+      <rationale>One engine means one source of truth for verdicts across every surface.</rationale>
+    </goal>
+    <goal id="GOAL-OFFLINE-FAST" title="Fast, offline, reproducible tooling" priority="should" ownerRef="STK-TOOLBUILDERS">
+      <statement>
+        Make validation and checking fast and fully offline so they can run on
+        every editor save, agent turn, and CI job.
+      </statement>
+    </goal>
+
+    <qgoal id="QGOAL-LLM-READ" title="LLM read reliability" priority="must">
+      <statement>The format SHOULD be the format LLMs parse most reliably.</statement>
+      <metric>
+        Explicit paired tags and semantic element names; no reliance on
+        whitespace or positional structure for meaning.
+      </metric>
+    </qgoal>
+    <qgoal id="QGOAL-VALIDATABLE" title="Schema validatability" priority="must">
+      <statement>Structural invariants SHALL be machine-checkable.</statement>
+      <metric>
+        100% of ID-uniqueness, trace-resolution, and state-machine-reference
+        invariants enforced by the XSD without external tooling.
+      </metric>
+    </qgoal>
+    <qgoal id="QGOAL-DIFF" title="Diff-friendliness" priority="should">
+      <statement>Documents SHOULD diff cleanly in version control.</statement>
+      <metric>
+        No whitespace-significant structure; reordering or reformatting does not
+        change document meaning.
+      </metric>
+    </qgoal>
+    <qgoal id="QGOAL-HUMAN" title="Human readability" priority="must">
+      <statement>The format SHALL remain readable and reviewable by humans.</statement>
+      <metric>A minimal valid document is expressible in under 15 lines.</metric>
+    </qgoal>
+
+    <qgoal id="QGOAL-DETERMINISTIC" title="Deterministic verdicts" priority="must">
+      <statement>The enforcement gate SHALL return identical verdicts for identical inputs.</statement>
+      <metric>100% reproducibility of rqml check verdicts across repeated runs and machines.</metric>
+    </qgoal>
+    <qgoal id="QGOAL-CHECK-SPEED" title="Interactive check latency" priority="should">
+      <statement>Validation and checking SHOULD be fast enough for interactive use.</statement>
+      <metric>rqml check and rqml status complete in under ~1s on a typical project.</metric>
+    </qgoal>
+
+    <obstacle id="OBS-DRIFT" title="Specification drift" likelihood="high" severity="high">
+      <statement>The spec decays into stale documentation disconnected from code.</statement>
+      <mitigation>Spec-first workflow, trace-to-code, and CI sync checks.</mitigation>
+    </obstacle>
+    <obstacle id="OBS-COST" title="Perceived RE cost" likelihood="medium" severity="high">
+      <statement>Teams perceive requirements work as heavyweight and skip it.</statement>
+      <mitigation>Minimal mandatory structure plus LLM-assisted authoring.</mitigation>
+    </obstacle>
+    <obstacle id="OBS-AMBIGUITY" title="Residual ambiguity" likelihood="medium" severity="high">
+      <statement>Free text leaves room for divergent interpretation.</statement>
+      <mitigation>Glossary, normative keywords, metrics, and acceptance criteria.</mitigation>
+    </obstacle>
+
+    <obstacle id="OBS-VOLUNTARY" title="Voluntary compliance fails" likelihood="high" severity="high">
+      <statement>
+        Coding agents forget that a project is RQML-governed and stop maintaining
+        the spec, because nothing deterministic enforces the process.
+      </statement>
+      <mitigation>Deterministic check gate, status re-anchoring, and drift detection.</mitigation>
+    </obstacle>
+
+    <goalLink id="GL-LLM-REFINES-PRIMARY" from="GOAL-LLM-CONTEXT" to="GOAL-PRIMARY-ARTIFACT" type="refines" confidence="0.9"/>
+    <goalLink id="GL-RE-REFINES-LOW" from="GOAL-RE-OPERATIONALIZE" to="GOAL-LOW-CEREMONY" type="refines" confidence="0.8"/>
+    <goalLink id="GL-DRIFT-THREATENS" from="OBS-DRIFT" to="GOAL-PRIMARY-ARTIFACT" type="threatens" confidence="0.9"/>
+    <goalLink id="GL-COST-THREATENS" from="OBS-COST" to="GOAL-LOW-CEREMONY" type="threatens" confidence="0.8"/>
+    <goalLink id="GL-AMBIGUITY-THREATENS" from="OBS-AMBIGUITY" to="GOAL-LLM-CONTEXT" type="threatens" confidence="0.8"/>
+    <goalLink id="GL-VOLUNTARY-THREATENS" from="OBS-VOLUNTARY" to="GOAL-ENFORCEMENT" type="threatens" confidence="0.9"/>
+    <goalLink id="GL-ENFORCE-REFINES-PRIMARY" from="GOAL-ENFORCEMENT" to="GOAL-PRIMARY-ARTIFACT" type="refines" confidence="0.85"/>
+    <goalLink id="GL-ENGINE-REFINES-ENFORCE" from="GOAL-REUSABLE-ENGINE" to="GOAL-ENFORCEMENT" type="refines" confidence="0.7"/>
+  </goals>
+
+  <!-- ============================================================= -->
+  <!-- SCENARIOS                                                     -->
+  <!-- ============================================================= -->
+  <scenarios>
+    <scenario id="SCN-AUTHOR" title="Authoring a specification" actorRef="ACT-AUTHOR">
+      <narrative>
+        1. An author (often with an LLM) creates one .rqml file in the project root.
+        2. They populate meta and at least one requirement.
+        3. They grow the spec — goals, scenarios, domain, behavior — as the system grows.
+        4. The schema validator confirms structural validity on save and in CI.
+      </narrative>
+    </scenario>
+    <scenario id="SCN-CODEGEN" title="Generating code from the spec" actorRef="ACT-LLM">
+      <narrative>
+        1. The agent reads domain entities, business rules, and behavior for data models.
+        2. It reads FR/IR/DR/SR requirements for features, contracts, and validation.
+        3. It generates code consistent with constraints and approved decisions.
+        4. It records implements trace edges back to the requirements.
+      </narrative>
+    </scenario>
+    <scenario id="SCN-TESTGEN" title="Generating tests from acceptance criteria" actorRef="ACT-LLM">
+      <narrative>
+        1. The agent reads given/when/then acceptance criteria and quality-goal metrics.
+        2. It generates acceptance, unit, integration, performance, and security tests.
+        3. It records verifiedBy/covers trace edges to the requirements.
+      </narrative>
+    </scenario>
+    <scenario id="SCN-IMPACT" title="Impact and coverage analysis" actorRef="ACT-TOOLING">
+      <narrative>
+        1. Tooling queries the trace graph for edges touching a changing artifact.
+        2. It follows edges transitively, weighted by confidence, to find impacts.
+        3. It flags goals with no satisfies edges as uncovered.
+      </narrative>
+    </scenario>
+    <misuseCase id="MIS-GHOST" title="Unspecified implementation (ghost feature)" actorRef="ACT-LLM">
+      <narrative>
+        An agent implements behavior with no corresponding approved requirement.
+        Under stricter levels this is rejected; the missing requirement must be
+        captured before or alongside the code.
+      </narrative>
+    </misuseCase>
+    <edgeCase id="EDGE-MINIMAL" title="Minimal valid document" actorRef="ACT-AUTHOR">
+      <narrative>
+        A document containing only meta (title, system) and a single requirement
+        is valid and useful — RQML scales down as well as up.
+      </narrative>
+    </edgeCase>
+  </scenarios>
+
+  <!-- ============================================================= -->
+  <!-- REQUIREMENTS                                                  -->
+  <!-- ============================================================= -->
+  <requirements>
+
+    <reqPackage id="PKG-STRUCTURE" title="Document structure" ownerRef="STK-MAINTAINER">
+      <description>Rules governing the shape, identity, and ordering of an RQML document.</description>
+      <req id="REQ-DOC-ROOT" type="DR" title="Document root" status="approved" priority="must">
+        <statement>
+          A conforming document SHALL have a single rqml root element declaring
+          the RQML namespace and carrying version, docId, and status attributes.
+        </statement>
+      </req>
+      <req id="REQ-VERSION" type="CR" title="Fixed version" status="approved" priority="must">
+        <statement>
+          The root version attribute SHALL equal "2.1.0" and the default
+          namespace SHALL be https://rqml.org/schema/2.1.0.
+        </statement>
+        <rationale>Binds a document to a specific, immutable schema generation.</rationale>
+      </req>
+      <req id="REQ-REQUIRED-SECTIONS" type="DR" title="Required sections" status="approved" priority="must">
+        <statement>
+          A document SHALL contain a meta section and a requirements section; all
+          other sections MAY be omitted.
+        </statement>
+        <acceptance>
+          <criterion id="CRIT-MIN-DOC">
+            <given>A document with only meta (title, system) and one req</given>
+            <when>It is validated against the XSD</when>
+            <then>Validation succeeds.</then>
+          </criterion>
+        </acceptance>
+      </req>
+      <req id="REQ-SECTION-ORDER" type="DR" title="Fixed section order" status="approved" priority="must">
+        <statement>
+          Sections SHALL appear in the order: meta, catalogs, domain, goals,
+          scenarios, requirements, behavior, interfaces, verification, trace, governance.
+        </statement>
+      </req>
+      <req id="REQ-ID-UNIQUE" type="DR" title="Unique identifiers" status="approved" priority="must">
+        <statement>
+          Every id attribute SHALL be unique across the entire document.
+        </statement>
+        <acceptance>
+          <criterion id="CRIT-DUP-ID">
+            <given>Two elements sharing the same id</given>
+            <when>The document is validated</when>
+            <then>Validation fails on the allIds key constraint.</then>
+          </criterion>
+        </acceptance>
+      </req>
+      <req id="REQ-ID-PATTERN" type="DR" title="Identifier format" status="approved" priority="must">
+        <statement>
+          Identifiers SHALL match the pattern [A-Za-z][A-Za-z0-9._-]* and be
+          2–80 characters long.
+        </statement>
+      </req>
+    </reqPackage>
+
+    <reqPackage id="PKG-VOCAB" title="Controlled vocabularies" ownerRef="STK-MAINTAINER">
+      <description>The enumerated value sets that constrain RQML attributes.</description>
+      <req id="REQ-STATUS-ENUM" type="DR" title="Lifecycle status vocabulary" status="approved" priority="must">
+        <statement>
+          Artifact status SHALL be one of: draft, review, approved, deprecated.
+          Only approved artifacts SHOULD drive implementation.
+        </statement>
+      </req>
+      <req id="REQ-PRIORITY-ENUM" type="DR" title="Priority vocabulary" status="approved" priority="must">
+        <statement>
+          Priority SHALL be one of must, should, or may, interpreted per RFC 2119.
+        </statement>
+      </req>
+      <req id="REQ-REQTYPE-ENUM" type="DR" title="Requirement-type vocabulary" status="approved" priority="must">
+        <statement>
+          A requirement SHALL declare a type from: FR, NFR, IR, DR, SR, CR, PR,
+          UXR, OR.
+        </statement>
+        <notes>The type guides which implementation approach an agent applies.</notes>
+      </req>
+      <req id="REQ-TRACETYPE-ENUM" type="DR" title="Trace-type vocabulary" status="approved" priority="must">
+        <statement>
+          A trace edge SHALL declare a type from the 15-value TraceType set,
+          including refines, satisfies, dependsOn, verifiedBy, mitigates,
+          implements, supersedes, conformsTo, deprecates, and breaks.
+        </statement>
+      </req>
+      <req id="REQ-TESTTYPE-ENUM" type="DR" title="Test-type vocabulary" status="approved" priority="should">
+        <statement>
+          A test case SHALL declare a type from: acceptance, integration, unit,
+          security, performance, inspection.
+        </statement>
+      </req>
+      <req id="REQ-CONFIDENCE-RANGE" type="DR" title="Confidence range" status="approved" priority="should">
+        <statement>
+          Confidence values on trace edges and goal links SHALL be decimals in
+          the inclusive range 0.0 to 1.0.
+        </statement>
+      </req>
+    </reqPackage>
+
+    <reqPackage id="PKG-TRACE" title="Traceability model" ownerRef="STK-MAINTAINER">
+      <description>The structured-endpoint trace graph introduced in 2.1.0.</description>
+      <req id="REQ-TRACE-EDGE" type="FR" title="Typed trace edges" status="approved" priority="must">
+        <statement>
+          The trace section SHALL express relationships as edge elements, each
+          with exactly one from and one to endpoint and a TraceType.
+        </statement>
+      </req>
+      <req id="REQ-TRACE-LOCATORS" type="FR" title="Three locator kinds" status="approved" priority="must">
+        <statement>
+          Each trace endpoint SHALL contain a locator of exactly one kind: local
+          (same document), doc (another RQML document), or external (any URI).
+        </statement>
+      </req>
+      <req id="REQ-TRACE-INTEGRITY" type="DR" title="Local reference integrity" status="approved" priority="must">
+        <statement>
+          Every local locator id SHALL resolve to a declared id in the same
+          document; dangling local references SHALL fail validation.
+        </statement>
+        <acceptance>
+          <criterion id="CRIT-DANGLING">
+            <given>An edge whose local locator id does not exist</given>
+            <when>The document is validated</when>
+            <then>Validation fails on the traceFromRef/traceToRef keyref.</then>
+          </criterion>
+        </acceptance>
+      </req>
+      <req id="REQ-TRACE-PINNING" type="IR" title="Cross-document pinning" status="approved" priority="should">
+        <statement>
+          Doc locators SHALL support optional version and git attributes so
+          cross-document references can be pinned for immutability.
+        </statement>
+      </req>
+    </reqPackage>
+
+    <reqPackage id="PKG-BEHAVIOR" title="Behavior modeling" ownerRef="STK-MAINTAINER">
+      <description>Flat finite state machines for entity and process lifecycles (RFC-0002).</description>
+      <req id="REQ-SM" type="FR" title="State machines" status="approved" priority="should">
+        <statement>
+          The optional behavior section SHALL allow state machines composed of
+          states and transitions with optional guards, actions, and entity references.
+        </statement>
+      </req>
+      <req id="REQ-SM-INITIAL" type="DR" title="Single initial state" status="approved" priority="must">
+        <statement>
+          Each state machine SHALL reference exactly one declared initial state
+          via its initial attribute.
+        </statement>
+        <acceptance>
+          <criterion id="CRIT-SM-INIT">
+            <given>A stateMachine whose @initial names an undeclared state</given>
+            <when>The document is validated</when>
+            <then>Validation fails on the smInitialRef keyref.</then>
+          </criterion>
+        </acceptance>
+      </req>
+      <req id="REQ-SM-FINAL" type="DR" title="Terminal final states" status="approved" priority="should">
+        <statement>
+          States declared with type "final" SHALL NOT have outgoing transitions.
+        </statement>
+      </req>
+      <req id="REQ-TRANSITION-REFS" type="DR" title="Resolvable transitions" status="approved" priority="must">
+        <statement>
+          Each transition from and to attribute SHALL resolve to a declared state.
+        </statement>
+      </req>
+    </reqPackage>
+
+    <reqPackage id="PKG-FORMAT" title="Format and extensibility" ownerRef="STK-TOOLBUILDERS">
+      <description>The XML-foundation requirements that make RQML a document format.</description>
+      <req id="REQ-XML" type="CR" title="Well-formed XML" status="approved" priority="must">
+        <statement>An RQML document SHALL be well-formed XML 1.0.</statement>
+        <rationale>LLMs read XML most reliably and it models documents, not data.</rationale>
+      </req>
+      <req id="REQ-MIXED-CONTENT" type="FR" title="Mixed content" status="approved" priority="must">
+        <statement>
+          Narrative-bearing elements SHALL permit mixed content: natural-language
+          prose interleaved with structured child elements.
+        </statement>
+      </req>
+      <req id="REQ-NAMESPACE" type="IR" title="Namespaced extensibility" status="approved" priority="should">
+        <statement>
+          The format SHALL use XML namespaces so third parties MAY extend RQML
+          without forking the standard.
+        </statement>
+      </req>
+      <req id="REQ-COMMENTS" type="FR" title="Author annotations" status="approved" priority="may">
+        <statement>
+          The format SHALL allow non-content author annotations (XML comments).
+        </statement>
+      </req>
+    </reqPackage>
+
+    <reqPackage id="PKG-PROCESS" title="Spec-first development process" ownerRef="STK-TEAMS">
+      <description>How RQML is meant to be used in an LLM-assisted workflow.</description>
+      <req id="REQ-SPEC-FIRST" type="PR" title="Spec-first development" status="approved" priority="must">
+        <statement>
+          Features SHALL be specified in RQML before implementation; code SHOULD
+          trace back to an approved requirement.
+        </statement>
+        <rationale>Prevents ghost features and keeps the spec authoritative.</rationale>
+      </req>
+      <req id="REQ-STRICTNESS" type="PR" title="Configurable strictness" status="approved" priority="should">
+        <statement>
+          The process SHALL support configurable strictness levels — relaxed,
+          standard, strict, and certified — that scale enforcement and required
+          trace metadata to the project's risk profile.
+        </statement>
+      </req>
+      <req id="REQ-NORMATIVE-KEYWORDS" type="CR" title="RFC 2119 statements" status="approved" priority="must">
+        <statement>
+          Requirement statements SHALL use RFC 2119 normative keywords so
+          obligation levels are unambiguous.
+        </statement>
+      </req>
+    </reqPackage>
+
+    <reqPackage id="PKG-QUALITY" title="Quality attributes" ownerRef="STK-MAINTAINER">
+      <description>Non-functional properties the format must uphold.</description>
+      <req id="REQ-LLM-READ" type="NFR" title="LLM read reliability" status="approved" priority="must">
+        <statement>
+          Structure SHALL be carried by explicit paired tags and semantic element
+          names, not by whitespace or position.
+        </statement>
+      </req>
+      <req id="REQ-VALIDATABLE" type="NFR" title="Machine validatability" status="approved" priority="must">
+        <statement>
+          ID uniqueness, trace resolution, and state-machine references SHALL be
+          enforceable purely by XSD validation.
+        </statement>
+      </req>
+      <req id="REQ-DIFF" type="NFR" title="Clean diffs" status="approved" priority="should">
+        <statement>
+          Document meaning SHALL be independent of insignificant whitespace so
+          documents review cleanly in pull requests.
+        </statement>
+      </req>
+      <req id="REQ-HUMAN" type="UXR" title="Human readability" status="approved" priority="must">
+        <statement>
+          The format SHALL remain readable to humans, with a useful minimal
+          document expressible in under 15 lines.
+        </statement>
+      </req>
+      <req id="REQ-BACKWARD-COMPAT" type="CR" title="Backward compatibility" status="approved" priority="must">
+        <statement>
+          Minor version increments SHALL be additive: documents valid under an
+          earlier 2.x version SHALL remain valid.
+        </statement>
+      </req>
+    </reqPackage>
+
+    <reqPackage id="PKG-MONOREPO" title="Reference toolchain and monorepo" ownerRef="STK-TOOLBUILDERS">
+      <description>
+        Structure of the rqml repository as a TypeScript workspace housing the
+        reference implementation alongside the schema and documentation.
+      </description>
+      <req id="REQ-TS-ENGINE" type="CR" title="TypeScript implementation" status="draft" priority="must" appliesTo="core cli mcp">
+        <statement>The reference toolchain SHALL be implemented in TypeScript on Node.js.</statement>
+        <rationale>One language across the engine, CLI, MCP server, and editor integration.</rationale>
+      </req>
+      <req id="REQ-WORKSPACE" type="CR" title="Single pnpm workspace" status="draft" priority="must">
+        <statement>
+          The repository SHALL be a single pnpm-managed workspace whose publishable
+          packages are @rqml/core, the rqml CLI, and @rqml/mcp, alongside the
+          canonical schema package and the documentation site.
+        </statement>
+      </req>
+      <req id="REQ-PACKAGE-LAYOUT" type="DR" title="Package layout" status="draft" priority="should">
+        <statement>
+          Source packages SHALL reside under packages/, the documentation site in
+          its own app directory, and the canonical XSDs within the schema package.
+        </statement>
+      </req>
+      <req id="REQ-CORE-DEPS" type="NFR" title="Dependency-clean core" status="draft" priority="must" appliesTo="core">
+        <statement>
+          @rqml/core SHALL NOT declare CLI argument-parsing or MCP SDK packages as
+          runtime dependencies, so editors and agent integrations can embed it
+          without inheriting toolchain dependencies.
+        </statement>
+        <rationale>Keeps the engine embeddable; the CLI and MCP server are the dependency-heavy edges.</rationale>
+      </req>
+      <req id="REQ-SCHEMA-CANONICAL" type="DR" title="Single canonical schema" status="draft" priority="must">
+        <statement>
+          Every supported schema version SHALL have a single canonical source in
+          the schema package; consumers SHALL obtain it from there rather than
+          maintaining copies.
+        </statement>
+      </req>
+      <req id="REQ-SCHEMA-URLS" type="CR" title="Stable schema URLs" status="draft" priority="must">
+        <statement>
+          The documentation site SHALL publish each schema version at its stable
+          https://rqml.org/schema/&lt;version&gt;/ URL and the AGENTS.md template
+          at https://rqml.org/AGENTS.md, preserving the namespace and
+          schemaLocation contract that existing documents resolve against.
+        </statement>
+        <rationale>Published schema URLs are an immutable contract for documents in the wild.</rationale>
+      </req>
+      <req id="REQ-VERSION-DECOUPLE" type="CR" title="Decoupled versioning" status="draft" priority="should">
+        <statement>
+          The RQML spec version SHALL be versioned independently of the npm package
+          versions of the toolchain.
+        </statement>
+      </req>
+    </reqPackage>
+
+    <reqPackage id="PKG-CORE" title="Core engine (rqml-core)" ownerRef="STK-TOOLBUILDERS">
+      <description>The dependency-clean library that every other surface reuses.</description>
+      <req id="REQ-CORE-PARSE" type="FR" title="Parse to typed model" status="draft" priority="must" appliesTo="core">
+        <statement>@rqml/core SHALL parse an RQML document into a typed in-memory model.</statement>
+      </req>
+      <req id="REQ-CORE-VALIDATE" type="FR" title="Deterministic validation" status="draft" priority="must" appliesTo="core">
+        <statement>
+          @rqml/core SHALL validate a document for XML well-formedness, XSD
+          validity, identifier uniqueness, and trace referential integrity,
+          equivalently to the schema's own constraints and without network access.
+        </statement>
+      </req>
+      <req id="REQ-CORE-SCHEMA-DETECT" type="FR" title="Schema-version detection" status="draft" priority="must" appliesTo="core">
+        <statement>
+          @rqml/core SHALL detect the declared schema version from the document
+          namespace and validate against the matching bundled schema.
+        </statement>
+      </req>
+      <req id="REQ-CORE-TRACE-GRAPH" type="FR" title="Traceability graph" status="draft" priority="must" appliesTo="core">
+        <statement>
+          @rqml/core SHALL construct the traceability graph from trace edges and
+          expose queries for impact analysis and coverage.
+        </statement>
+      </req>
+      <req id="REQ-CORE-COVERAGE" type="FR" title="Coverage metrics" status="draft" priority="must" appliesTo="core">
+        <statement>
+          @rqml/core SHALL compute coverage deterministically: goals without
+          satisfying requirements, requirements without verification, dangling
+          local references, and orphaned artifacts.
+        </statement>
+      </req>
+      <req id="REQ-CORE-DRIFT" type="FR" title="Deterministic drift detection" status="draft" priority="must" appliesTo="core">
+        <statement>
+          @rqml/core SHALL detect spec/implementation drift by resolving the
+          external locators of implements edges and reporting links whose
+          referenced artifact is missing or has changed since the linked
+          requirement was last approved.
+        </statement>
+      </req>
+      <req id="REQ-CORE-API" type="IR" title="Stable typed API" status="draft" priority="must" appliesTo="core">
+        <statement>
+          @rqml/core SHALL expose a stable, typed programmatic API consumed by the
+          CLI, the MCP server, and external integrations.
+        </statement>
+      </req>
+      <req id="REQ-CORE-NO-LLM" type="CR" title="No model in the engine" status="draft" priority="must" appliesTo="core">
+        <statement>
+          @rqml/core SHALL produce its validation, coverage, and drift results
+          deterministically, without invoking any language model.
+        </statement>
+        <rationale>Reproducibility is required for a trustworthy, auditable gate.</rationale>
+      </req>
+    </reqPackage>
+
+    <reqPackage id="PKG-CLI" title="Command-line interface (rqml)" ownerRef="STK-TOOLBUILDERS">
+      <description>The rqml binary: the universal substrate every integration invokes.</description>
+      <req id="REQ-CLI-BINARY" type="FR" title="rqml executable" status="draft" priority="must" appliesTo="cli">
+        <statement>
+          The toolchain SHALL provide an rqml executable that operates
+          non-interactively on a project's RQML document(s).
+        </statement>
+      </req>
+      <req id="REQ-CLI-COMMANDS" type="FR" title="Core commands" status="draft" priority="must" appliesTo="cli">
+        <statement>
+          rqml SHALL provide at least: init (scaffold a spec and project marker),
+          validate (schema and integrity), status (current spec and coverage
+          state), and check (the enforcement gate).
+        </statement>
+      </req>
+      <req id="REQ-CLI-CHECK-GATE" type="FR" title="Check gate" status="draft" priority="must" appliesTo="cli">
+        <statement>
+          rqml check SHALL act as a deterministic gate, exiting zero only when the
+          document is valid and no blocking drift or coverage violation exists, and
+          non-zero otherwise.
+        </statement>
+        <acceptance>
+          <criterion id="CRIT-GATE-FAIL">
+            <given>A project whose implementation has drifted from the spec</given>
+            <when>rqml check is run</when>
+            <then>It exits non-zero and reports the drift.</then>
+          </criterion>
+        </acceptance>
+      </req>
+      <req id="REQ-CLI-JSON" type="IR" title="Machine-readable output" status="draft" priority="must" appliesTo="cli">
+        <statement>
+          rqml status and rqml check SHALL emit a documented, stable JSON
+          representation for control loops, in addition to human-readable output.
+        </statement>
+      </req>
+      <req id="REQ-CLI-EXIT-CODES" type="IR" title="Stable exit codes" status="draft" priority="must" appliesTo="cli">
+        <statement>
+          rqml SHALL use documented, stable exit codes distinguishing success,
+          validation failure, drift or coverage failure, and usage error.
+        </statement>
+      </req>
+      <req id="REQ-CLI-OFFLINE" type="NFR" title="Offline operation" status="draft" priority="must" appliesTo="cli">
+        <statement>rqml SHALL run fully offline, bundling the schema via @rqml/core.</statement>
+      </req>
+      <req id="REQ-CLI-SPEED" type="NFR" title="Interactive latency" status="draft" priority="should" appliesTo="cli">
+        <statement>
+          rqml check and rqml status SHALL complete quickly enough to run on every
+          editor save or agent turn, targeting under ~1s on a typical project.
+        </statement>
+      </req>
+    </reqPackage>
+
+    <reqPackage id="PKG-MCP" title="MCP server (rqml-mcp)" ownerRef="STK-TOOLBUILDERS">
+      <description>The agent-facing surface exposing core capabilities as MCP tools.</description>
+      <req id="REQ-MCP-SERVER" type="FR" title="MCP server" status="draft" priority="must" appliesTo="mcp">
+        <statement>
+          The toolchain SHALL provide an MCP server exposing RQML capabilities as
+          tools to coding agents.
+        </statement>
+      </req>
+      <req id="REQ-MCP-TOOLS" type="FR" title="Exposed tools" status="draft" priority="must" appliesTo="mcp">
+        <statement>
+          The MCP server SHALL expose at least validate, status, check, trace
+          query, and skeleton-generation tools, each backed by @rqml/core.
+        </statement>
+      </req>
+      <req id="REQ-MCP-PARITY" type="CR" title="CLI and MCP parity" status="draft" priority="must" appliesTo="mcp">
+        <statement>
+          For the same input, an MCP tool SHALL return results equivalent to the
+          corresponding rqml CLI command, since both are backed by one engine.
+        </statement>
+      </req>
+      <req id="REQ-MCP-READONLY" type="SR" title="No silent side effects" status="draft" priority="should" appliesTo="mcp">
+        <statement>
+          The MCP server SHALL treat the spec as read-mostly and SHALL NOT perform
+          irreversible filesystem actions without explicit caller intent.
+        </statement>
+      </req>
+    </reqPackage>
+
+    <reqPackage id="PKG-ENFORCEMENT" title="Spec-first enforcement" ownerRef="STK-TEAMS">
+      <description>
+        The deterministic primitives the toolchain provides so external control
+        loops (editor hooks, agent hooks, CI) can enforce spec-first development.
+        The agent-specific harness is specified in downstream integration repos.
+      </description>
+      <req id="REQ-ENFORCE-PRIMITIVES" type="PR" title="Enforcement primitives" status="draft" priority="must">
+        <statement>
+          The toolchain SHALL provide the deterministic primitives required to
+          enforce spec-first development externally — a check gate, a status
+          surface, and drift detection — so enforcement does not rely on voluntary
+          model compliance.
+        </statement>
+      </req>
+      <req id="REQ-ENFORCE-DETERMINISM" type="PR" title="Reproducible enforcement" status="draft" priority="must">
+        <statement>
+          Enforcement decisions SHALL be reproducible: the same document and
+          codebase SHALL yield the same check verdict on every run and machine.
+        </statement>
+      </req>
+      <req id="REQ-ENFORCE-AUTHOR-SPLIT" type="PR" title="Authoring vs. enforcement" status="draft" priority="should">
+        <statement>
+          Language-model assistance SHALL be confined to authoring and proposing
+          RQML content; it SHALL NOT be a required participant in the enforcement
+          gate.
+        </statement>
+      </req>
+      <req id="REQ-ENFORCE-CODE-TRACE" type="PR" title="Explicit code traceability" status="draft" priority="should">
+        <statement>
+          Implementation artifacts SHALL be linked to the requirements they realize
+          via implements trace edges using external locators, so drift can be
+          detected deterministically.
+        </statement>
+      </req>
+      <req id="REQ-ENFORCE-CERTIFIED" type="PR" title="Certified audit trail" status="draft" priority="should">
+        <statement>
+          Under the certified strictness level, the toolchain SHALL record an
+          append-only audit trail of enforcement checks suitable as compliance
+          evidence.
+        </statement>
+        <notes>Supports regulated domains such as IEC 62304 and ISO 26262.</notes>
+      </req>
+      <req id="REQ-ENFORCE-STRICTNESS" type="PR" title="Strictness-governed enforcement" status="draft" priority="should">
+        <statement>
+          Enforcement intensity SHALL be governed by the configured strictness
+          level (relaxed, standard, strict, certified).
+        </statement>
+      </req>
+    </reqPackage>
+
+  </requirements>
+
+  <!-- ============================================================= -->
+  <!-- BEHAVIOR — the lifecycle of an RQML artifact's status         -->
+  <!-- ============================================================= -->
+  <behavior>
+    <stateMachine id="SM-DOC-LIFECYCLE" name="Artifact Lifecycle" entityRef="ENT-DOC" initial="ST-DRAFT">
+      <description>
+        The status lifecycle shared by documents, requirements, goals, decisions,
+        and trace edges. Only the approved state should drive implementation.
+      </description>
+      <state id="ST-DRAFT" name="Draft" type="initial">
+        <description>Initial state; content is incomplete or unreviewed.</description>
+        <invariant>Not yet driving implementation.</invariant>
+      </state>
+      <state id="ST-REVIEW" name="Review">
+        <description>Under stakeholder review; awaiting feedback or approval.</description>
+        <onEntry>Notify reviewers.</onEntry>
+      </state>
+      <state id="ST-APPROVED" name="Approved">
+        <description>Formally accepted; ready for implementation.</description>
+        <invariant>May be referenced by implements trace edges.</invariant>
+      </state>
+      <state id="ST-DEPRECATED" name="Deprecated" type="final">
+        <description>No longer active; retained for historical reference.</description>
+        <onEntry>Record supersedes/deprecates trace edge to any replacement.</onEntry>
+      </state>
+      <transition id="TR-SUBMIT" from="ST-DRAFT" to="ST-REVIEW" event="submit">
+        <description>Author submits the artifact for review.</description>
+        <guard>Required fields are populated.</guard>
+      </transition>
+      <transition id="TR-APPROVE" from="ST-REVIEW" to="ST-APPROVED" event="approve">
+        <description>Reviewers accept the artifact.</description>
+        <guard>All blocking issues resolved.</guard>
+        <action>Record approval sign-off.</action>
+      </transition>
+      <transition id="TR-REVISE" from="ST-REVIEW" to="ST-DRAFT" event="revise">
+        <description>Reviewers request changes, returning the artifact to draft.</description>
+      </transition>
+      <transition id="TR-DEPRECATE-APPROVED" from="ST-APPROVED" to="ST-DEPRECATED" event="deprecate">
+        <description>An approved artifact is superseded or retired.</description>
+      </transition>
+      <transition id="TR-DEPRECATE-DRAFT" from="ST-DRAFT" to="ST-DEPRECATED" event="abandon">
+        <description>A draft artifact is abandoned.</description>
+      </transition>
+    </stateMachine>
+    <stateMachine id="SM-IMPL-STATUS" name="Implementation Link Lifecycle" entityRef="ENT-IMPL-LINK" initial="STIMPL-UNLINKED">
+      <description>
+        The lifecycle of a requirement's implementation as tracked deterministically
+        by rqml check via implements edges and their external locators.
+      </description>
+      <state id="STIMPL-UNLINKED" name="Unlinked" type="initial">
+        <description>No implements edge links the requirement to any code artifact.</description>
+        <invariant>Counts against implementation coverage.</invariant>
+      </state>
+      <state id="STIMPL-LINKED" name="Linked">
+        <description>An implements edge exists and its target artifact resolves.</description>
+      </state>
+      <state id="STIMPL-VERIFIED" name="Verified">
+        <description>The linked artifact resolves and its associated tests pass.</description>
+      </state>
+      <state id="STIMPL-DRIFTED" name="Drifted">
+        <description>The linked artifact is missing or has changed since the requirement was approved.</description>
+        <invariant>Blocks the check gate under strict and certified levels.</invariant>
+      </state>
+      <transition id="TRIMPL-LINK" from="STIMPL-UNLINKED" to="STIMPL-LINKED" event="link">
+        <description>An implements edge is added with a resolvable external locator.</description>
+      </transition>
+      <transition id="TRIMPL-VERIFY" from="STIMPL-LINKED" to="STIMPL-VERIFIED" event="verify">
+        <description>Verification tests for the requirement pass.</description>
+      </transition>
+      <transition id="TRIMPL-DRIFT-L" from="STIMPL-LINKED" to="STIMPL-DRIFTED" event="drift">
+        <description>The linked artifact goes missing or changes unexpectedly.</description>
+      </transition>
+      <transition id="TRIMPL-DRIFT-V" from="STIMPL-VERIFIED" to="STIMPL-DRIFTED" event="drift">
+        <description>A previously verified artifact changes after approval.</description>
+      </transition>
+      <transition id="TRIMPL-RECONCILE" from="STIMPL-DRIFTED" to="STIMPL-LINKED" event="reconcile">
+        <description>The spec or code is updated so the link resolves again.</description>
+      </transition>
+    </stateMachine>
+  </behavior>
+
+  <!-- ============================================================= -->
+  <!-- VERIFICATION                                                  -->
+  <!-- ============================================================= -->
+  <verification>
+    <testSuite id="TS-CONFORMANCE" title="RQML conformance suite">
+      <description>
+        Validates that a document conforms to the structural and referential
+        rules of the RQML 2.1.0 schema.
+      </description>
+    </testSuite>
+    <testSuite id="TS-TOOLCHAIN" title="Reference toolchain suite">
+      <description>
+        Validates the deterministic behavior, packaging, and contracts of the core
+        engine, CLI, and MCP server.
+      </description>
+    </testSuite>
+    <testCase id="TC-XSD-VALID" type="integration" title="Valid document passes XSD">
+      <purpose>Confirm a correct 2.1.0 document validates.</purpose>
+      <steps>Validate an example document (e.g. payments.rqml) against rqml-2.1.0.xsd.</steps>
+      <expected>No schema violations are reported.</expected>
+    </testCase>
+    <testCase id="TC-UNIQUE-ID" type="unit" title="Duplicate IDs rejected">
+      <purpose>Verify the allIds key constraint.</purpose>
+      <steps>Validate a document containing two elements with the same id.</steps>
+      <expected>Validation fails citing a duplicate key.</expected>
+    </testCase>
+    <testCase id="TC-TRACE-RESOLVE" type="unit" title="Dangling local trace rejected">
+      <purpose>Verify trace referential integrity.</purpose>
+      <steps>Validate a document whose local locator id is undeclared.</steps>
+      <expected>Validation fails on traceFromRef/traceToRef.</expected>
+    </testCase>
+    <testCase id="TC-SM-INITIAL" type="unit" title="Unresolved initial state rejected">
+      <purpose>Verify state-machine initial reference.</purpose>
+      <steps>Validate a state machine whose @initial names no declared state.</steps>
+      <expected>Validation fails on smInitialRef.</expected>
+    </testCase>
+    <testCase id="TC-MINIMAL-DOC" type="acceptance" title="Minimal document is valid">
+      <purpose>Confirm RQML scales down.</purpose>
+      <steps>Validate a document with only meta and one requirement.</steps>
+      <expected>Validation succeeds.</expected>
+    </testCase>
+    <testCase id="TC-CHECK-GATE" type="acceptance" title="Check gate fails on drift">
+      <purpose>Confirm rqml check gates on drift.</purpose>
+      <steps>Run rqml check on a project whose code has diverged from an implements-linked requirement.</steps>
+      <expected>The process exits non-zero and the report identifies the drifted link.</expected>
+    </testCase>
+    <testCase id="TC-CHECK-DETERMINISM" type="integration" title="Verdicts are reproducible">
+      <purpose>Verify deterministic enforcement.</purpose>
+      <steps>Run rqml check twice on identical inputs on two machines.</steps>
+      <expected>Both runs produce the same verdict and findings.</expected>
+    </testCase>
+    <testCase id="TC-DRIFT-DETECT" type="unit" title="Missing target is drift">
+      <purpose>Verify drift detection from implements locators.</purpose>
+      <steps>Resolve an implements edge whose external locator points to a missing artifact.</steps>
+      <expected>The link is reported as drifted.</expected>
+    </testCase>
+    <testCase id="TC-CORE-OFFLINE" type="integration" title="Validation works offline">
+      <purpose>Verify offline operation with the bundled schema.</purpose>
+      <steps>Validate a document with no network access.</steps>
+      <expected>Validation completes using the bundled schema.</expected>
+    </testCase>
+    <testCase id="TC-CORE-NO-DEPS" type="inspection" title="Core has no CLI or MCP deps">
+      <purpose>Verify the dependency-clean core boundary.</purpose>
+      <steps>Inspect the published @rqml/core dependency tree.</steps>
+      <expected>No CLI argument-parser or MCP SDK runtime dependencies are present.</expected>
+    </testCase>
+    <testCase id="TC-SCHEMA-URL" type="integration" title="Schema served at canonical URL">
+      <purpose>Verify the published-URL contract.</purpose>
+      <steps>Build the site and request /schema/2.1.0/rqml-2.1.0.xsd.</steps>
+      <expected>The canonical XSD is served at the stable URL.</expected>
+    </testCase>
+    <testCase id="TC-MCP-PARITY" type="integration" title="MCP and CLI agree">
+      <purpose>Verify single-engine parity.</purpose>
+      <steps>Run the MCP check tool and rqml check on the same project.</steps>
+      <expected>Both return equivalent results.</expected>
+    </testCase>
+  </verification>
+
+  <!-- ============================================================= -->
+  <!-- TRACE                                                         -->
+  <!-- ============================================================= -->
+  <trace>
+    <!-- Requirements satisfy goals -->
+    <edge id="E-DOC-PRIMARY" type="satisfies" confidence="0.9">
+      <from><locator><local id="REQ-REQUIRED-SECTIONS"/></locator></from>
+      <to><locator><local id="GOAL-PRIMARY-ARTIFACT"/></locator></to>
+    </edge>
+    <edge id="E-XML-LLM" type="satisfies" confidence="0.9">
+      <from><locator><local id="REQ-XML"/></locator></from>
+      <to><locator><local id="GOAL-LLM-CONTEXT"/></locator></to>
+    </edge>
+    <edge id="E-TRACE-GOAL" type="satisfies" confidence="0.95">
+      <from><locator><local id="REQ-TRACE-EDGE"/></locator></from>
+      <to><locator><local id="GOAL-TRACEABILITY"/></locator></to>
+    </edge>
+    <edge id="E-STRICT-LOW" type="satisfies" confidence="0.8">
+      <from><locator><local id="REQ-STRICTNESS"/></locator></from>
+      <to><locator><local id="GOAL-LOW-CEREMONY"/></locator></to>
+    </edge>
+    <edge id="E-LLMREAD-QGOAL" type="satisfies" confidence="0.9">
+      <from><locator><local id="REQ-LLM-READ"/></locator></from>
+      <to><locator><local id="QGOAL-LLM-READ"/></locator></to>
+    </edge>
+    <edge id="E-VALID-QGOAL" type="satisfies" confidence="0.9">
+      <from><locator><local id="REQ-VALIDATABLE"/></locator></from>
+      <to><locator><local id="QGOAL-VALIDATABLE"/></locator></to>
+    </edge>
+
+    <!-- Requirements depend on the decisions that motivate them -->
+    <edge id="E-XML-DEC" type="dependsOn" confidence="1.0">
+      <from><locator><local id="REQ-XML"/></locator></from>
+      <to><locator><local id="DEC-XML"/></locator></to>
+    </edge>
+    <edge id="E-MIXED-DEC" type="dependsOn" confidence="1.0">
+      <from><locator><local id="REQ-MIXED-CONTENT"/></locator></from>
+      <to><locator><local id="DEC-MIXED-CONTENT"/></locator></to>
+    </edge>
+    <edge id="E-TRACE-DEC" type="dependsOn" confidence="1.0">
+      <from><locator><local id="REQ-TRACE-LOCATORS"/></locator></from>
+      <to><locator><local id="DEC-TRACE-ENDPOINTS"/></locator></to>
+    </edge>
+    <edge id="E-SM-DEC" type="dependsOn" confidence="1.0">
+      <from><locator><local id="REQ-SM"/></locator></from>
+      <to><locator><local id="DEC-BEHAVIOR-FLAT"/></locator></to>
+    </edge>
+    <edge id="E-XML-CON" type="dependsOn" confidence="1.0">
+      <from><locator><local id="REQ-XML"/></locator></from>
+      <to><locator><local id="CON-XML"/></locator></to>
+    </edge>
+
+    <!-- Requirements mitigate risks / obstacles -->
+    <edge id="E-SPECFIRST-DRIFT" type="mitigates" confidence="0.8">
+      <from><locator><local id="REQ-SPEC-FIRST"/></locator></from>
+      <to><locator><local id="RISK-DRIFT"/></locator></to>
+    </edge>
+    <edge id="E-HUMAN-VERBOSITY" type="mitigates" confidence="0.7">
+      <from><locator><local id="REQ-HUMAN"/></locator></from>
+      <to><locator><local id="RISK-VERBOSITY"/></locator></to>
+    </edge>
+    <edge id="E-NORM-AMBIGUITY" type="mitigates" confidence="0.8">
+      <from><locator><local id="REQ-NORMATIVE-KEYWORDS"/></locator></from>
+      <to><locator><local id="RISK-AMBIGUITY"/></locator></to>
+    </edge>
+
+    <!-- Behavior refines the document entity -->
+    <edge id="E-SM-ENTITY" type="refines" confidence="0.9">
+      <from><locator><local id="SM-DOC-LIFECYCLE"/></locator></from>
+      <to><locator><local id="ENT-DOC"/></locator></to>
+    </edge>
+
+    <!-- Requirements verified by tests -->
+    <edge id="E-REQUIRED-TEST" type="verifiedBy">
+      <from><locator><local id="REQ-REQUIRED-SECTIONS"/></locator></from>
+      <to><locator><local id="TC-MINIMAL-DOC"/></locator></to>
+    </edge>
+    <edge id="E-IDUNIQUE-TEST" type="verifiedBy">
+      <from><locator><local id="REQ-ID-UNIQUE"/></locator></from>
+      <to><locator><local id="TC-UNIQUE-ID"/></locator></to>
+    </edge>
+    <edge id="E-INTEGRITY-TEST" type="verifiedBy">
+      <from><locator><local id="REQ-TRACE-INTEGRITY"/></locator></from>
+      <to><locator><local id="TC-TRACE-RESOLVE"/></locator></to>
+    </edge>
+    <edge id="E-SMINIT-TEST" type="verifiedBy">
+      <from><locator><local id="REQ-SM-INITIAL"/></locator></from>
+      <to><locator><local id="TC-SM-INITIAL"/></locator></to>
+    </edge>
+    <edge id="E-VERSION-TEST" type="verifiedBy">
+      <from><locator><local id="REQ-VERSION"/></locator></from>
+      <to><locator><local id="TC-XSD-VALID"/></locator></to>
+    </edge>
+
+    <!-- Conformance to external standards -->
+    <edge id="E-NORM-RFC2119" type="conformsTo">
+      <from><locator><local id="REQ-NORMATIVE-KEYWORDS"/></locator></from>
+      <to><locator><external uri="urn:ietf:rfc:2119" kind="standard" title="RFC 2119"/></locator></to>
+    </edge>
+    <edge id="E-RE-IEEE29148" type="conformsTo">
+      <from><locator><local id="GOAL-RE-OPERATIONALIZE"/></locator></from>
+      <to><locator><external uri="urn:iso:std:iso-iec-ieee:29148" kind="standard" title="ISO/IEC/IEEE 29148:2018"/></locator></to>
+    </edge>
+
+    <!-- Lifecycle: 2.1.0 trace model supersedes the 2.0.1 model -->
+    <edge id="E-TRACE-SUPERSEDES" type="supersedes">
+      <from><locator><local id="REQ-TRACE-EDGE"/></locator></from>
+      <to><locator><external uri="https://rqml.org/schema/rqml-2.0.1.xsd#traceEdge" kind="schema" title="RQML 2.0.1 traceEdge"/></locator></to>
+      <notes>2.1.0 replaced flat traceEdge attributes with structured from/to locators.</notes>
+    </edge>
+    <!-- Toolchain requirements satisfy toolchain goals -->
+    <edge id="E-PRIM-ENFORCE" type="satisfies" confidence="0.9">
+      <from><locator><local id="REQ-ENFORCE-PRIMITIVES"/></locator></from>
+      <to><locator><local id="GOAL-ENFORCEMENT"/></locator></to>
+    </edge>
+    <edge id="E-API-ENGINE" type="satisfies" confidence="0.9">
+      <from><locator><local id="REQ-CORE-API"/></locator></from>
+      <to><locator><local id="GOAL-REUSABLE-ENGINE"/></locator></to>
+    </edge>
+    <edge id="E-OFFLINE-GOAL" type="satisfies" confidence="0.85">
+      <from><locator><local id="REQ-CLI-OFFLINE"/></locator></from>
+      <to><locator><local id="GOAL-OFFLINE-FAST"/></locator></to>
+    </edge>
+    <edge id="E-DETERMINISM-QGOAL" type="satisfies" confidence="0.9">
+      <from><locator><local id="REQ-ENFORCE-DETERMINISM"/></locator></from>
+      <to><locator><local id="QGOAL-DETERMINISTIC"/></locator></to>
+    </edge>
+    <edge id="E-SPEED-QGOAL" type="satisfies" confidence="0.8">
+      <from><locator><local id="REQ-CLI-SPEED"/></locator></from>
+      <to><locator><local id="QGOAL-CHECK-SPEED"/></locator></to>
+    </edge>
+
+    <!-- Toolchain requirements depend on the decisions that motivate them -->
+    <edge id="E-WORKSPACE-DEC" type="dependsOn" confidence="1.0">
+      <from><locator><local id="REQ-WORKSPACE"/></locator></from>
+      <to><locator><local id="DEC-MONOREPO"/></locator></to>
+    </edge>
+    <edge id="E-NOLLM-DEC" type="dependsOn" confidence="1.0">
+      <from><locator><local id="REQ-CORE-NO-LLM"/></locator></from>
+      <to><locator><local id="DEC-DETERMINISTIC-CHECK"/></locator></to>
+    </edge>
+    <edge id="E-DRIFT-DEC" type="dependsOn" confidence="1.0">
+      <from><locator><local id="REQ-CORE-DRIFT"/></locator></from>
+      <to><locator><local id="DEC-EXPLICIT-TRACE"/></locator></to>
+    </edge>
+    <edge id="E-CANON-DEC" type="dependsOn" confidence="1.0">
+      <from><locator><local id="REQ-SCHEMA-CANONICAL"/></locator></from>
+      <to><locator><local id="DEC-SCHEMA-PACKAGE"/></locator></to>
+    </edge>
+    <edge id="E-VERDEC-DEC" type="dependsOn" confidence="1.0">
+      <from><locator><local id="REQ-VERSION-DECOUPLE"/></locator></from>
+      <to><locator><local id="DEC-VERSION-DECOUPLE"/></locator></to>
+    </edge>
+    <edge id="E-MCP-CORE-API" type="dependsOn" confidence="0.9">
+      <from><locator><local id="REQ-MCP-PARITY"/></locator></from>
+      <to><locator><local id="REQ-CORE-API"/></locator></to>
+    </edge>
+    <edge id="E-GATE-DRIFT" type="dependsOn" confidence="0.9">
+      <from><locator><local id="REQ-CLI-CHECK-GATE"/></locator></from>
+      <to><locator><local id="REQ-CORE-DRIFT"/></locator></to>
+    </edge>
+
+    <!-- Toolchain requirements mitigate toolchain risks -->
+    <edge id="E-NOLLM-RISK" type="mitigates" confidence="0.9">
+      <from><locator><local id="REQ-CORE-NO-LLM"/></locator></from>
+      <to><locator><local id="RISK-LLM-GATE"/></locator></to>
+    </edge>
+    <edge id="E-CANON-RISK" type="mitigates" confidence="0.9">
+      <from><locator><local id="REQ-SCHEMA-CANONICAL"/></locator></from>
+      <to><locator><local id="RISK-SCHEMA-COPY"/></locator></to>
+    </edge>
+    <edge id="E-COREDEPS-RISK" type="mitigates" confidence="0.9">
+      <from><locator><local id="REQ-CORE-DEPS"/></locator></from>
+      <to><locator><local id="RISK-CORE-BLOAT"/></locator></to>
+    </edge>
+    <edge id="E-PRIM-DRIFT" type="mitigates" confidence="0.8">
+      <from><locator><local id="REQ-ENFORCE-PRIMITIVES"/></locator></from>
+      <to><locator><local id="RISK-DRIFT"/></locator></to>
+    </edge>
+
+    <!-- Toolchain requirements verified by toolchain tests -->
+    <edge id="E-GATE-TEST" type="verifiedBy">
+      <from><locator><local id="REQ-CLI-CHECK-GATE"/></locator></from>
+      <to><locator><local id="TC-CHECK-GATE"/></locator></to>
+    </edge>
+    <edge id="E-DETERMINISM-TEST" type="verifiedBy">
+      <from><locator><local id="REQ-ENFORCE-DETERMINISM"/></locator></from>
+      <to><locator><local id="TC-CHECK-DETERMINISM"/></locator></to>
+    </edge>
+    <edge id="E-DRIFT-TEST" type="verifiedBy">
+      <from><locator><local id="REQ-CORE-DRIFT"/></locator></from>
+      <to><locator><local id="TC-DRIFT-DETECT"/></locator></to>
+    </edge>
+    <edge id="E-OFFLINE-TEST" type="verifiedBy">
+      <from><locator><local id="REQ-CLI-OFFLINE"/></locator></from>
+      <to><locator><local id="TC-CORE-OFFLINE"/></locator></to>
+    </edge>
+    <edge id="E-COREDEPS-TEST" type="verifiedBy">
+      <from><locator><local id="REQ-CORE-DEPS"/></locator></from>
+      <to><locator><local id="TC-CORE-NO-DEPS"/></locator></to>
+    </edge>
+    <edge id="E-SCHEMAURL-TEST" type="verifiedBy">
+      <from><locator><local id="REQ-SCHEMA-URLS"/></locator></from>
+      <to><locator><local id="TC-SCHEMA-URL"/></locator></to>
+    </edge>
+    <edge id="E-PARITY-TEST" type="verifiedBy">
+      <from><locator><local id="REQ-MCP-PARITY"/></locator></from>
+      <to><locator><local id="TC-MCP-PARITY"/></locator></to>
+    </edge>
+
+    <!-- Behavior refines the implementation-link entity -->
+    <edge id="E-SMIMPL-ENTITY" type="refines" confidence="0.9">
+      <from><locator><local id="SM-IMPL-STATUS"/></locator></from>
+      <to><locator><local id="ENT-IMPL-LINK"/></locator></to>
+    </edge>
+
+    <!-- Certified enforcement conforms to a regulated-domain standard -->
+    <edge id="E-CERT-IEC62304" type="conformsTo">
+      <from><locator><local id="REQ-ENFORCE-CERTIFIED"/></locator></from>
+      <to><locator><external uri="urn:iec:std:62304" kind="standard" title="IEC 62304"/></locator></to>
+    </edge>
+  </trace>
+
+  <!-- ============================================================= -->
+  <!-- GOVERNANCE                                                    -->
+  <!-- ============================================================= -->
+  <governance>
+    <issue id="ISS-HIERARCHICAL" status="review" owner="STK-MAINTAINER">
+      <statement>
+        Should the behavior section eventually support hierarchical or parallel
+        (AND) states beyond the current flat model?
+      </statement>
+      <notes>Deferred in RFC-0002 as a possible future RFC to preserve LLM legibility.</notes>
+    </issue>
+    <issue id="ISS-GUARD-LANG" status="review" owner="STK-MAINTAINER">
+      <statement>
+        Should transition guards adopt a small structured expression language
+        instead of free text?
+      </statement>
+      <notes>Open question in RFC-0002; free text risks ambiguity (RISK-AMBIGUITY).</notes>
+    </issue>
+    <issue id="ISS-INTERFACES-NA" status="approved" owner="STK-MAINTAINER">
+      <statement>
+        The interfaces section is intentionally omitted from this self-spec:
+        RQML is a format, not a running service with APIs or events.
+      </statement>
+      <notes>Resolved: omission is correct and schema-valid (interfaces is optional).</notes>
+    </issue>
+    <issue id="ISS-IMPL-TRACE" status="review" owner="STK-TOOLBUILDERS">
+      <statement>
+        implements trace edges to source files will be added as core, cli, and mcp
+        are built; until then implementation coverage is intentionally zero and
+        rqml check will report the toolchain packages as unimplemented.
+      </statement>
+      <notes>This is the dogfood baseline: the spec leads the code.</notes>
+    </issue>
+    <issue id="ISS-PLUGIN-SCOPE" status="approved" owner="STK-MAINTAINER">
+      <statement>
+        The Claude Code plugin and hooks that consume these primitives are
+        specified in a separate integration repository, not here. This document
+        specifies only the in-repo toolchain that provides the primitives.
+      </statement>
+      <notes>Keeps the self-spec focused on the rqml monorepo.</notes>
+    </issue>
+    <issue id="ISS-MCP-PACKAGE" status="approved" owner="STK-TOOLBUILDERS">
+      <statement>
+        The MCP server is shipped as its own package (@rqml/mcp) rather than as a
+        CLI subcommand.
+      </statement>
+      <notes>Resolved in favor of three packages: core, cli, mcp.</notes>
+    </issue>
+    <approval id="APR-MAINTAINER" role="RQML Maintainer" status="review">
+      <description>Maintainer sign-off on the RQML self-specification.</description>
+    </approval>
+  </governance>
+
+</rqml>

@@ -1,4 +1,22 @@
-.github
-
 .DS_Store
 **/.DS_Store
+
+# dependencies
+node_modules/
+**/node_modules/
+
+# build output
+dist/
+**/dist/
+.turbo/
+**/.turbo/
+
+# docusaurus
+**/.docusaurus/
+**/build/
+**/.firebase/
+
+# logs / env
+*.log
+.env
+.env.*
