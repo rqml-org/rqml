@@ -113,7 +113,8 @@ export async function callTool(
       const baseDir = typeof args.baseDir === "string" ? args.baseDir : undefined;
       const coverage = parsed.ok ? computeCoverage(parsed.document) : undefined;
       const drift = parsed.ok ? detectDrift(parsed.document, { baseDir }) : undefined;
-      const strictness = typeof args.strictness === "string" ? args.strictness : "standard";
+      const strictness =
+        typeof args.strictness === "string" ? args.strictness : "standard";
       const coverageBlocks = strictness === "strict" || strictness === "certified";
       const validationFailed = !validation.valid || integrity.length > 0;
       const driftFailed = (drift?.drifted.length ?? 0) > 0;
@@ -123,8 +124,7 @@ export async function callTool(
           (coverage?.orphanRequirements.length ?? 0) >
         0;
       const coverageFailed = coverageBlocks && coverageProblem;
-      const verdict =
-        validationFailed || driftFailed || coverageFailed ? "fail" : "pass";
+      const verdict = validationFailed || driftFailed || coverageFailed ? "fail" : "pass";
       return {
         verdict,
         strictness,

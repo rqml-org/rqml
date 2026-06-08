@@ -1,10 +1,10 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { parse } from "../src/parse/parse.js";
-import { buildOutline } from "../src/export/outline.js";
 import { outlineToMarkdown, toMarkdown } from "../src/export/markdown.js";
+import { buildOutline } from "../src/export/outline.js";
 import type { RqmlDocument } from "../src/model/types.js";
+import { parse } from "../src/parse/parse.js";
 
 const carrental = readFileSync(
   fileURLToPath(new URL("../../schema/examples/carrental.rqml", import.meta.url)),
@@ -79,9 +79,7 @@ describe("buildOutline", () => {
 
   it("is deterministic", () => {
     const doc = parseOk(carrental);
-    expect(JSON.stringify(buildOutline(doc))).toBe(
-      JSON.stringify(buildOutline(doc)),
-    );
+    expect(JSON.stringify(buildOutline(doc))).toBe(JSON.stringify(buildOutline(doc)));
   });
 
   it("resolves cross-section ref target titles", () => {

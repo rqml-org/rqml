@@ -2,15 +2,11 @@ import { readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { parse } from "../src/parse/parse.js";
-import { serialize } from "../src/parse/serialize.js";
 import { getRawSections } from "../src/parse/raw.js";
+import { serialize } from "../src/parse/serialize.js";
 
-const examplesDir = fileURLToPath(
-  new URL("../../schema/examples/", import.meta.url),
-);
-const localFixture = fileURLToPath(
-  new URL("./fixtures/rqml-core.rqml", import.meta.url),
-);
+const examplesDir = fileURLToPath(new URL("../../schema/examples/", import.meta.url));
+const localFixture = fileURLToPath(new URL("./fixtures/rqml-core.rqml", import.meta.url));
 
 const docs: Array<{ name: string; xml: string }> = readdirSync(examplesDir)
   .filter((f) => f.endsWith(".rqml"))
@@ -72,9 +68,7 @@ describe("section completeness (carrental)", () => {
     expect(states.some((s) => s.type === "normal")).toBe(true);
     expect(states.some((s) => s.type === "final")).toBe(true);
     for (const s of states) {
-      expect(Object.prototype.hasOwnProperty.call(s, "type")).toBe(
-        s.type !== undefined,
-      );
+      expect(Object.prototype.hasOwnProperty.call(s, "type")).toBe(s.type !== undefined);
     }
   });
 
@@ -104,7 +98,9 @@ describe("section completeness (carrental)", () => {
       expect(docLocator.docId).toBeDefined();
       expect(docLocator.version).toBeDefined();
     }
-    expect(doc.trace.some((e) => e.from.kind === "external" || e.to.kind === "external")).toBe(true);
+    expect(
+      doc.trace.some((e) => e.from.kind === "external" || e.to.kind === "external"),
+    ).toBe(true);
   });
 });
 

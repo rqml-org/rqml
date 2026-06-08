@@ -128,6 +128,7 @@ function matchLines(xml: string, starts: number[], re: RegExp): number[] {
   const lines: number[] = [];
   re.lastIndex = 0;
   let m: RegExpExecArray | null;
+  // biome-ignore lint/suspicious/noAssignInExpressions: idiomatic global-regex exec loop
   while ((m = re.exec(xml)) !== null) {
     lines.push(lineAtOffset(starts, m.index));
     if (m.index === re.lastIndex) re.lastIndex++;
@@ -186,7 +187,10 @@ export function checkIntegrity(xml: string): Diagnostic[] {
   for (const ref of refs) {
     if (ref.refId === "" || declaredSet.has(ref.refId)) continue;
     const re = ref.flat
-      ? new RegExp(`<traceEdge\\b[^>]*?\\s${ref.side}\\s*=\\s*"${escapeRegExp(ref.refId)}"`, "g")
+      ? new RegExp(
+          `<traceEdge\\b[^>]*?\\s${ref.side}\\s*=\\s*"${escapeRegExp(ref.refId)}"`,
+          "g",
+        )
       : new RegExp(`<local\\b[^>]*?\\sid\\s*=\\s*"${escapeRegExp(ref.refId)}"`, "g");
     const lines = matchLines(xml, starts, re);
     const diag: Diagnostic = {

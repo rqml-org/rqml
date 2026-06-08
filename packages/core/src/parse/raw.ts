@@ -18,8 +18,6 @@ export function setRawSections(
   rawSections.set(doc, sections);
 }
 
-export function getRawSections(
-  doc: RqmlDocument,
-): Record<string, unknown> | undefined {
+export function getRawSections(doc: RqmlDocument): Record<string, unknown> | undefined {
   return rawSections.get(doc);
 }

@@ -53,7 +53,9 @@ export function parseArgs(rest: string[]): Args {
   }
   const strictness = String(flags.get("strictness") ?? "standard") as Strictness;
   if (!STRICTNESS.has(strictness)) {
-    throw new UsageError(`unknown strictness "${strictness}" (relaxed|standard|strict|certified)`);
+    throw new UsageError(
+      `unknown strictness "${strictness}" (relaxed|standard|strict|certified)`,
+    );
   }
   return {
     positionals,

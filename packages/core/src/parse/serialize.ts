@@ -50,13 +50,11 @@ const ATTR_PREFIX = "@_";
 const XSI = "http://www.w3.org/2001/XMLSchema-instance";
 const NS_210 = {
   xmlns: "https://rqml.org/schema/2.1.0",
-  schemaLocation:
-    "https://rqml.org/schema/2.1.0 https://rqml.org/schema/rqml-2.1.0.xsd",
+  schemaLocation: "https://rqml.org/schema/2.1.0 https://rqml.org/schema/rqml-2.1.0.xsd",
 };
 const NS_201 = {
   xmlns: "https://rqml.org/schema/2.0.1",
-  schemaLocation:
-    "https://rqml.org/schema/2.0.1 https://rqml.org/schema/rqml-2.0.1.xsd",
+  schemaLocation: "https://rqml.org/schema/2.0.1 https://rqml.org/schema/rqml-2.0.1.xsd",
 };
 
 function namespaceFor(version: string): { xmlns: string; schemaLocation: string } {

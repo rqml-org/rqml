@@ -1,3 +1,4 @@
+import agentsTemplate from "../templates/AGENTS.md";
 /**
  * @rqml/schema — the single canonical source of every RQML schema version.
  *
@@ -10,7 +11,6 @@
  */
 import xsd201 from "../versions/2.0.1/rqml-2.0.1.xsd";
 import xsd210 from "../versions/2.1.0/rqml-2.1.0.xsd";
-import agentsTemplate from "../templates/AGENTS.md";
 
 /** Supported RQML schema versions, oldest first, newest-supported last. */
 export const SCHEMA_VERSIONS = ["2.0.1", "2.1.0"] as const;

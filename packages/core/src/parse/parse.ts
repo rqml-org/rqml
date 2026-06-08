@@ -232,9 +232,7 @@ function parseMeta(node: unknown): Meta {
   };
   const summary = text(child(node, "summary"));
   if (summary !== undefined) meta.summary = summary;
-  meta.authors = asArray(child(child(node, "authors"), "author")).map(
-    parseAuthor,
-  );
+  meta.authors = asArray(child(child(node, "authors"), "author")).map(parseAuthor);
 
   const datesNode = child(node, "dates");
   if (isNode(datesNode)) {
@@ -258,9 +256,7 @@ function parseMeta(node: unknown): Meta {
     if (Object.keys(conv).length > 0) meta.conventions = conv;
   }
 
-  const profiles = asArray(child(child(node, "profiles"), "profile")).map(
-    parseProfile,
-  );
+  const profiles = asArray(child(child(node, "profiles"), "profile")).map(parseProfile);
   if (profiles.length > 0) meta.profiles = profiles;
 
   return meta;
@@ -364,12 +360,8 @@ function parseCatalogs(node: unknown): Catalogs | undefined {
   const c: Catalogs = {};
   const glossary = collect(node.glossary, "term").map(parseTerm);
   const actors = collect(node.actors, "actor").map(parseActor);
-  const stakeholders = collect(node.stakeholders, "stakeholder").map(
-    parseStakeholder,
-  );
-  const constraints = collect(node.constraints, "constraint").map(
-    parseConstraint,
-  );
+  const stakeholders = collect(node.stakeholders, "stakeholder").map(parseStakeholder);
+  const constraints = collect(node.constraints, "constraint").map(parseConstraint);
   const policies = collect(node.policies, "policy").map(parsePolicy);
   const decisions = collect(node.decisions, "decision").map(parseDecision);
   const risks = collect(node.risks, "risk").map(parseRisk);

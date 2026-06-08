@@ -3,7 +3,9 @@ import type { Diagnostic } from "@rqml/core";
 /** Render a normalized diagnostic as a single human-readable line. */
 export function formatDiagnostic(d: Diagnostic): string {
   const loc =
-    d.line !== undefined ? `:${d.line}${d.column !== undefined ? `:${d.column}` : ""}` : "";
+    d.line !== undefined
+      ? `:${d.line}${d.column !== undefined ? `:${d.column}` : ""}`
+      : "";
   const rule = d.rule !== undefined ? ` [${d.rule}]` : "";
   return `  ${d.severity}${loc} (${d.source})${rule}: ${d.message}`;
 }

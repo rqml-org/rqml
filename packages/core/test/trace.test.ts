@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { declaredIdIndex, resolveTrace } from "../src/trace/index.js";
 import type { RqmlDocument, TraceEdge } from "../src/model/types.js";
+import { declaredIdIndex, resolveTrace } from "../src/trace/index.js";
 
 function edge(id: string, fromId: string, toId: string): TraceEdge {
   return {

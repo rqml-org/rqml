@@ -15,7 +15,8 @@ export async function runStatus(rest: string[]): Promise<number> {
   const lintDiags = lint(doc);
   const trace = resolveTrace(doc);
   const reqCount =
-    doc.packages.reduce((n, p) => n + p.requirements.length, 0) + doc.looseRequirements.length;
+    doc.packages.reduce((n, p) => n + p.requirements.length, 0) +
+    doc.looseRequirements.length;
 
   const summary = {
     path,

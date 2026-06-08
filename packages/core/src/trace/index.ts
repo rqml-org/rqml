@@ -1,12 +1,12 @@
 import type { Diagnostic } from "../model/diagnostic.js";
 import {
-  allRequirements,
-  declaredElements,
   type ElementRef,
   type Locator,
   type Requirement,
   type RqmlDocument,
   type TraceEdge,
+  allRequirements,
+  declaredElements,
 } from "../model/types.js";
 
 /** A trace endpoint resolved against the document's declared elements. */

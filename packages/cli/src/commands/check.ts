@@ -1,6 +1,6 @@
 import { checkIntegrity, computeCoverage, detectDrift, parse } from "@rqml/core";
 import { printDiagnostics } from "../report.js";
-import { EXIT, parseArgs, readSpec, type Strictness } from "../runtime.js";
+import { EXIT, type Strictness, parseArgs, readSpec } from "../runtime.js";
 
 /** Coverage findings block the gate at strict and certified levels. */
 function coverageBlocks(strictness: Strictness): boolean {
@@ -23,7 +23,9 @@ export async function runCheck(rest: string[]): Promise<number> {
 
   const parsed = parse(xml);
   const coverage = parsed.ok ? computeCoverage(parsed.document) : undefined;
-  const drift = parsed.ok ? detectDrift(parsed.document, { baseDir: args.baseDir }) : undefined;
+  const drift = parsed.ok
+    ? detectDrift(parsed.document, { baseDir: args.baseDir })
+    : undefined;
 
   const validationFailed = !validation.valid || integrity.length > 0;
   const driftFailed = (drift?.drifted.length ?? 0) > 0;

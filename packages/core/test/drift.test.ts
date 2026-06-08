@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { detectDrift, implementsLinks } from "../src/check/drift.js";
-import { parse } from "../src/parse/parse.js";
 import type { RqmlDocument } from "../src/model/types.js";
+import { parse } from "../src/parse/parse.js";
 
 // Two implements links: one to code that exists, one to code that is gone.
 const DOC = `<?xml version="1.0" encoding="UTF-8"?>
@@ -60,7 +60,9 @@ describe("detectDrift", () => {
   it("treats changed artifacts as drift too", () => {
     const report = detectDrift(doc(), { resolve: () => "changed" });
     expect(report.drifted).toHaveLength(2);
-    expect(report.diagnostics.every((d) => d.rule === "changed-implementation")).toBe(true);
+    expect(report.diagnostics.every((d) => d.rule === "changed-implementation")).toBe(
+      true,
+    );
   });
 
   it("is clean when every artifact resolves", () => {

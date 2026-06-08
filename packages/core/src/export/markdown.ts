@@ -6,10 +6,10 @@
 
 import type { RqmlDocument } from "../model/types.js";
 import {
-  buildOutline,
   type DocumentOutline,
   type OutlineField,
   type OutlineNode,
+  buildOutline,
 } from "./outline.js";
 
 export interface MarkdownOptions {
@@ -106,9 +106,7 @@ export function outlineToMarkdown(
 
     const children = section.children ?? [];
     const isTrace =
-      traceAsTable &&
-      children.length > 0 &&
-      children.every((c) => c.kind === "edge");
+      traceAsTable && children.length > 0 && children.every((c) => c.kind === "edge");
     if (isTrace) {
       lines.push(...renderTraceTable(children));
       lines.push("");
@@ -127,9 +125,6 @@ export function outlineToMarkdown(
  * `outlineToMarkdown(buildOutline(doc), opts)` — build the {@link DocumentOutline}
  * yourself if you also need it in another form.
  */
-export function toMarkdown(
-  doc: RqmlDocument,
-  opts: MarkdownOptions = {},
-): string {
+export function toMarkdown(doc: RqmlDocument, opts: MarkdownOptions = {}): string {
   return outlineToMarkdown(buildOutline(doc), opts);
 }

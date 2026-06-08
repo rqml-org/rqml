@@ -24,11 +24,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
   try {
     const result = await callTool(name, args ?? {});
-    return { content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }] };
+    return {
+      content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
+    };
   } catch (err) {
     return {
       isError: true,
-      content: [{ type: "text" as const, text: err instanceof Error ? err.message : String(err) }],
+      content: [
+        { type: "text" as const, text: err instanceof Error ? err.message : String(err) },
+      ],
     };
   }
 });

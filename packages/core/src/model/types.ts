@@ -11,16 +11,7 @@
 
 export type ReqStatus = "draft" | "review" | "approved" | "deprecated";
 export type Priority = "must" | "should" | "may";
-export type ReqType =
-  | "FR"
-  | "NFR"
-  | "IR"
-  | "DR"
-  | "SR"
-  | "CR"
-  | "PR"
-  | "UXR"
-  | "OR";
+export type ReqType = "FR" | "NFR" | "IR" | "DR" | "SR" | "CR" | "PR" | "UXR" | "OR";
 
 export type TraceType =
   | "refines"
@@ -491,10 +482,7 @@ export interface RqmlDocument {
 
 /** Convenience: every requirement in the document, regardless of grouping. */
 export function allRequirements(doc: RqmlDocument): Requirement[] {
-  return [
-    ...doc.packages.flatMap((p) => p.requirements),
-    ...doc.looseRequirements,
-  ];
+  return [...doc.packages.flatMap((p) => p.requirements), ...doc.looseRequirements];
 }
 
 /** A reference to any id-bearing element, tagged with its element kind. */

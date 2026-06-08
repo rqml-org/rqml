@@ -12,7 +12,8 @@
       "**/*.xsd",
       "**/.docusaurus/**",
       "**/build/**",
-      "apps/website/**"
+      "apps/website/**",
+      ".vscode/**"
     ]
   },
   "formatter": {
@@ -27,7 +28,10 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true
+      "recommended": true,
+      "suspicious": {
+        "noThenProperty": "off"
+      }
     }
   },
   "javascript": {

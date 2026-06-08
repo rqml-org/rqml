@@ -8,13 +8,8 @@
  * outgoing references with target titles and a resolved/dangling flag.
  */
 
-import {
-  type Criterion,
-  type Locator,
-  type Requirement,
-  type RqmlDocument,
-} from "../model/types.js";
-import { resolveTrace, type ResolvedEndpoint } from "../trace/index.js";
+import type { Criterion, Locator, Requirement, RqmlDocument } from "../model/types.js";
+import { type ResolvedEndpoint, resolveTrace } from "../trace/index.js";
 
 export interface OutlineField {
   label: string;
@@ -152,10 +147,7 @@ function endpointTitle(
   return undefined;
 }
 
-function endpointLabel(
-  ep: ResolvedEndpoint,
-  titleById: Map<string, string>,
-): string {
+function endpointLabel(ep: ResolvedEndpoint, titleById: Map<string, string>): string {
   let s = locatorLabel(ep.locator);
   const hint = endpointTitle(ep, titleById);
   if (hint !== undefined) s += ` (${hint})`;
@@ -236,10 +228,7 @@ export function buildOutline(doc: RqmlDocument): DocumentOutline {
           "term",
           t.id,
           t.name,
-          fields(
-            ["Definition", t.definition],
-            ["Synonyms", t.synonyms?.join(", ")],
-          ),
+          fields(["Definition", t.definition], ["Synonyms", t.synonyms?.join(", ")]),
         ),
       ),
     );
@@ -353,11 +342,10 @@ export function buildOutline(doc: RqmlDocument): DocumentOutline {
     const ruleNodes = (dom.businessRules ?? []).map((r) =>
       node("rule", r.id, r.statement, fields(["Examples", r.examples])),
     );
-    pushSection(
-      "Domain",
-      fields(["Overview", dom.overview]),
-      [...entityNodes, ...ruleNodes],
-    );
+    pushSection("Domain", fields(["Overview", dom.overview]), [
+      ...entityNodes,
+      ...ruleNodes,
+    ]);
   }
 
   // --- Goals ---
@@ -437,13 +425,15 @@ export function buildOutline(doc: RqmlDocument): DocumentOutline {
   // --- Scenarios ---
   const sc = doc.scenarios;
   if (sc) {
-    const scNode = (kind: string) => (s: { id: string; title: string; actorRef?: string; narrative: string }) =>
-      node(
-        kind,
-        s.id,
-        s.title,
-        fields(["Actor", s.actorRef], ["Narrative", s.narrative]),
-      );
+    const scNode =
+      (kind: string) =>
+      (s: { id: string; title: string; actorRef?: string; narrative: string }) =>
+        node(
+          kind,
+          s.id,
+          s.title,
+          fields(["Actor", s.actorRef], ["Narrative", s.narrative]),
+        );
     pushSection("Scenarios", [], (sc.scenarios ?? []).map(scNode("scenario")));
     pushSection("Misuse cases", [], (sc.misuseCases ?? []).map(scNode("misuseCase")));
     pushSection("Edge cases", [], (sc.edgeCases ?? []).map(scNode("edgeCase")));

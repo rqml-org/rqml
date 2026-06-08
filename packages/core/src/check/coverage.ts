@@ -1,9 +1,9 @@
 import type { Diagnostic } from "../model/diagnostic.js";
 import {
-  allRequirements,
   type ElementRef,
   type RqmlDocument,
   type TraceType,
+  allRequirements,
 } from "../model/types.js";
 import { declaredIdIndex, resolveTrace } from "../trace/index.js";
 
@@ -44,8 +44,17 @@ const UPWARD_TARGET_KINDS = new Set([
   "edgeCase",
 ]);
 
-function add(group: Partial<Record<TraceType, string[]>>, type: TraceType, edgeId: string) {
-  (group[type] ??= []).push(edgeId);
+function add(
+  group: Partial<Record<TraceType, string[]>>,
+  type: TraceType,
+  edgeId: string,
+) {
+  const existing = group[type];
+  if (existing) {
+    existing.push(edgeId);
+  } else {
+    group[type] = [edgeId];
+  }
 }
 
 function sortGroups(group: Partial<Record<TraceType, string[]>>) {
@@ -72,19 +81,18 @@ export function computeCoverage(doc: RqmlDocument): CoverageReport {
   };
 
   for (const edge of doc.trace) {
-    if (edge.from.kind === "local") add(ensure(outgoing, edge.from.id), edge.type, edge.id);
+    if (edge.from.kind === "local")
+      add(ensure(outgoing, edge.from.id), edge.type, edge.id);
     if (edge.to.kind === "local") add(ensure(incoming, edge.to.id), edge.type, edge.id);
   }
 
-  const requirements: ArtifactCoverage[] = [...reqIds]
-    .sort()
-    .map((id) => {
-      const out = outgoing.get(id) ?? {};
-      const inc = incoming.get(id) ?? {};
-      sortGroups(out);
-      sortGroups(inc);
-      return { id, outgoing: out, incoming: inc };
-    });
+  const requirements: ArtifactCoverage[] = [...reqIds].sort().map((id) => {
+    const out = outgoing.get(id) ?? {};
+    const inc = incoming.get(id) ?? {};
+    sortGroups(out);
+    sortGroups(inc);
+    return { id, outgoing: out, incoming: inc };
+  });
 
   // Goals/qgoals with no incoming `satisfies` edge.
   const uncoveredGoals: string[] = [];
@@ -116,13 +124,37 @@ export function computeCoverage(doc: RqmlDocument): CoverageReport {
 
   const diagnostics: Diagnostic[] = [];
   for (const id of uncoveredGoals)
-    diagnostics.push(finding("coverage", "uncovered-goal", `Goal "${id}" has no satisfying requirement.`));
+    diagnostics.push(
+      finding(
+        "coverage",
+        "uncovered-goal",
+        `Goal "${id}" has no satisfying requirement.`,
+      ),
+    );
   for (const id of unverifiedRequirements)
-    diagnostics.push(finding("coverage", "unverified-requirement", `Requirement "${id}" has no verification edge.`));
+    diagnostics.push(
+      finding(
+        "coverage",
+        "unverified-requirement",
+        `Requirement "${id}" has no verification edge.`,
+      ),
+    );
   for (const id of unimplementedRequirements)
-    diagnostics.push(finding("coverage", "unimplemented-requirement", `Requirement "${id}" has no implementation link.`));
+    diagnostics.push(
+      finding(
+        "coverage",
+        "unimplemented-requirement",
+        `Requirement "${id}" has no implementation link.`,
+      ),
+    );
   for (const id of orphanRequirements)
-    diagnostics.push(finding("coverage", "orphan-requirement", `Requirement "${id}" satisfies no goal or scenario.`));
+    diagnostics.push(
+      finding(
+        "coverage",
+        "orphan-requirement",
+        `Requirement "${id}" satisfies no goal or scenario.`,
+      ),
+    );
   // Fold in dangling local-reference diagnostics (REQ-CORE-COVERAGE).
   diagnostics.push(...resolveTrace(doc).diagnostics);
 
@@ -136,6 +168,10 @@ export function computeCoverage(doc: RqmlDocument): CoverageReport {
   };
 }
 
-function finding(source: Diagnostic["source"], rule: string, message: string): Diagnostic {
+function finding(
+  source: Diagnostic["source"],
+  rule: string,
+  message: string,
+): Diagnostic {
   return { source, severity: "warning", rule, message };
 }

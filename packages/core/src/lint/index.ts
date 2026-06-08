@@ -1,5 +1,5 @@
 import type { Diagnostic, DiagnosticSeverity } from "../model/diagnostic.js";
-import { allRequirements, type RqmlDocument } from "../model/types.js";
+import { type RqmlDocument, allRequirements } from "../model/types.js";
 
 /**
  * How aggressively lint rules report. Strictness scales a rule's severity
@@ -31,10 +31,7 @@ function scaleSeverity(
 }
 
 /** Requirements with no acceptance criteria are unverifiable. Nominal: warning. */
-function missingAcceptance(
-  doc: RqmlDocument,
-  strictness: Strictness,
-): Diagnostic[] {
+function missingAcceptance(doc: RqmlDocument, strictness: Strictness): Diagnostic[] {
   const severity = scaleSeverity("warning", strictness);
   if (severity === undefined) return [];
   return allRequirements(doc)

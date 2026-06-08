@@ -1,9 +1,9 @@
 import {
+  type ErrorDetail,
   XmlDocument,
   XmlParseError,
   XmlValidateError,
   XsdValidator,
-  type ErrorDetail,
 } from "libxml2-wasm";
 import type { Diagnostic, ValidationResult } from "../model/diagnostic.js";
 import {

@@ -1,9 +1,9 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { allRequirements } from "../src/model/types.js";
 import { parse } from "../src/parse/parse.js";
 import { serialize } from "../src/parse/serialize.js";
-import { allRequirements } from "../src/model/types.js";
 
 const fixture = readFileSync(
   fileURLToPath(new URL("./fixtures/rqml-core.rqml", import.meta.url)),

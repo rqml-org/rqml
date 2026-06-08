@@ -18,10 +18,7 @@ function doc(requirements: Requirement[]): RqmlDocument {
   };
 }
 
-const withGap = doc([
-  req("R1", [{ then: "ok" }]),
-  req("R2", []),
-]);
+const withGap = doc([req("R1", [{ then: "ok" }]), req("R2", [])]);
 
 describe("lint missing-acceptance", () => {
   it("warns by default for requirements lacking acceptance criteria", () => {

@@ -28,10 +28,7 @@ describe("checkIntegrity", () => {
   });
 
   it("flags a duplicate id across sections", () => {
-    const dup = clean.replace(
-      '<goal id="G1" title="g">',
-      '<goal id="R1" title="g">',
-    );
+    const dup = clean.replace('<goal id="G1" title="g">', '<goal id="R1" title="g">');
     const diags = checkIntegrity(dup);
     const dupDiags = diags.filter((d) => d.rule === "duplicate-id");
     expect(dupDiags).toHaveLength(1);

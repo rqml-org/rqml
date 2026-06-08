@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { computeCoverage } from "../src/check/coverage.js";
-import { parse } from "../src/parse/parse.js";
 import type { RqmlDocument } from "../src/model/types.js";
+import { parse } from "../src/parse/parse.js";
 
 // REQ-1 is fully covered (satisfies a goal, verified by a test, implemented).
 // REQ-2 is an orphan: it satisfies nothing, is unverified, and unimplemented.
