@@ -6,6 +6,11 @@ on:
 
 concurrency: release-${{ github.ref }}
 
+# changesets/action needs to push version commits/tags and open the Version PR.
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
