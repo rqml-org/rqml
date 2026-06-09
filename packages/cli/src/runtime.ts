@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 
 /**
@@ -74,10 +74,16 @@ export function resolveSpecPath(args: Args): string {
   if (explicit !== undefined) {
     const p = resolve(args.baseDir, explicit);
     if (!existsSync(p)) throw new UsageError(`spec file not found: ${explicit}`);
+    if (statSync(p).isDirectory()) {
+      throw new UsageError(`"${explicit}" is a directory, not an .rqml file`);
+    }
     return p;
   }
-  const candidates = readdirSync(args.baseDir)
-    .filter((f) => f.endsWith(".rqml"))
+  // Only regular files — a directory whose name ends in ".rqml" (e.g. the
+  // project's `.rqml/` governance folder) must not be mistaken for the spec.
+  const candidates = readdirSync(args.baseDir, { withFileTypes: true })
+    .filter((e) => e.isFile() && e.name.endsWith(".rqml"))
+    .map((e) => e.name)
     .sort();
   if (candidates.length === 0) {
     throw new UsageError("no .rqml document found in this directory; pass a path");
