@@ -1,8 +1,15 @@
-# rqml
+# @rqml/cli
 
 The RQML command-line interface — the universal substrate every RQML integration
 can invoke. Backed entirely by `@rqml/core`, so its verdicts match the engine and
 the `@rqml/mcp` server.
+
+Published as `@rqml/cli`; the installed command is `rqml`:
+
+```bash
+npm i -g @rqml/cli   # then: rqml <command>
+# or, no install:    npx @rqml/cli <command>
+```
 
 ```
 rqml <command> [spec.rqml] [options]
