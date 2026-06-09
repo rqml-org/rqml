@@ -13,7 +13,8 @@
       "**/.docusaurus/**",
       "**/build/**",
       "apps/website/**",
-      ".vscode/**"
+      ".vscode/**",
+      "**/package.json"
     ]
   },
   "formatter": {
