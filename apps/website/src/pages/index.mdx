@@ -40,6 +40,22 @@ import styles from './index.module.css';
     </div>
   </header>
 
+  {/* WHY XML — disarm the most common objection early */}
+  <section className={`container ${styles.section}`}>
+    <div className="container">
+      <p size="lg" className={styles.heroSubtitleCenter}>
+        <b>Why XML — and not JSON or Markdown?</b> Because the model reads it best.
+        Anthropic, Google, and AWS all recommend XML tags to structure LLM prompts;
+        RQML turns your spec into a self-validating version of exactly that — strict
+        where it matters, readable everywhere else.
+      </p>
+      <div className={styles.heroCtas}>
+        <a className="button button--secondary button--lg" href="/why-xml">Why XML</a>
+        <a className="button button--secondary button--lg" href="/why-rqml">Why RQML</a>
+      </div>
+    </div>
+  </section>
+
   {/* HERO: Workflow */}
   <section id="workflow" className={`container ${styles.section}`}>
     <div className="container">
@@ -128,6 +144,19 @@ import styles from './index.module.css';
           </div>
         </div>
       </div>
+
+      <p size="lg" className={styles.heroSubtitleCenter}>
+        Link a requirement to the code that implements it, and <code>rqml check</code> fails —
+        in CI or a commit hook — the moment that code drifts:
+      </p>
+      <CodeBlock language="bash">{`$ rqml check
+✓ check pass (standard) — requirements.rqml
+
+# after the code an "implements" edge points to is deleted:
+$ rqml check
+  error (drift) [missing-implementation]: implements edge "E-IMPL-AUTH"
+    points at "file:src/auth.ts", which does not exist.
+✗ check fail (standard) — requirements.rqml      (exit code 2)`}</CodeBlock>
 
       <div className={styles.heroCtas}>
         <a className="button button--primary button--lg" href="/docs/tooling">Explore the tooling</a>
