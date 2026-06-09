@@ -29,7 +29,9 @@ Claude (Anthropic) and other top-tier LLMs specifically recommend using XML tags
 
 ## Is RQML really 25 years old?
 
-Yes! The original RQML 1.0 was released in 2000 at the [University of York Department of Computer Science](https://www.york.ac.uk/computer-science/) — one of the first XML standards designed to capture software intent in a structured, machine-readable form. It was way ahead of its time. LLMs are the first systems capable of fully using it, which is why RQML 2.x was redesigned from the ground up for LLM-native workflows.
+Yes — RQML began as a September 2000 MSc thesis at the [University of York](https://www.york.ac.uk/computer-science/): *Using XML for Requirements Markup*, supervised by [Tim Kelly](https://pure.york.ac.uk/portal/en/persons/tim-kelly). The thesis developed a **Requirements Markup Language (RQML)** as an XML DTD — version 0.9 — with elements for requirements, stakeholders, use cases, and traceability, declared under an `http://www.rqml.org/namespaces/rqml` namespace. XML itself was barely two years old.
+
+The idea was ahead of its tooling: a structured, machine-readable requirements format only really pays off once something can read and reason over it at scale. LLMs are that something — so RQML 2.x is a ground-up redesign (now XSD-based) for LLM-native workflows, carrying the same core vocabulary forward 25 years later.
 
 ## How do I validate my RQML document?
 
