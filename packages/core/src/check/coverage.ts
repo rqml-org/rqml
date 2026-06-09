@@ -16,6 +16,12 @@ export interface ArtifactCoverage {
   incoming: Partial<Record<TraceType, string[]>>;
 }
 
+/** An implements edge whose requirement endpoint is not approved. */
+export interface PrematureImplementation {
+  edgeId: string;
+  requirementId: string;
+}
+
 /**
  * Deterministic coverage of an RQML document over its trace graph
  * (REQ-CORE-COVERAGE). Every output array is sorted, so repeated runs on the
@@ -30,6 +36,14 @@ export interface CoverageReport {
   unverifiedRequirements: string[];
   /** Requirement ids with no incoming `implements` edge from a code artifact. */
   unimplementedRequirements: string[];
+  /**
+   * Approved requirement ids with no incoming `implements` edge — the
+   * lifecycle-aware implementation gap, since only approved artifacts should
+   * drive implementation (REQ-CORE-STATUS-AWARE).
+   */
+  unimplementedApprovedRequirements: string[];
+  /** Implements edges targeting a requirement that is not approved. */
+  prematureImplementations: PrematureImplementation[];
   /** Requirement ids that satisfy no goal or scenario (trace up to nothing). */
   orphanRequirements: string[];
   /** Coverage findings plus dangling local-reference diagnostics from trace. */
@@ -102,15 +116,21 @@ export function computeCoverage(doc: RqmlDocument): CoverageReport {
   }
   uncoveredGoals.sort();
 
+  const statusOf = new Map(reqs.map((r) => [r.id, r.status]));
+
   const unverifiedRequirements: string[] = [];
   const unimplementedRequirements: string[] = [];
+  const unimplementedApprovedRequirements: string[] = [];
   const orphanRequirements: string[] = [];
   for (const id of [...reqIds].sort()) {
     const out = outgoing.get(id) ?? {};
     const inc = incoming.get(id) ?? {};
     const verified = (out.verifiedBy?.length ?? 0) > 0 || (inc.covers?.length ?? 0) > 0;
     if (!verified) unverifiedRequirements.push(id);
-    if (!(inc.implements?.length ?? 0)) unimplementedRequirements.push(id);
+    if (!(inc.implements?.length ?? 0)) {
+      unimplementedRequirements.push(id);
+      if (statusOf.get(id) === "approved") unimplementedApprovedRequirements.push(id);
+    }
 
     const satisfiesUpward = (out.satisfies ?? []).some((edgeId) => {
       const edge = doc.trace.find((e) => e.id === edgeId);
@@ -121,6 +141,18 @@ export function computeCoverage(doc: RqmlDocument): CoverageReport {
     });
     if (!satisfiesUpward) orphanRequirements.push(id);
   }
+
+  // Implements edges pointing at a requirement that is not approved
+  // (REQ-CORE-STATUS-AWARE): implementation preceded approval.
+  const prematureImplementations: PrematureImplementation[] = [];
+  for (const edge of doc.trace) {
+    if (edge.type !== "implements" || edge.to.kind !== "local") continue;
+    const requirementId = edge.to.id;
+    if (!reqIds.has(requirementId)) continue;
+    if (statusOf.get(requirementId) === "approved") continue;
+    prematureImplementations.push({ edgeId: edge.id, requirementId });
+  }
+  prematureImplementations.sort((a, b) => a.edgeId.localeCompare(b.edgeId));
 
   const diagnostics: Diagnostic[] = [];
   for (const id of uncoveredGoals)
@@ -155,6 +187,14 @@ export function computeCoverage(doc: RqmlDocument): CoverageReport {
         `Requirement "${id}" satisfies no goal or scenario.`,
       ),
     );
+  for (const p of prematureImplementations)
+    diagnostics.push(
+      finding(
+        "coverage",
+        "premature-implementation",
+        `implements edge "${p.edgeId}" targets requirement "${p.requirementId}", which is not approved.`,
+      ),
+    );
   // Fold in dangling local-reference diagnostics (REQ-CORE-COVERAGE).
   diagnostics.push(...resolveTrace(doc).diagnostics);
 
@@ -163,6 +203,8 @@ export function computeCoverage(doc: RqmlDocument): CoverageReport {
     uncoveredGoals,
     unverifiedRequirements,
     unimplementedRequirements,
+    unimplementedApprovedRequirements,
+    prematureImplementations,
     orphanRequirements,
     diagnostics,
   };

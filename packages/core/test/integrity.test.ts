@@ -70,3 +70,85 @@ describe("checkIntegrity", () => {
     expect(checkIntegrity("<rqml><unclosed>")).toEqual([]);
   });
 });
+
+const machine = (
+  initial: string,
+  transitions: string,
+) => `<?xml version="1.0" encoding="UTF-8"?>
+<rqml xmlns="https://rqml.org/schema/2.1.0" version="2.1.0" docId="D" status="draft">
+  <meta><title>t</title><system>s</system></meta>
+  <requirements>
+    <req id="R1" type="FR" title="r"><statement>s</statement></req>
+  </requirements>
+  <behavior>
+    <stateMachine id="SM-1" name="m" initial="${initial}">
+      <state id="ST-A" name="a" type="initial"/>
+      <state id="ST-B" name="b"/>
+      <state id="ST-Z" name="z" type="final"/>
+      ${transitions}
+    </stateMachine>
+  </behavior>
+</rqml>`;
+
+describe("checkIntegrity state machines (REQ-CORE-SM-INTEGRITY)", () => {
+  it("accepts a well-formed machine", () => {
+    const xml = machine(
+      "ST-A",
+      `<transition id="TR-1" from="ST-A" to="ST-B"/>
+       <transition id="TR-2" from="ST-B" to="ST-Z"/>`,
+    );
+    expect(checkIntegrity(xml)).toEqual([]);
+  });
+
+  it("flags an initial attribute naming an undeclared state", () => {
+    const xml = machine("ST-NOPE", `<transition id="TR-1" from="ST-A" to="ST-B"/>`);
+    const diags = checkIntegrity(xml);
+    expect(diags).toHaveLength(1);
+    expect(diags[0]?.rule).toBe("unresolved-state-ref");
+    expect(diags[0]?.message).toContain("SM-1");
+    expect(diags[0]?.message).toContain("ST-NOPE");
+    expect(typeof diags[0]?.line).toBe("number");
+  });
+
+  it("flags transition endpoints that resolve to no state of the machine", () => {
+    const xml = machine("ST-A", `<transition id="TR-1" from="ST-A" to="ST-GHOST"/>`);
+    const diags = checkIntegrity(xml);
+    expect(diags).toHaveLength(1);
+    expect(diags[0]?.rule).toBe("unresolved-state-ref");
+    expect(diags[0]?.message).toContain("TR-1");
+    expect(diags[0]?.message).toContain("ST-GHOST");
+  });
+
+  it("flags an outgoing transition from a final state", () => {
+    const xml = machine("ST-A", `<transition id="TR-1" from="ST-Z" to="ST-A"/>`);
+    const diags = checkIntegrity(xml);
+    expect(diags).toHaveLength(1);
+    expect(diags[0]?.rule).toBe("final-state-outgoing");
+    expect(diags[0]?.message).toContain("ST-Z");
+    expect(diags[0]?.message).toContain("TR-1");
+  });
+
+  it("scopes state resolution to the owning machine", () => {
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<rqml xmlns="https://rqml.org/schema/2.1.0" version="2.1.0" docId="D" status="draft">
+  <meta><title>t</title><system>s</system></meta>
+  <requirements>
+    <req id="R1" type="FR" title="r"><statement>s</statement></req>
+  </requirements>
+  <behavior>
+    <stateMachine id="SM-1" name="m1" initial="ST-A">
+      <state id="ST-A" name="a" type="initial"/>
+    </stateMachine>
+    <stateMachine id="SM-2" name="m2" initial="ST-X">
+      <state id="ST-X" name="x" type="initial"/>
+      <transition id="TR-X" from="ST-X" to="ST-A"/>
+    </stateMachine>
+  </behavior>
+</rqml>`;
+    // ST-A exists in SM-1, not SM-2: the transition must still be flagged.
+    const diags = checkIntegrity(xml);
+    expect(diags).toHaveLength(1);
+    expect(diags[0]?.rule).toBe("unresolved-state-ref");
+    expect(diags[0]?.message).toContain("SM-2");
+  });
+});

@@ -80,8 +80,8 @@ function flatRefs(edge: Node, out: TraceRef[]): void {
   if (to !== undefined) out.push({ refId: to, edgeId, side: "to", flat: true });
 }
 
-/** Collect declared ids and trace refs over the whole tree. */
-function walk(node: Node, declared: string[], refs: TraceRef[]): void {
+/** Collect declared ids, trace refs, and state machines over the whole tree. */
+function walk(node: Node, declared: string[], refs: TraceRef[], machines: Node[]): void {
   for (const [key, value] of Object.entries(node)) {
     if (key.startsWith(ATTR_PREFIX) || key === "#text") continue;
     for (const item of asArray<unknown>(value)) {
@@ -90,7 +90,8 @@ function walk(node: Node, declared: string[], refs: TraceRef[]): void {
       if (id !== undefined && !REFERENCE_ELEMENTS.has(key)) declared.push(id);
       if (key === "edge") nestedRefs(item, refs);
       else if (key === "traceEdge") flatRefs(item, refs);
-      walk(item, declared, refs);
+      else if (key === "stateMachine") machines.push(item);
+      walk(item, declared, refs, machines);
     }
   }
 }
@@ -154,7 +155,8 @@ export function checkIntegrity(xml: string): Diagnostic[] {
 
   const declared: string[] = [];
   const refs: TraceRef[] = [];
-  walk(root, declared, refs);
+  const machines: Node[] = [];
+  walk(root, declared, refs, machines);
 
   const starts = lineStarts(xml);
   const diagnostics: Diagnostic[] = [];
@@ -201,6 +203,77 @@ export function checkIntegrity(xml: string): Diagnostic[] {
     };
     if (lines.length > 0) diag.line = lines[0];
     diagnostics.push(diag);
+  }
+
+  // State-machine reference integrity (REQ-CORE-SM-INTEGRITY). The XSD declares
+  // smInitialRef and transition keyrefs, but they never fire for the same
+  // namespace reason as allIds above, so: @initial and transition @from/@to
+  // must resolve to states of the same machine, and final states must have no
+  // outgoing transitions.
+  for (const sm of machines) {
+    const smId = attr(sm, "id") ?? "";
+    const stateIds = new Set<string>();
+    const finalStates = new Set<string>();
+    for (const st of asArray<unknown>(sm.state).filter(isNode)) {
+      const sid = attr(st, "id");
+      if (sid === undefined) continue;
+      stateIds.add(sid);
+      if (attr(st, "type") === "final") finalStates.add(sid);
+    }
+
+    const initial = attr(sm, "initial");
+    if (initial !== undefined && !stateIds.has(initial)) {
+      const re = new RegExp(
+        `<stateMachine\\b[^>]*?\\sinitial\\s*=\\s*"${escapeRegExp(initial)}"`,
+        "g",
+      );
+      const lines = matchLines(xml, starts, re);
+      const diag: Diagnostic = {
+        source: "validate",
+        severity: "error",
+        rule: "unresolved-state-ref",
+        message: `State machine "${smId}" initial state "${initial}" is not a declared state of the machine.`,
+      };
+      if (lines.length > 0) diag.line = lines[0];
+      diagnostics.push(diag);
+    }
+
+    for (const tr of asArray<unknown>(sm.transition).filter(isNode)) {
+      const trId = attr(tr, "id") ?? "";
+      for (const side of ["from", "to"] as const) {
+        const refId = attr(tr, side);
+        if (refId === undefined || stateIds.has(refId)) continue;
+        const re = new RegExp(
+          `<transition\\b[^>]*?\\s${side}\\s*=\\s*"${escapeRegExp(refId)}"`,
+          "g",
+        );
+        const lines = matchLines(xml, starts, re);
+        const diag: Diagnostic = {
+          source: "validate",
+          severity: "error",
+          rule: "unresolved-state-ref",
+          message: `Transition "${trId}" (${side}) references unknown state "${refId}" in state machine "${smId}".`,
+        };
+        if (lines.length > 0) diag.line = lines[0];
+        diagnostics.push(diag);
+      }
+      const from = attr(tr, "from");
+      if (from !== undefined && finalStates.has(from)) {
+        const re = new RegExp(
+          `<transition\\b[^>]*?\\sid\\s*=\\s*"${escapeRegExp(trId)}"`,
+          "g",
+        );
+        const lines = matchLines(xml, starts, re);
+        const diag: Diagnostic = {
+          source: "validate",
+          severity: "error",
+          rule: "final-state-outgoing",
+          message: `Final state "${from}" has outgoing transition "${trId}" in state machine "${smId}".`,
+        };
+        if (lines.length > 0) diag.line = lines[0];
+        diagnostics.push(diag);
+      }
+    }
   }
 
   return diagnostics;

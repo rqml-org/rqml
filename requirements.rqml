@@ -45,7 +45,7 @@
     </authors>
     <dates>
       <created>2026-02-01</created>
-      <updated>2026-06-07</updated>
+      <updated>2026-06-09</updated>
       <targetRelease>RQML 2.1.0</targetRelease>
     </dates>
     <conventions>
@@ -1079,6 +1079,18 @@
           obligation levels are unambiguous.
         </statement>
       </req>
+      <req id="REQ-AGENTS-TEMPLATE" type="PR" title="Template routes agents to the toolchain" status="approved" priority="should">
+        <statement>
+          The published AGENTS.md template SHALL direct agents to the rqml CLI —
+          check, status, and the loop operations — as the primary validation and
+          traceability workflow, rather than ad hoc schema validation.
+        </statement>
+        <rationale>
+          The template predates the toolchain and still prescribes raw xmllint
+          against a network URL; agents follow what the marker file says, so
+          the process is only as enforced as the template is current.
+        </rationale>
+      </req>
     </reqPackage>
 
     <reqPackage id="PKG-QUALITY" title="Quality attributes" ownerRef="STK-MAINTAINER">
@@ -1120,24 +1132,24 @@
         Structure of the rqml repository as a TypeScript workspace housing the
         reference implementation alongside the schema and documentation.
       </description>
-      <req id="REQ-TS-ENGINE" type="CR" title="TypeScript implementation" status="draft" priority="must" appliesTo="core cli mcp">
+      <req id="REQ-TS-ENGINE" type="CR" title="TypeScript implementation" status="approved" priority="must" appliesTo="core cli mcp">
         <statement>The reference toolchain SHALL be implemented in TypeScript on Node.js.</statement>
         <rationale>One language across the engine, CLI, MCP server, and editor integration.</rationale>
       </req>
-      <req id="REQ-WORKSPACE" type="CR" title="Single pnpm workspace" status="draft" priority="must">
+      <req id="REQ-WORKSPACE" type="CR" title="Single pnpm workspace" status="approved" priority="must">
         <statement>
           The repository SHALL be a single pnpm-managed workspace whose publishable
           packages are @rqml/core, the rqml CLI, and @rqml/mcp, alongside the
           canonical schema package and the documentation site.
         </statement>
       </req>
-      <req id="REQ-PACKAGE-LAYOUT" type="DR" title="Package layout" status="draft" priority="should">
+      <req id="REQ-PACKAGE-LAYOUT" type="DR" title="Package layout" status="approved" priority="should">
         <statement>
           Source packages SHALL reside under packages/, the documentation site in
           its own app directory, and the canonical XSDs within the schema package.
         </statement>
       </req>
-      <req id="REQ-CORE-DEPS" type="NFR" title="Dependency-clean core" status="draft" priority="must" appliesTo="core">
+      <req id="REQ-CORE-DEPS" type="NFR" title="Dependency-clean core" status="approved" priority="must" appliesTo="core">
         <statement>
           @rqml/core SHALL NOT declare CLI argument-parsing or MCP SDK packages as
           runtime dependencies, so editors and agent integrations can embed it
@@ -1145,14 +1157,14 @@
         </statement>
         <rationale>Keeps the engine embeddable; the CLI and MCP server are the dependency-heavy edges.</rationale>
       </req>
-      <req id="REQ-SCHEMA-CANONICAL" type="DR" title="Single canonical schema" status="draft" priority="must">
+      <req id="REQ-SCHEMA-CANONICAL" type="DR" title="Single canonical schema" status="approved" priority="must">
         <statement>
           Every supported schema version SHALL have a single canonical source in
           the schema package; consumers SHALL obtain it from there rather than
           maintaining copies.
         </statement>
       </req>
-      <req id="REQ-SCHEMA-URLS" type="CR" title="Stable schema URLs" status="draft" priority="must">
+      <req id="REQ-SCHEMA-URLS" type="CR" title="Stable schema URLs" status="approved" priority="must">
         <statement>
           The documentation site SHALL publish each schema version at its stable
           https://rqml.org/schema/&lt;version&gt;/ URL and the AGENTS.md template
@@ -1161,7 +1173,7 @@
         </statement>
         <rationale>Published schema URLs are an immutable contract for documents in the wild.</rationale>
       </req>
-      <req id="REQ-VERSION-DECOUPLE" type="CR" title="Decoupled versioning" status="draft" priority="should">
+      <req id="REQ-VERSION-DECOUPLE" type="CR" title="Decoupled versioning" status="approved" priority="should">
         <statement>
           The RQML spec version SHALL be versioned independently of the npm package
           versions of the toolchain.
@@ -1171,36 +1183,36 @@
 
     <reqPackage id="PKG-CORE" title="Core engine (rqml-core)" ownerRef="STK-TOOLBUILDERS">
       <description>The dependency-clean library that every other surface reuses.</description>
-      <req id="REQ-CORE-PARSE" type="FR" title="Parse to typed model" status="draft" priority="must" appliesTo="core">
+      <req id="REQ-CORE-PARSE" type="FR" title="Parse to typed model" status="approved" priority="must" appliesTo="core">
         <statement>@rqml/core SHALL parse an RQML document into a typed in-memory model.</statement>
       </req>
-      <req id="REQ-CORE-VALIDATE" type="FR" title="Deterministic validation" status="draft" priority="must" appliesTo="core">
+      <req id="REQ-CORE-VALIDATE" type="FR" title="Deterministic validation" status="approved" priority="must" appliesTo="core">
         <statement>
           @rqml/core SHALL validate a document for XML well-formedness, XSD
           validity, identifier uniqueness, and trace referential integrity,
           equivalently to the schema's own constraints and without network access.
         </statement>
       </req>
-      <req id="REQ-CORE-SCHEMA-DETECT" type="FR" title="Schema-version detection" status="draft" priority="must" appliesTo="core">
+      <req id="REQ-CORE-SCHEMA-DETECT" type="FR" title="Schema-version detection" status="approved" priority="must" appliesTo="core">
         <statement>
           @rqml/core SHALL detect the declared schema version from the document
           namespace and validate against the matching bundled schema.
         </statement>
       </req>
-      <req id="REQ-CORE-TRACE-GRAPH" type="FR" title="Traceability graph" status="draft" priority="must" appliesTo="core">
+      <req id="REQ-CORE-TRACE-GRAPH" type="FR" title="Traceability graph" status="approved" priority="must" appliesTo="core">
         <statement>
           @rqml/core SHALL construct the traceability graph from trace edges and
           expose queries for impact analysis and coverage.
         </statement>
       </req>
-      <req id="REQ-CORE-COVERAGE" type="FR" title="Coverage metrics" status="draft" priority="must" appliesTo="core">
+      <req id="REQ-CORE-COVERAGE" type="FR" title="Coverage metrics" status="approved" priority="must" appliesTo="core">
         <statement>
           @rqml/core SHALL compute coverage deterministically: goals without
           satisfying requirements, requirements without verification, dangling
           local references, and orphaned artifacts.
         </statement>
       </req>
-      <req id="REQ-CORE-DRIFT" type="FR" title="Deterministic drift detection" status="draft" priority="must" appliesTo="core">
+      <req id="REQ-CORE-DRIFT" type="FR" title="Deterministic drift detection" status="approved" priority="must" appliesTo="core">
         <statement>
           @rqml/core SHALL detect spec/implementation drift by resolving the
           external locators of implements edges and reporting links whose
@@ -1208,37 +1220,100 @@
           requirement was last approved.
         </statement>
       </req>
-      <req id="REQ-CORE-API" type="IR" title="Stable typed API" status="draft" priority="must" appliesTo="core">
+      <req id="REQ-CORE-API" type="IR" title="Stable typed API" status="approved" priority="must" appliesTo="core">
         <statement>
           @rqml/core SHALL expose a stable, typed programmatic API consumed by the
           CLI, the MCP server, and external integrations.
         </statement>
       </req>
-      <req id="REQ-CORE-NO-LLM" type="CR" title="No model in the engine" status="draft" priority="must" appliesTo="core">
+      <req id="REQ-CORE-NO-LLM" type="CR" title="No model in the engine" status="approved" priority="must" appliesTo="core">
         <statement>
           @rqml/core SHALL produce its validation, coverage, and drift results
           deterministically, without invoking any language model.
         </statement>
         <rationale>Reproducibility is required for a trustworthy, auditable gate.</rationale>
       </req>
+      <req id="REQ-CORE-SM-INTEGRITY" type="DR" title="State-machine integrity in code" status="approved" priority="must" appliesTo="core">
+        <statement>
+          Integrity checking SHALL verify state-machine references in code:
+          every stateMachine initial attribute SHALL resolve to a declared
+          state, every transition from and to SHALL resolve to declared states
+          of the same machine, and states of type "final" SHALL NOT have
+          outgoing transitions.
+        </statement>
+        <rationale>
+          The XSD declares these constraints as keyrefs, but the toolchain does
+          not rely on keyref enforcement; checkIntegrity must close the gap so
+          REQ-SM-INITIAL, REQ-TRANSITION-REFS, and REQ-SM-FINAL are enforced by
+          the gate rather than by nothing.
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-SM-INTEG">
+            <given>A state machine whose initial attribute names an undeclared state</given>
+            <when>checkIntegrity runs</when>
+            <then>A diagnostic is reported and rqml check fails validation.</then>
+          </criterion>
+        </acceptance>
+      </req>
+      <req id="REQ-CORE-DRIFT-BASELINE" type="FR" title="Drift baselines" status="approved" priority="must" appliesTo="core cli">
+        <statement>
+          The toolchain SHALL record a content hash for each implements-linked
+          artifact in a project-local baseline store, and drift detection SHALL
+          report a linked artifact as changed when its current content no
+          longer matches the recorded hash.
+        </statement>
+        <rationale>
+          Existence checking alone catches deleted artifacts only; the changed
+          state required by REQ-CORE-DRIFT needs a recorded baseline to compare
+          against. A sidecar store (e.g. under the .rqml/ project folder) keeps
+          the spec document itself clean and diffable.
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-DRIFT-CHANGED">
+            <given>An implements-linked artifact modified after its baseline was recorded</given>
+            <when>rqml check runs</when>
+            <then>The link is reported as changed and the gate exits non-zero.</then>
+          </criterion>
+        </acceptance>
+      </req>
+      <req id="REQ-CORE-STATUS-AWARE" type="FR" title="Lifecycle-aware coverage" status="approved" priority="should" appliesTo="core">
+        <statement>
+          Coverage SHALL distinguish artifact lifecycle status: implementation
+          coverage SHALL be reported over approved requirements, and an
+          implements edge whose requirement endpoint is not approved SHALL be
+          reported as a finding.
+        </statement>
+        <rationale>
+          Only approved artifacts should drive implementation (REQ-STATUS-ENUM);
+          treating draft and approved requirements identically makes a strict
+          gate unusable mid-project and hides premature implementation.
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-STATUS-IMPL">
+            <given>An implements edge targeting a requirement with status draft</given>
+            <when>Coverage is computed</when>
+            <then>A premature-implementation finding names the edge and the requirement.</then>
+          </criterion>
+        </acceptance>
+      </req>
     </reqPackage>
 
     <reqPackage id="PKG-CLI" title="Command-line interface (rqml)" ownerRef="STK-TOOLBUILDERS">
       <description>The rqml binary: the universal substrate every integration invokes.</description>
-      <req id="REQ-CLI-BINARY" type="FR" title="rqml executable" status="draft" priority="must" appliesTo="cli">
+      <req id="REQ-CLI-BINARY" type="FR" title="rqml executable" status="approved" priority="must" appliesTo="cli">
         <statement>
           The toolchain SHALL provide an rqml executable that operates
           non-interactively on a project's RQML document(s).
         </statement>
       </req>
-      <req id="REQ-CLI-COMMANDS" type="FR" title="Core commands" status="draft" priority="must" appliesTo="cli">
+      <req id="REQ-CLI-COMMANDS" type="FR" title="Core commands" status="approved" priority="must" appliesTo="cli">
         <statement>
           rqml SHALL provide at least: init (scaffold a spec and project marker),
           validate (schema and integrity), status (current spec and coverage
           state), and check (the enforcement gate).
         </statement>
       </req>
-      <req id="REQ-CLI-CHECK-GATE" type="FR" title="Check gate" status="draft" priority="must" appliesTo="cli">
+      <req id="REQ-CLI-CHECK-GATE" type="FR" title="Check gate" status="approved" priority="must" appliesTo="cli">
         <statement>
           rqml check SHALL act as a deterministic gate, exiting zero only when the
           document is valid and no blocking drift or coverage violation exists, and
@@ -1252,22 +1327,22 @@
           </criterion>
         </acceptance>
       </req>
-      <req id="REQ-CLI-JSON" type="IR" title="Machine-readable output" status="draft" priority="must" appliesTo="cli">
+      <req id="REQ-CLI-JSON" type="IR" title="Machine-readable output" status="approved" priority="must" appliesTo="cli">
         <statement>
           rqml status and rqml check SHALL emit a documented, stable JSON
           representation for control loops, in addition to human-readable output.
         </statement>
       </req>
-      <req id="REQ-CLI-EXIT-CODES" type="IR" title="Stable exit codes" status="draft" priority="must" appliesTo="cli">
+      <req id="REQ-CLI-EXIT-CODES" type="IR" title="Stable exit codes" status="approved" priority="must" appliesTo="cli">
         <statement>
           rqml SHALL use documented, stable exit codes distinguishing success,
           validation failure, drift or coverage failure, and usage error.
         </statement>
       </req>
-      <req id="REQ-CLI-OFFLINE" type="NFR" title="Offline operation" status="draft" priority="must" appliesTo="cli">
+      <req id="REQ-CLI-OFFLINE" type="NFR" title="Offline operation" status="approved" priority="must" appliesTo="cli">
         <statement>rqml SHALL run fully offline, bundling the schema via @rqml/core.</statement>
       </req>
-      <req id="REQ-CLI-SPEED" type="NFR" title="Interactive latency" status="draft" priority="should" appliesTo="cli">
+      <req id="REQ-CLI-SPEED" type="NFR" title="Interactive latency" status="approved" priority="should" appliesTo="cli">
         <statement>
           rqml check and rqml status SHALL complete quickly enough to run on every
           editor save or agent turn, targeting under ~1s on a typical project.
@@ -1277,29 +1352,133 @@
 
     <reqPackage id="PKG-MCP" title="MCP server (rqml-mcp)" ownerRef="STK-TOOLBUILDERS">
       <description>The agent-facing surface exposing core capabilities as MCP tools.</description>
-      <req id="REQ-MCP-SERVER" type="FR" title="MCP server" status="draft" priority="must" appliesTo="mcp">
+      <req id="REQ-MCP-SERVER" type="FR" title="MCP server" status="approved" priority="must" appliesTo="mcp">
         <statement>
           The toolchain SHALL provide an MCP server exposing RQML capabilities as
           tools to coding agents.
         </statement>
       </req>
-      <req id="REQ-MCP-TOOLS" type="FR" title="Exposed tools" status="draft" priority="must" appliesTo="mcp">
+      <req id="REQ-MCP-TOOLS" type="FR" title="Exposed tools" status="approved" priority="must" appliesTo="mcp">
         <statement>
           The MCP server SHALL expose at least validate, status, check, trace
           query, and skeleton-generation tools, each backed by @rqml/core.
         </statement>
       </req>
-      <req id="REQ-MCP-PARITY" type="CR" title="CLI and MCP parity" status="draft" priority="must" appliesTo="mcp">
+      <req id="REQ-MCP-PARITY" type="CR" title="CLI and MCP parity" status="approved" priority="must" appliesTo="mcp">
         <statement>
           For the same input, an MCP tool SHALL return results equivalent to the
           corresponding rqml CLI command, since both are backed by one engine.
         </statement>
       </req>
-      <req id="REQ-MCP-READONLY" type="SR" title="No silent side effects" status="draft" priority="should" appliesTo="mcp">
+      <req id="REQ-MCP-READONLY" type="SR" title="No silent side effects" status="approved" priority="should" appliesTo="mcp">
         <statement>
           The MCP server SHALL treat the spec as read-mostly and SHALL NOT perform
           irreversible filesystem actions without explicit caller intent.
         </statement>
+      </req>
+      <req id="REQ-MCP-PATH-INPUT" type="IR" title="Path inputs" status="approved" priority="must" appliesTo="mcp">
+        <statement>
+          Every MCP tool SHALL accept a filesystem path to the spec document as
+          an alternative to inline document text, reading the file without
+          modifying it.
+        </statement>
+        <rationale>
+          Requiring agents to inline a multi-thousand-line document into every
+          tool call wastes context and discourages use; reading by path keeps
+          the loop cheap.
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-MCP-PATH">
+            <given>A tool call providing a path argument and no inline document</given>
+            <when>The tool executes</when>
+            <then>The result equals the result for the same document passed inline.</then>
+          </criterion>
+        </acceptance>
+      </req>
+    </reqPackage>
+
+    <reqPackage id="PKG-LOOP" title="Agent workflow operations" ownerRef="STK-TEAMS">
+      <description>
+        Deterministic spec operations serving the middle of the agent loop —
+        choosing work, reading one artifact, and recording trace links — so the
+        toolchain supports the whole Elicit-Specify-Implement-Verify-Trace
+        cycle, not only validation at the start and the gate at the end.
+        Generation of target-language code or tests is intentionally excluded
+        (DEC-DETERMINISTIC-CHECK: the model proposes, the toolchain disposes).
+      </description>
+      <req id="REQ-LOOP-LINK" type="FR" title="Link recording" status="approved" priority="must" appliesTo="core cli mcp">
+        <statement>
+          The toolchain SHALL provide a link operation, on both the CLI and MCP
+          surfaces, that appends a schema-valid implements or verifiedBy trace
+          edge to the spec document given an artifact id and an external
+          locator URI, and records the drift baseline for the linked artifact.
+        </statement>
+        <rationale>
+          Hand-editing XML trace edges is the highest-friction step of the loop
+          and the one agents skip; recording links must be mechanical for the
+          drift and coverage story to hold. The write is explicit caller
+          intent, consistent with REQ-MCP-READONLY.
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-LINK-ROUNDTRIP">
+            <given>A valid spec, a requirement id, and an existing source path</given>
+            <when>The link operation runs</when>
+            <then>The document revalidates and coverage counts the requirement as implemented.</then>
+          </criterion>
+        </acceptance>
+      </req>
+      <req id="REQ-LOOP-SHOW" type="FR" title="Artifact extraction" status="approved" priority="must" appliesTo="core cli mcp">
+        <statement>
+          The toolchain SHALL extract a single artifact by id — its statement,
+          acceptance criteria, and resolved trace neighborhood — as JSON and as
+          markdown, so an agent can work from a relevant slice of the spec
+          without loading the whole document.
+        </statement>
+        <acceptance>
+          <criterion id="CRIT-SHOW-SLICE">
+            <given>A spec containing a requirement with acceptance criteria and trace edges</given>
+            <when>The artifact is extracted by id</when>
+            <then>The output contains the statement, the criteria, and every edge touching the id, and nothing else.</then>
+          </criterion>
+        </acceptance>
+      </req>
+      <req id="REQ-LOOP-IMPACT" type="FR" title="Impact query" status="approved" priority="must" appliesTo="core cli mcp">
+        <statement>
+          The toolchain SHALL answer impact queries: given an artifact id, it
+          SHALL traverse the trace graph transitively in both directions and
+          return the affected artifacts grouped by edge type and direction.
+        </statement>
+        <rationale>
+          "What breaks if this changes?" is the question an engineering agent
+          must ask before touching anything (SCN-IMPACT); REQ-CORE-TRACE-GRAPH
+          promises the query and coverage alone does not answer it.
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-IMPACT-TRANSITIVE">
+            <given>A goal satisfied by a requirement that is verified by a test</given>
+            <when>Impact is queried for the goal</when>
+            <then>Both the requirement and the test are reported with their edge paths.</then>
+          </criterion>
+        </acceptance>
+      </req>
+      <req id="REQ-LOOP-SKELETON" type="FR" title="Skeleton generation" status="approved" priority="must" appliesTo="core cli mcp">
+        <statement>
+          The toolchain SHALL generate schema-valid RQML snippets — at least
+          req, trace edge, testCase, and stateMachine skeletons — so authoring
+          tools and agents never emit structurally invalid XML.
+        </statement>
+        <notes>
+          Realizes the skeleton-generation tool already required of the MCP
+          server by REQ-MCP-TOOLS. Scope is RQML snippets only: target-language
+          code and test generation are excluded by design.
+        </notes>
+        <acceptance>
+          <criterion id="CRIT-SKELETON-VALID">
+            <given>A skeleton request for any supported element kind</given>
+            <when>The snippet is inserted into a valid document</when>
+            <then>The document still validates against the XSD.</then>
+          </criterion>
+        </acceptance>
       </req>
     </reqPackage>
 
@@ -1309,7 +1488,7 @@
         loops (editor hooks, agent hooks, CI) can enforce spec-first development.
         The agent-specific harness is specified in downstream integration repos.
       </description>
-      <req id="REQ-ENFORCE-PRIMITIVES" type="PR" title="Enforcement primitives" status="draft" priority="must">
+      <req id="REQ-ENFORCE-PRIMITIVES" type="PR" title="Enforcement primitives" status="approved" priority="must">
         <statement>
           The toolchain SHALL provide the deterministic primitives required to
           enforce spec-first development externally — a check gate, a status
@@ -1317,27 +1496,27 @@
           model compliance.
         </statement>
       </req>
-      <req id="REQ-ENFORCE-DETERMINISM" type="PR" title="Reproducible enforcement" status="draft" priority="must">
+      <req id="REQ-ENFORCE-DETERMINISM" type="PR" title="Reproducible enforcement" status="approved" priority="must">
         <statement>
           Enforcement decisions SHALL be reproducible: the same document and
           codebase SHALL yield the same check verdict on every run and machine.
         </statement>
       </req>
-      <req id="REQ-ENFORCE-AUTHOR-SPLIT" type="PR" title="Authoring vs. enforcement" status="draft" priority="should">
+      <req id="REQ-ENFORCE-AUTHOR-SPLIT" type="PR" title="Authoring vs. enforcement" status="approved" priority="should">
         <statement>
           Language-model assistance SHALL be confined to authoring and proposing
           RQML content; it SHALL NOT be a required participant in the enforcement
           gate.
         </statement>
       </req>
-      <req id="REQ-ENFORCE-CODE-TRACE" type="PR" title="Explicit code traceability" status="draft" priority="should">
+      <req id="REQ-ENFORCE-CODE-TRACE" type="PR" title="Explicit code traceability" status="approved" priority="should">
         <statement>
           Implementation artifacts SHALL be linked to the requirements they realize
           via implements trace edges using external locators, so drift can be
           detected deterministically.
         </statement>
       </req>
-      <req id="REQ-ENFORCE-CERTIFIED" type="PR" title="Certified audit trail" status="draft" priority="should">
+      <req id="REQ-ENFORCE-CERTIFIED" type="PR" title="Certified audit trail" status="approved" priority="should">
         <statement>
           Under the certified strictness level, the toolchain SHALL record an
           append-only audit trail of enforcement checks suitable as compliance
@@ -1345,7 +1524,7 @@
         </statement>
         <notes>Supports regulated domains such as IEC 62304 and ISO 26262.</notes>
       </req>
-      <req id="REQ-ENFORCE-STRICTNESS" type="PR" title="Strictness-governed enforcement" status="draft" priority="should">
+      <req id="REQ-ENFORCE-STRICTNESS" type="PR" title="Strictness-governed enforcement" status="approved" priority="should">
         <statement>
           Enforcement intensity SHALL be governed by the configured strictness
           level (relaxed, standard, strict, certified).
@@ -1511,6 +1690,31 @@
       <purpose>Verify single-engine parity.</purpose>
       <steps>Run the MCP check tool and rqml check on the same project.</steps>
       <expected>Both return equivalent results.</expected>
+    </testCase>
+    <testCase id="TC-SM-INTEGRITY" type="unit" title="Unresolved state references rejected in code">
+      <purpose>Verify in-code state-machine integrity checking.</purpose>
+      <steps>Run checkIntegrity on a machine with an undeclared initial state, a dangling transition endpoint, and an outgoing transition from a final state.</steps>
+      <expected>Each defect yields a diagnostic.</expected>
+    </testCase>
+    <testCase id="TC-DRIFT-CHANGED" type="integration" title="Changed artifact is drift">
+      <purpose>Verify baseline-based change detection.</purpose>
+      <steps>Link an artifact, modify the file, run rqml check.</steps>
+      <expected>The link is reported as changed and the gate exits non-zero.</expected>
+    </testCase>
+    <testCase id="TC-LINK-ROUNDTRIP" type="acceptance" title="Link operation preserves validity">
+      <purpose>Verify mechanical trace recording.</purpose>
+      <steps>Run the link operation for a requirement and an existing file, then revalidate and recompute coverage.</steps>
+      <expected>The document validates and the requirement counts as implemented.</expected>
+    </testCase>
+    <testCase id="TC-SHOW-SLICE" type="acceptance" title="Artifact slice is self-contained">
+      <purpose>Verify single-artifact extraction.</purpose>
+      <steps>Extract one requirement by id from a document with many sections.</steps>
+      <expected>The slice holds the statement, criteria, and trace neighborhood only.</expected>
+    </testCase>
+    <testCase id="TC-IMPACT-TRANSITIVE" type="unit" title="Impact traverses transitively">
+      <purpose>Verify the impact query.</purpose>
+      <steps>Query impact for an artifact two edges away from a test.</steps>
+      <expected>The transitive closure includes the test, grouped by edge type and direction.</expected>
     </testCase>
   </verification>
 
@@ -1735,6 +1939,532 @@
       <from><locator><local id="REQ-ENFORCE-CERTIFIED"/></locator></from>
       <to><locator><external uri="urn:iec:std:62304" kind="standard" title="IEC 62304"/></locator></to>
     </edge>
+
+    <!-- ========================================================= -->
+    <!-- IMPLEMENTS — code artifacts realizing requirements        -->
+    <!-- (ENT-IMPL-LINK: from = external code locator, to = req.   -->
+    <!-- URIs are repo-root-relative so rqml check resolves them   -->
+    <!-- when run from the repository root.)                       -->
+    <!-- ========================================================= -->
+
+    <!-- Format requirements realized by the canonical XSD -->
+    <edge id="E-IMPL-DOC-ROOT" type="implements">
+      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd" kind="schema" title="RQML 2.1.0 XSD"/></locator></from>
+      <to><locator><local id="REQ-DOC-ROOT"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-VERSION" type="implements">
+      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd" kind="schema" title="RQML 2.1.0 XSD"/></locator></from>
+      <to><locator><local id="REQ-VERSION"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-REQUIRED-SECTIONS" type="implements">
+      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd" kind="schema" title="RQML 2.1.0 XSD"/></locator></from>
+      <to><locator><local id="REQ-REQUIRED-SECTIONS"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-SECTION-ORDER" type="implements">
+      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd" kind="schema" title="RQML 2.1.0 XSD"/></locator></from>
+      <to><locator><local id="REQ-SECTION-ORDER"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-ID-PATTERN" type="implements">
+      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#IdType" kind="schema" title="IdType pattern"/></locator></from>
+      <to><locator><local id="REQ-ID-PATTERN"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-STATUS-ENUM" type="implements">
+      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#StatusType" kind="schema" title="StatusType enumeration"/></locator></from>
+      <to><locator><local id="REQ-STATUS-ENUM"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-PRIORITY-ENUM" type="implements">
+      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#PriorityType" kind="schema" title="PriorityType enumeration"/></locator></from>
+      <to><locator><local id="REQ-PRIORITY-ENUM"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-REQTYPE-ENUM" type="implements">
+      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#ReqType" kind="schema" title="ReqType enumeration"/></locator></from>
+      <to><locator><local id="REQ-REQTYPE-ENUM"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-TRACETYPE-ENUM" type="implements">
+      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#TraceType" kind="schema" title="TraceType enumeration"/></locator></from>
+      <to><locator><local id="REQ-TRACETYPE-ENUM"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-TESTTYPE-ENUM" type="implements">
+      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#TestType" kind="schema" title="TestType enumeration"/></locator></from>
+      <to><locator><local id="REQ-TESTTYPE-ENUM"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-CONFIDENCE-RANGE" type="implements">
+      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#ConfidenceType" kind="schema" title="ConfidenceType range"/></locator></from>
+      <to><locator><local id="REQ-CONFIDENCE-RANGE"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-TRACE-EDGE" type="implements">
+      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#TraceEdgeType" kind="schema" title="TraceEdgeType"/></locator></from>
+      <to><locator><local id="REQ-TRACE-EDGE"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-TRACE-LOCATORS" type="implements">
+      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#TraceLocatorType" kind="schema" title="Locator choice: local/doc/external"/></locator></from>
+      <to><locator><local id="REQ-TRACE-LOCATORS"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-TRACE-PINNING" type="implements">
+      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#TraceDocRefType" kind="schema" title="Doc locator version/git pinning"/></locator></from>
+      <to><locator><local id="REQ-TRACE-PINNING"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-SM" type="implements">
+      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#StateMachineType" kind="schema" title="Behavior section"/></locator></from>
+      <to><locator><local id="REQ-SM"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-XML" type="implements">
+      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd" kind="schema" title="RQML 2.1.0 XSD"/></locator></from>
+      <to><locator><local id="REQ-XML"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-MIXED-CONTENT" type="implements">
+      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#TextBlockType" kind="schema" title="TextBlockType mixed content"/></locator></from>
+      <to><locator><local id="REQ-MIXED-CONTENT"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-NAMESPACE" type="implements">
+      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd" kind="schema" title="RQML target namespace"/></locator></from>
+      <to><locator><local id="REQ-NAMESPACE"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-COMMENTS" type="implements">
+      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd" kind="schema" title="RQML 2.1.0 XSD"/></locator></from>
+      <to><locator><local id="REQ-COMMENTS"/></locator></to>
+    </edge>
+
+    <!-- Identity and referential integrity are enforced in code
+         (checkIntegrity), not by XSD keyrefs -->
+    <edge id="E-IMPL-ID-UNIQUE" type="implements">
+      <from><locator><external uri="packages/core/src/analyze/integrity.ts#checkIntegrity" kind="code" title="checkIntegrity duplicate-id rule"/></locator></from>
+      <to><locator><local id="REQ-ID-UNIQUE"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-TRACE-INTEGRITY" type="implements">
+      <from><locator><external uri="packages/core/src/analyze/integrity.ts#checkIntegrity" kind="code" title="checkIntegrity unresolved-local-ref rule"/></locator></from>
+      <to><locator><local id="REQ-TRACE-INTEGRITY"/></locator></to>
+    </edge>
+
+    <!-- Monorepo requirements -->
+    <edge id="E-IMPL-TS-ENGINE" type="implements">
+      <from><locator><external uri="tsconfig.base.json" kind="config" title="Shared TypeScript configuration"/></locator></from>
+      <to><locator><local id="REQ-TS-ENGINE"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-WORKSPACE" type="implements">
+      <from><locator><external uri="pnpm-workspace.yaml" kind="config" title="pnpm workspace manifest"/></locator></from>
+      <to><locator><local id="REQ-WORKSPACE"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-PACKAGE-LAYOUT" type="implements">
+      <from><locator><external uri="pnpm-workspace.yaml" kind="config" title="packages/* workspace layout"/></locator></from>
+      <to><locator><local id="REQ-PACKAGE-LAYOUT"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-CORE-DEPS" type="implements">
+      <from><locator><external uri="packages/core/package.json" kind="config" title="@rqml/core dependency manifest"/></locator></from>
+      <to><locator><local id="REQ-CORE-DEPS"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-SCHEMA-CANONICAL" type="implements">
+      <from><locator><external uri="packages/schema/src/index.ts#resolveSchema" kind="code" title="@rqml/schema resolveSchema()"/></locator></from>
+      <to><locator><local id="REQ-SCHEMA-CANONICAL"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-SCHEMA-URLS" type="implements">
+      <from><locator><external uri="apps/website/static/schema/rqml-2.1.0.xsd" kind="schema" title="Published schema at rqml.org/schema/"/></locator></from>
+      <to><locator><local id="REQ-SCHEMA-URLS"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-VERSION-DECOUPLE" type="implements">
+      <from><locator><external uri="packages/schema/src/index.ts#SCHEMA_VERSIONS" kind="code" title="Supported spec versions list"/></locator></from>
+      <to><locator><local id="REQ-VERSION-DECOUPLE"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-BACKWARD-COMPAT" type="implements">
+      <from><locator><external uri="packages/core/src/validate/version.ts" kind="code" title="2.0.1-to-2.1.0 normalization"/></locator></from>
+      <to><locator><local id="REQ-BACKWARD-COMPAT"/></locator></to>
+    </edge>
+
+    <!-- Core engine requirements -->
+    <edge id="E-IMPL-CORE-PARSE" type="implements">
+      <from><locator><external uri="packages/core/src/parse/parse.ts#parse" kind="code" title="@rqml/core parse()"/></locator></from>
+      <to><locator><local id="REQ-CORE-PARSE"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-CORE-VALIDATE" type="implements">
+      <from><locator><external uri="packages/core/src/validate/index.ts#validate" kind="code" title="@rqml/core validate()"/></locator></from>
+      <to><locator><local id="REQ-CORE-VALIDATE"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-CORE-VALIDATE-INTEGRITY" type="implements">
+      <from><locator><external uri="packages/core/src/analyze/integrity.ts#checkIntegrity" kind="code" title="@rqml/core checkIntegrity()"/></locator></from>
+      <to><locator><local id="REQ-CORE-VALIDATE"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-CORE-SCHEMA-DETECT" type="implements">
+      <from><locator><external uri="packages/core/src/validate/version.ts#extractDocumentVersion" kind="code" title="Namespace version detection"/></locator></from>
+      <to><locator><local id="REQ-CORE-SCHEMA-DETECT"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-CORE-TRACE-GRAPH" type="implements">
+      <from><locator><external uri="packages/core/src/trace/index.ts#resolveTrace" kind="code" title="@rqml/core resolveTrace()"/></locator></from>
+      <to><locator><local id="REQ-CORE-TRACE-GRAPH"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-CORE-COVERAGE" type="implements">
+      <from><locator><external uri="packages/core/src/check/coverage.ts#computeCoverage" kind="code" title="@rqml/core computeCoverage()"/></locator></from>
+      <to><locator><local id="REQ-CORE-COVERAGE"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-CORE-DRIFT" type="implements">
+      <from><locator><external uri="packages/core/src/check/drift.ts#detectDrift" kind="code" title="@rqml/core detectDrift()"/></locator></from>
+      <to><locator><local id="REQ-CORE-DRIFT"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-CORE-API" type="implements">
+      <from><locator><external uri="packages/core/src/index.ts" kind="code" title="@rqml/core public API surface"/></locator></from>
+      <to><locator><local id="REQ-CORE-API"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-CORE-NO-LLM" type="implements">
+      <from><locator><external uri="packages/core/package.json" kind="config" title="No model SDK in the dependency tree"/></locator></from>
+      <to><locator><local id="REQ-CORE-NO-LLM"/></locator></to>
+    </edge>
+
+    <!-- CLI requirements -->
+    <edge id="E-IMPL-CLI-BINARY" type="implements">
+      <from><locator><external uri="packages/cli/package.json#bin" kind="config" title="rqml bin entry"/></locator></from>
+      <to><locator><local id="REQ-CLI-BINARY"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-CLI-COMMANDS" type="implements">
+      <from><locator><external uri="packages/cli/src/index.ts" kind="code" title="init/validate/status/check dispatch"/></locator></from>
+      <to><locator><local id="REQ-CLI-COMMANDS"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-CLI-CHECK-GATE" type="implements">
+      <from><locator><external uri="packages/cli/src/commands/check.ts#runCheck" kind="code" title="rqml check gate"/></locator></from>
+      <to><locator><local id="REQ-CLI-CHECK-GATE"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-CLI-JSON-STATUS" type="implements">
+      <from><locator><external uri="packages/cli/src/commands/status.ts" kind="code" title="rqml status --json"/></locator></from>
+      <to><locator><local id="REQ-CLI-JSON"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-CLI-JSON-CHECK" type="implements">
+      <from><locator><external uri="packages/cli/src/commands/check.ts" kind="code" title="rqml check --json"/></locator></from>
+      <to><locator><local id="REQ-CLI-JSON"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-CLI-EXIT-CODES" type="implements">
+      <from><locator><external uri="packages/cli/src/runtime.ts#EXIT" kind="code" title="Documented exit codes"/></locator></from>
+      <to><locator><local id="REQ-CLI-EXIT-CODES"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-CLI-OFFLINE" type="implements">
+      <from><locator><external uri="packages/schema/src/index.ts" kind="code" title="Build-time inlined schema"/></locator></from>
+      <to><locator><local id="REQ-CLI-OFFLINE"/></locator></to>
+    </edge>
+
+    <!-- MCP requirements -->
+    <edge id="E-IMPL-MCP-SERVER" type="implements">
+      <from><locator><external uri="packages/mcp/src/index.ts" kind="code" title="@rqml/mcp stdio server"/></locator></from>
+      <to><locator><local id="REQ-MCP-SERVER"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-MCP-PARITY" type="implements">
+      <from><locator><external uri="packages/mcp/src/tools.ts#callTool" kind="code" title="Tools backed by @rqml/core"/></locator></from>
+      <to><locator><local id="REQ-MCP-PARITY"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-MCP-READONLY" type="implements">
+      <from><locator><external uri="packages/mcp/src/tools.ts" kind="code" title="Read-only tool handlers"/></locator></from>
+      <to><locator><local id="REQ-MCP-READONLY"/></locator></to>
+    </edge>
+
+    <!-- Enforcement and process requirements -->
+    <edge id="E-IMPL-ENF-PRIMITIVES" type="implements">
+      <from><locator><external uri="packages/cli/src/commands/check.ts" kind="code" title="Gate + status + drift primitives"/></locator></from>
+      <to><locator><local id="REQ-ENFORCE-PRIMITIVES"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-ENF-DETERMINISM" type="implements">
+      <from><locator><external uri="packages/core/src/check/index.ts" kind="code" title="Pure deterministic check module"/></locator></from>
+      <to><locator><local id="REQ-ENFORCE-DETERMINISM"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-ENF-CODE-TRACE" type="implements">
+      <from><locator><external uri="packages/core/src/check/drift.ts#implementsLinks" kind="code" title="implements-edge extraction"/></locator></from>
+      <to><locator><local id="REQ-ENFORCE-CODE-TRACE"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-ENF-STRICTNESS" type="implements">
+      <from><locator><external uri="packages/cli/src/runtime.ts#Strictness" kind="code" title="relaxed/standard/strict/certified levels"/></locator></from>
+      <to><locator><local id="REQ-ENFORCE-STRICTNESS"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-STRICTNESS" type="implements">
+      <from><locator><external uri="packages/core/src/lint/index.ts#scaleSeverity" kind="code" title="Strictness-scaled lint severity"/></locator></from>
+      <to><locator><local id="REQ-STRICTNESS"/></locator></to>
+    </edge>
+
+    <!-- ========================================================= -->
+    <!-- VERIFIEDBY — executable tests realizing verification       -->
+    <!-- ========================================================= -->
+    <edge id="E-VER-CORE-PARSE" type="verifiedBy">
+      <from><locator><local id="REQ-CORE-PARSE"/></locator></from>
+      <to><locator><external uri="packages/core/test/parse.test.ts" kind="test" title="Parse round-trip tests"/></locator></to>
+    </edge>
+    <edge id="E-VER-CORE-VALIDATE" type="verifiedBy">
+      <from><locator><local id="REQ-CORE-VALIDATE"/></locator></from>
+      <to><locator><external uri="packages/core/test/validate.test.ts" kind="test" title="XSD validation tests"/></locator></to>
+    </edge>
+    <edge id="E-VER-CORE-SCHEMA-DETECT" type="verifiedBy">
+      <from><locator><local id="REQ-CORE-SCHEMA-DETECT"/></locator></from>
+      <to><locator><external uri="packages/core/test/version.test.ts" kind="test" title="Version detection tests"/></locator></to>
+    </edge>
+    <edge id="E-VER-CORE-TRACE-GRAPH" type="verifiedBy">
+      <from><locator><local id="REQ-CORE-TRACE-GRAPH"/></locator></from>
+      <to><locator><external uri="packages/core/test/trace.test.ts" kind="test" title="Trace resolution tests"/></locator></to>
+    </edge>
+    <edge id="E-VER-CORE-COVERAGE" type="verifiedBy">
+      <from><locator><local id="REQ-CORE-COVERAGE"/></locator></from>
+      <to><locator><external uri="packages/core/test/coverage.test.ts" kind="test" title="Coverage computation tests"/></locator></to>
+    </edge>
+    <edge id="E-VER-CORE-DRIFT" type="verifiedBy">
+      <from><locator><local id="REQ-CORE-DRIFT"/></locator></from>
+      <to><locator><external uri="packages/core/test/drift.test.ts" kind="test" title="Drift detection tests (realizes TC-DRIFT-DETECT)"/></locator></to>
+    </edge>
+    <edge id="E-VER-ID-UNIQUE" type="verifiedBy">
+      <from><locator><local id="REQ-ID-UNIQUE"/></locator></from>
+      <to><locator><external uri="packages/core/test/integrity.test.ts" kind="test" title="Duplicate-id tests (realizes TC-UNIQUE-ID)"/></locator></to>
+    </edge>
+    <edge id="E-VER-TRACE-INTEGRITY" type="verifiedBy">
+      <from><locator><local id="REQ-TRACE-INTEGRITY"/></locator></from>
+      <to><locator><external uri="packages/core/test/integrity.test.ts" kind="test" title="Dangling-ref tests (realizes TC-TRACE-RESOLVE)"/></locator></to>
+    </edge>
+    <edge id="E-VER-BACKWARD-COMPAT" type="verifiedBy">
+      <from><locator><local id="REQ-BACKWARD-COMPAT"/></locator></from>
+      <to><locator><external uri="packages/core/test/version.test.ts" kind="test" title="2.0.1 document normalization tests"/></locator></to>
+    </edge>
+    <edge id="E-VER-CLI-EXIT-CODES" type="verifiedBy">
+      <from><locator><local id="REQ-CLI-EXIT-CODES"/></locator></from>
+      <to><locator><external uri="packages/cli/test/runtime.test.ts" kind="test" title="Exit-code contract tests"/></locator></to>
+    </edge>
+    <edge id="E-VER-CLI-JSON" type="verifiedBy">
+      <from><locator><local id="REQ-CLI-JSON"/></locator></from>
+      <to><locator><external uri="packages/cli/test/runtime.test.ts" kind="test" title="--json flag tests"/></locator></to>
+    </edge>
+    <edge id="E-VER-SCHEMA-CANONICAL" type="verifiedBy">
+      <from><locator><local id="REQ-SCHEMA-CANONICAL"/></locator></from>
+      <to><locator><external uri="packages/schema/test/schema.test.ts" kind="test" title="Inlined-equals-canonical tests"/></locator></to>
+    </edge>
+    <edge id="E-VER-STRICTNESS" type="verifiedBy">
+      <from><locator><local id="REQ-STRICTNESS"/></locator></from>
+      <to><locator><external uri="packages/core/test/lint.test.ts" kind="test" title="Strictness severity-scaling tests"/></locator></to>
+    </edge>
+    <edge id="E-VER-ENF-STRICTNESS" type="verifiedBy">
+      <from><locator><local id="REQ-ENFORCE-STRICTNESS"/></locator></from>
+      <to><locator><external uri="packages/cli/test/runtime.test.ts" kind="test" title="Strictness flag parsing tests"/></locator></to>
+    </edge>
+
+    <!-- ========================================================= -->
+    <!-- AGENT-LOOP REQUIREMENTS (proposed 2026-06-09)              -->
+    <!-- ========================================================= -->
+
+    <!-- Loop requirements satisfy goals -->
+    <edge id="E-SMINTEG-QGOAL" type="satisfies" confidence="0.8">
+      <from><locator><local id="REQ-CORE-SM-INTEGRITY"/></locator></from>
+      <to><locator><local id="QGOAL-VALIDATABLE"/></locator></to>
+    </edge>
+    <edge id="E-BASELINE-ENFORCE" type="satisfies" confidence="0.9">
+      <from><locator><local id="REQ-CORE-DRIFT-BASELINE"/></locator></from>
+      <to><locator><local id="GOAL-ENFORCEMENT"/></locator></to>
+    </edge>
+    <edge id="E-STATUSAWARE-ENFORCE" type="satisfies" confidence="0.7">
+      <from><locator><local id="REQ-CORE-STATUS-AWARE"/></locator></from>
+      <to><locator><local id="GOAL-ENFORCEMENT"/></locator></to>
+    </edge>
+    <edge id="E-LINK-TRACE-GOAL" type="satisfies" confidence="0.9">
+      <from><locator><local id="REQ-LOOP-LINK"/></locator></from>
+      <to><locator><local id="GOAL-TRACEABILITY"/></locator></to>
+    </edge>
+    <edge id="E-SHOW-CONTEXT" type="satisfies" confidence="0.9">
+      <from><locator><local id="REQ-LOOP-SHOW"/></locator></from>
+      <to><locator><local id="GOAL-LLM-CONTEXT"/></locator></to>
+    </edge>
+    <edge id="E-IMPACT-TRACE-GOAL" type="satisfies" confidence="0.9">
+      <from><locator><local id="REQ-LOOP-IMPACT"/></locator></from>
+      <to><locator><local id="GOAL-TRACEABILITY"/></locator></to>
+    </edge>
+    <edge id="E-SKELETON-CEREMONY" type="satisfies" confidence="0.7">
+      <from><locator><local id="REQ-LOOP-SKELETON"/></locator></from>
+      <to><locator><local id="GOAL-LOW-CEREMONY"/></locator></to>
+    </edge>
+    <edge id="E-PATHINPUT-CONTEXT" type="satisfies" confidence="0.7">
+      <from><locator><local id="REQ-MCP-PATH-INPUT"/></locator></from>
+      <to><locator><local id="GOAL-LLM-CONTEXT"/></locator></to>
+    </edge>
+    <edge id="E-TEMPLATE-ENFORCE" type="satisfies" confidence="0.7">
+      <from><locator><local id="REQ-AGENTS-TEMPLATE"/></locator></from>
+      <to><locator><local id="GOAL-ENFORCEMENT"/></locator></to>
+    </edge>
+
+    <!-- Loop requirements refine or depend on existing requirements -->
+    <edge id="E-SMINTEG-REFINES" type="refines" confidence="0.9">
+      <from><locator><local id="REQ-CORE-SM-INTEGRITY"/></locator></from>
+      <to><locator><local id="REQ-CORE-VALIDATE"/></locator></to>
+    </edge>
+    <edge id="E-BASELINE-REFINES" type="refines" confidence="0.9">
+      <from><locator><local id="REQ-CORE-DRIFT-BASELINE"/></locator></from>
+      <to><locator><local id="REQ-CORE-DRIFT"/></locator></to>
+    </edge>
+    <edge id="E-STATUSAWARE-DEP" type="dependsOn" confidence="0.9">
+      <from><locator><local id="REQ-CORE-STATUS-AWARE"/></locator></from>
+      <to><locator><local id="REQ-STATUS-ENUM"/></locator></to>
+    </edge>
+    <edge id="E-LINK-BASELINE-DEP" type="dependsOn" confidence="0.9">
+      <from><locator><local id="REQ-LOOP-LINK"/></locator></from>
+      <to><locator><local id="REQ-CORE-DRIFT-BASELINE"/></locator></to>
+    </edge>
+    <edge id="E-IMPACT-REFINES" type="refines" confidence="0.9">
+      <from><locator><local id="REQ-LOOP-IMPACT"/></locator></from>
+      <to><locator><local id="REQ-CORE-TRACE-GRAPH"/></locator></to>
+    </edge>
+    <edge id="E-SKELETON-REFINES" type="refines" confidence="0.9">
+      <from><locator><local id="REQ-LOOP-SKELETON"/></locator></from>
+      <to><locator><local id="REQ-MCP-TOOLS"/></locator></to>
+    </edge>
+
+    <!-- Loop requirements mitigate risks and obstacles -->
+    <edge id="E-LINK-DRIFT-RISK" type="mitigates" confidence="0.8">
+      <from><locator><local id="REQ-LOOP-LINK"/></locator></from>
+      <to><locator><local id="RISK-DRIFT"/></locator></to>
+    </edge>
+    <edge id="E-LINK-VOLUNTARY" type="mitigates" confidence="0.8">
+      <from><locator><local id="REQ-LOOP-LINK"/></locator></from>
+      <to><locator><local id="OBS-VOLUNTARY"/></locator></to>
+    </edge>
+    <edge id="E-TEMPLATE-VOLUNTARY" type="mitigates" confidence="0.7">
+      <from><locator><local id="REQ-AGENTS-TEMPLATE"/></locator></from>
+      <to><locator><local id="OBS-VOLUNTARY"/></locator></to>
+    </edge>
+
+    <!-- Loop requirements verified by planned tests -->
+    <edge id="E-SMINTEG-TEST" type="verifiedBy">
+      <from><locator><local id="REQ-CORE-SM-INTEGRITY"/></locator></from>
+      <to><locator><local id="TC-SM-INTEGRITY"/></locator></to>
+    </edge>
+    <edge id="E-BASELINE-TEST" type="verifiedBy">
+      <from><locator><local id="REQ-CORE-DRIFT-BASELINE"/></locator></from>
+      <to><locator><local id="TC-DRIFT-CHANGED"/></locator></to>
+    </edge>
+    <edge id="E-LINK-TEST" type="verifiedBy">
+      <from><locator><local id="REQ-LOOP-LINK"/></locator></from>
+      <to><locator><local id="TC-LINK-ROUNDTRIP"/></locator></to>
+    </edge>
+    <edge id="E-SHOW-TEST" type="verifiedBy">
+      <from><locator><local id="REQ-LOOP-SHOW"/></locator></from>
+      <to><locator><local id="TC-SHOW-SLICE"/></locator></to>
+    </edge>
+    <edge id="E-IMPACT-TEST" type="verifiedBy">
+      <from><locator><local id="REQ-LOOP-IMPACT"/></locator></from>
+      <to><locator><local id="TC-IMPACT-TRANSITIVE"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-CORE-SM-INTEGRITY" type="implements">
+      <from><locator><external uri="packages/core/src/analyze/integrity.ts#checkIntegrity" kind="code"/></locator></from>
+      <to><locator><local id="REQ-CORE-SM-INTEGRITY"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-SM-INITIAL" type="implements">
+      <from><locator><external uri="packages/core/src/analyze/integrity.ts#checkIntegrity" kind="code"/></locator></from>
+      <to><locator><local id="REQ-SM-INITIAL"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-SM-FINAL" type="implements">
+      <from><locator><external uri="packages/core/src/analyze/integrity.ts#checkIntegrity" kind="code"/></locator></from>
+      <to><locator><local id="REQ-SM-FINAL"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-TRANSITION-REFS" type="implements">
+      <from><locator><external uri="packages/core/src/analyze/integrity.ts#checkIntegrity" kind="code"/></locator></from>
+      <to><locator><local id="REQ-TRANSITION-REFS"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-CORE-DRIFT-BASELINE" type="implements">
+      <from><locator><external uri="packages/core/src/check/drift.ts#computeBaseline" kind="code"/></locator></from>
+      <to><locator><local id="REQ-CORE-DRIFT-BASELINE"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-CORE-STATUS-AWARE" type="implements">
+      <from><locator><external uri="packages/core/src/check/coverage.ts#computeCoverage" kind="code"/></locator></from>
+      <to><locator><local id="REQ-CORE-STATUS-AWARE"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-LOOP-LINK-CORE" type="implements">
+      <from><locator><external uri="packages/core/src/edit/link.ts#appendTraceEdge" kind="code"/></locator></from>
+      <to><locator><local id="REQ-LOOP-LINK"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-LOOP-LINK-CLI" type="implements">
+      <from><locator><external uri="packages/cli/src/commands/link.ts#runLink" kind="code"/></locator></from>
+      <to><locator><local id="REQ-LOOP-LINK"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-LOOP-SHOW-CORE" type="implements">
+      <from><locator><external uri="packages/core/src/export/extract.ts#extractArtifact" kind="code"/></locator></from>
+      <to><locator><local id="REQ-LOOP-SHOW"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-LOOP-SHOW-CLI" type="implements">
+      <from><locator><external uri="packages/cli/src/commands/show.ts#runShow" kind="code"/></locator></from>
+      <to><locator><local id="REQ-LOOP-SHOW"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-LOOP-IMPACT-CORE" type="implements">
+      <from><locator><external uri="packages/core/src/trace/impact.ts#impactOf" kind="code"/></locator></from>
+      <to><locator><local id="REQ-LOOP-IMPACT"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-LOOP-IMPACT-CLI" type="implements">
+      <from><locator><external uri="packages/cli/src/commands/impact.ts#runImpact" kind="code"/></locator></from>
+      <to><locator><local id="REQ-LOOP-IMPACT"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-LOOP-SKELETON-CORE" type="implements">
+      <from><locator><external uri="packages/core/src/export/skeleton.ts#skeleton" kind="code"/></locator></from>
+      <to><locator><local id="REQ-LOOP-SKELETON"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-LOOP-SKELETON-CLI" type="implements">
+      <from><locator><external uri="packages/cli/src/commands/skeleton.ts#runSkeleton" kind="code"/></locator></from>
+      <to><locator><local id="REQ-LOOP-SKELETON"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-MCP-PATH-INPUT" type="implements">
+      <from><locator><external uri="packages/mcp/src/tools.ts#resolveSpec" kind="code"/></locator></from>
+      <to><locator><local id="REQ-MCP-PATH-INPUT"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-MCP-TOOLS" type="implements">
+      <from><locator><external uri="packages/mcp/src/tools.ts#TOOLS" kind="code"/></locator></from>
+      <to><locator><local id="REQ-MCP-TOOLS"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-AGENTS-TEMPLATE" type="implements">
+      <from><locator><external uri="packages/schema/templates/AGENTS.md" kind="doc"/></locator></from>
+      <to><locator><local id="REQ-AGENTS-TEMPLATE"/></locator></to>
+    </edge>
+    <edge id="E-VER-CORE-SM-INTEGRITY" type="verifiedBy">
+      <from><locator><local id="REQ-CORE-SM-INTEGRITY"/></locator></from>
+      <to><locator><external uri="packages/core/test/integrity.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-VER-SM-INITIAL-CODE" type="verifiedBy">
+      <from><locator><local id="REQ-SM-INITIAL"/></locator></from>
+      <to><locator><external uri="packages/core/test/integrity.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-VER-SM-FINAL-CODE" type="verifiedBy">
+      <from><locator><local id="REQ-SM-FINAL"/></locator></from>
+      <to><locator><external uri="packages/core/test/integrity.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-VER-TRANSITION-REFS-CODE" type="verifiedBy">
+      <from><locator><local id="REQ-TRANSITION-REFS"/></locator></from>
+      <to><locator><external uri="packages/core/test/integrity.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-VER-CORE-DRIFT-BASELINE" type="verifiedBy">
+      <from><locator><local id="REQ-CORE-DRIFT-BASELINE"/></locator></from>
+      <to><locator><external uri="packages/core/test/drift.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-VER-DRIFT-BASELINE-E2E" type="verifiedBy">
+      <from><locator><local id="REQ-CORE-DRIFT-BASELINE"/></locator></from>
+      <to><locator><external uri="packages/cli/test/commands.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-VER-CORE-STATUS-AWARE" type="verifiedBy">
+      <from><locator><local id="REQ-CORE-STATUS-AWARE"/></locator></from>
+      <to><locator><external uri="packages/core/test/coverage.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-VER-LOOP-LINK-CORE" type="verifiedBy">
+      <from><locator><local id="REQ-LOOP-LINK"/></locator></from>
+      <to><locator><external uri="packages/core/test/link.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-VER-LOOP-LINK-CLI" type="verifiedBy">
+      <from><locator><local id="REQ-LOOP-LINK"/></locator></from>
+      <to><locator><external uri="packages/cli/test/commands.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-VER-LOOP-SHOW" type="verifiedBy">
+      <from><locator><local id="REQ-LOOP-SHOW"/></locator></from>
+      <to><locator><external uri="packages/core/test/extract.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-VER-LOOP-IMPACT" type="verifiedBy">
+      <from><locator><local id="REQ-LOOP-IMPACT"/></locator></from>
+      <to><locator><external uri="packages/core/test/impact.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-VER-LOOP-SKELETON" type="verifiedBy">
+      <from><locator><local id="REQ-LOOP-SKELETON"/></locator></from>
+      <to><locator><external uri="packages/core/test/skeleton.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-VER-MCP-PATH-INPUT" type="verifiedBy">
+      <from><locator><local id="REQ-MCP-PATH-INPUT"/></locator></from>
+      <to><locator><external uri="packages/mcp/test/tools.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-VER-MCP-TOOLS-CODE" type="verifiedBy">
+      <from><locator><local id="REQ-MCP-TOOLS"/></locator></from>
+      <to><locator><external uri="packages/mcp/test/tools.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-VER-MCP-PARITY-CODE" type="verifiedBy">
+      <from><locator><local id="REQ-MCP-PARITY"/></locator></from>
+      <to><locator><external uri="packages/mcp/test/tools.test.ts" kind="test"/></locator></to>
+    </edge>
   </trace>
 
   <!-- ============================================================= -->
@@ -1764,11 +2494,24 @@
     </issue>
     <issue id="ISS-IMPL-TRACE" status="review" owner="STK-TOOLBUILDERS">
       <statement>
-        implements trace edges to source files will be added as core, cli, and mcp
-        are built; until then implementation coverage is intentionally zero and
-        rqml check will report the toolchain packages as unimplemented.
+        implements trace edges (E-IMPL-*) now link the built schema, core, cli,
+        and mcp packages to their requirements, and verifiedBy edges (E-VER-*)
+        link requirements to the executable test files. The agent-loop build of
+        2026-06-09 (PKG-LOOP) closed the earlier gaps: REQ-MCP-TOOLS shipped its
+        skeleton tool, and REQ-SM-INITIAL, REQ-SM-FINAL, and REQ-TRANSITION-REFS
+        are now enforced in code by checkIntegrity (REQ-CORE-SM-INTEGRITY).
+        Still intentionally unlinked: REQ-ENFORCE-CERTIFIED (append-only audit
+        trail not yet implemented), REQ-CLI-SPEED (latency target not yet
+        benchmarked), REQ-ENFORCE-AUTHOR-SPLIT (process property), and the
+        format-property and process requirements with no single code artifact
+        (REQ-LLM-READ, REQ-DIFF, REQ-HUMAN, REQ-VALIDATABLE, REQ-SPEC-FIRST,
+        REQ-NORMATIVE-KEYWORDS).
       </statement>
-      <notes>This is the dogfood baseline: the spec leads the code.</notes>
+      <notes>
+        Loop edges from 2026-06-09 onward are recorded with rqml link, which
+        also captures the drift baseline (.rqml/baseline.json); rqml check now
+        detects changed artifacts, not just missing ones.
+      </notes>
     </issue>
     <issue id="ISS-PLUGIN-SCOPE" status="approved" owner="STK-MAINTAINER">
       <statement>
@@ -1784,6 +2527,17 @@
         CLI subcommand.
       </statement>
       <notes>Resolved in favor of three packages: core, cli, mcp.</notes>
+    </issue>
+    <issue id="ISS-LOOP-SCOPE" status="review" owner="STK-MAINTAINER">
+      <statement>
+        The agent-loop package (PKG-LOOP) is scoped to deterministic operations
+        on the spec itself. Excluded by design: generation of target-language
+        code or tests from entities, criteria, or interfaces (the model's job
+        per DEC-DETERMINISTIC-CHECK); symbol- or AST-level drift resolution
+        (file-granularity hashes suffice); and cross-document locator
+        resolution, deferred until a multi-document consumer exists.
+      </statement>
+      <notes>Boundary recorded 2026-06-09 to keep the toolchain lightweight.</notes>
     </issue>
     <approval id="APR-MAINTAINER" role="RQML Maintainer" status="review">
       <description>Maintainer sign-off on the RQML self-specification.</description>

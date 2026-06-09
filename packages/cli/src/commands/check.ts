@@ -1,4 +1,10 @@
-import { checkIntegrity, computeCoverage, detectDrift, parse } from "@rqml/core";
+import {
+  checkIntegrity,
+  computeCoverage,
+  detectDrift,
+  loadBaseline,
+  parse,
+} from "@rqml/core";
 import { printDiagnostics } from "../report.js";
 import { EXIT, type Strictness, parseArgs, readSpec } from "../runtime.js";
 
@@ -23,16 +29,19 @@ export async function runCheck(rest: string[]): Promise<number> {
 
   const parsed = parse(xml);
   const coverage = parsed.ok ? computeCoverage(parsed.document) : undefined;
-  const drift = parsed.ok
-    ? detectDrift(parsed.document, { baseDir: args.baseDir })
-    : undefined;
+  const driftOptions: Parameters<typeof detectDrift>[1] = { baseDir: args.baseDir };
+  const baseline = loadBaseline(args.baseDir);
+  if (baseline !== undefined) driftOptions.baseline = baseline;
+  const drift = parsed.ok ? detectDrift(parsed.document, driftOptions) : undefined;
 
   const validationFailed = !validation.valid || integrity.length > 0;
   const driftFailed = (drift?.drifted.length ?? 0) > 0;
   const coverageProblemCount =
     (coverage?.uncoveredGoals.length ?? 0) +
     (coverage?.unverifiedRequirements.length ?? 0) +
-    (coverage?.orphanRequirements.length ?? 0);
+    (coverage?.orphanRequirements.length ?? 0) +
+    (coverage?.unimplementedApprovedRequirements.length ?? 0) +
+    (coverage?.prematureImplementations.length ?? 0);
   const coverageFailed = coverageBlocks(args.strictness) && coverageProblemCount > 0;
 
   const verdict: "pass" | "fail" =
@@ -57,6 +66,8 @@ export async function runCheck(rest: string[]): Promise<number> {
           uncoveredGoals: coverage.uncoveredGoals,
           unverifiedRequirements: coverage.unverifiedRequirements,
           unimplementedRequirements: coverage.unimplementedRequirements,
+          unimplementedApprovedRequirements: coverage.unimplementedApprovedRequirements,
+          prematureImplementations: coverage.prematureImplementations,
           orphanRequirements: coverage.orphanRequirements,
         }
       : null,

@@ -28,6 +28,8 @@ export async function runStatus(rest: string[]): Promise<number> {
     uncoveredGoals: coverage.uncoveredGoals,
     unverifiedRequirements: coverage.unverifiedRequirements,
     unimplementedRequirements: coverage.unimplementedRequirements,
+    unimplementedApprovedRequirements: coverage.unimplementedApprovedRequirements,
+    prematureImplementations: coverage.prematureImplementations,
     orphanRequirements: coverage.orphanRequirements,
     danglingReferences: trace.diagnostics.length,
     lintFindings: lintDiags.length,
@@ -42,7 +44,9 @@ export async function runStatus(rest: string[]): Promise<number> {
         `  requirements: ${reqCount}   trace edges: ${doc.trace.length}\n` +
         `  uncovered goals: ${coverage.uncoveredGoals.length}\n` +
         `  unverified reqs: ${coverage.unverifiedRequirements.length}\n` +
-        `  unimplemented reqs: ${coverage.unimplementedRequirements.length}\n` +
+        `  unimplemented reqs: ${coverage.unimplementedRequirements.length}` +
+        ` (approved: ${coverage.unimplementedApprovedRequirements.length})\n` +
+        `  premature implementations: ${coverage.prematureImplementations.length}\n` +
         `  dangling refs: ${trace.diagnostics.length}   lint findings: ${lintDiags.length}\n`,
     );
   }

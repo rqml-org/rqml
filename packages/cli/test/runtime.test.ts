@@ -2,7 +2,14 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { EXIT, UsageError, parseArgs, resolveSpecPath } from "../src/runtime.js";
+import {
+  EXIT,
+  UsageError,
+  flagString,
+  parseArgs,
+  resolveSpecPath,
+  specArgs,
+} from "../src/runtime.js";
 
 describe("parseArgs", () => {
   it("defaults strictness to standard and json to false", () => {
@@ -25,6 +32,20 @@ describe("parseArgs", () => {
   it("documents stable exit codes", () => {
     expect(EXIT).toEqual({ OK: 0, VALIDATION: 1, CHECK: 2, USAGE: 64 });
   });
+
+  it("exposes command-specific flags", () => {
+    const a = parseArgs(["REQ-1", "src/a.ts", "--type", "verifiedBy", "--id=E-X"]);
+    expect(a.positionals).toEqual(["REQ-1", "src/a.ts"]);
+    expect(flagString(a, "type")).toBe("verifiedBy");
+    expect(flagString(a, "id")).toBe("E-X");
+    expect(flagString(a, "missing")).toBeUndefined();
+  });
+
+  it("specArgs prefers --spec over positionals", () => {
+    const a = parseArgs(["REQ-1", "--spec", "other.rqml"]);
+    expect(specArgs(a).positionals).toEqual(["other.rqml"]);
+    expect(specArgs(parseArgs(["REQ-1"])).positionals).toEqual([]);
+  });
 });
 
 describe("resolveSpecPath", () => {
@@ -34,6 +55,7 @@ describe("resolveSpecPath", () => {
     json: false,
     strictness: "standard" as const,
     baseDir,
+    flags: new Map<string, string | boolean>(),
   });
 
   beforeEach(() => {

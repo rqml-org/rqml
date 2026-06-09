@@ -81,3 +81,50 @@ describe("computeCoverage", () => {
     expect(computeCoverage(doc())).toEqual(computeCoverage(doc()));
   });
 });
+
+describe("computeCoverage lifecycle awareness (REQ-CORE-STATUS-AWARE)", () => {
+  it("reports the approved-only implementation gap separately", () => {
+    // REQ-2 is unimplemented but draft: it must NOT appear in the approved gap.
+    const cov = computeCoverage(doc());
+    expect(cov.unimplementedRequirements).toEqual(["REQ-2"]);
+    expect(cov.unimplementedApprovedRequirements).toEqual([]);
+  });
+
+  it("counts an approved requirement without implements in the approved gap", () => {
+    const approved = DOC.replace(
+      '<req id="REQ-2" type="FR" title="Orphan" priority="should" status="draft">',
+      '<req id="REQ-2" type="FR" title="Orphan" priority="should" status="approved">',
+    );
+    const r = parse(approved);
+    if (!r.ok) throw new Error("fixture failed to parse");
+    expect(computeCoverage(r.document).unimplementedApprovedRequirements).toEqual([
+      "REQ-2",
+    ]);
+  });
+
+  it("flags implements edges targeting a non-approved requirement (CRIT-STATUS-IMPL)", () => {
+    const premature = DOC.replace(
+      '<to><locator><local id="REQ-1"/></locator></to>\n    </edge>\n  </trace>',
+      `<to><locator><local id="REQ-1"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-EARLY" type="implements">
+      <from><locator><external uri="file:src/early.ts"/></locator></from>
+      <to><locator><local id="REQ-2"/></locator></to>
+    </edge>
+  </trace>`,
+    );
+    const r = parse(premature);
+    if (!r.ok) throw new Error("fixture failed to parse");
+    const cov = computeCoverage(r.document);
+    expect(cov.prematureImplementations).toEqual([
+      { edgeId: "E-IMPL-EARLY", requirementId: "REQ-2" },
+    ]);
+    const diag = cov.diagnostics.find((d) => d.rule === "premature-implementation");
+    expect(diag?.message).toContain("E-IMPL-EARLY");
+    expect(diag?.message).toContain("REQ-2");
+  });
+
+  it("does not flag implements edges to approved requirements", () => {
+    expect(computeCoverage(doc()).prematureImplementations).toEqual([]);
+  });
+});

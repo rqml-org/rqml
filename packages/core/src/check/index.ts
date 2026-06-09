@@ -8,11 +8,17 @@ export {
   computeCoverage,
   type ArtifactCoverage,
   type CoverageReport,
+  type PrematureImplementation,
 } from "./coverage.js";
 export {
+  BASELINE_PATH,
+  computeBaseline,
   detectDrift,
   implementsLinks,
+  loadBaseline,
+  saveBaseline,
   type ArtifactStatus,
+  type DriftBaseline,
   type DriftFinding,
   type DriftOptions,
   type DriftReport,

@@ -1,5 +1,14 @@
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { detectDrift, implementsLinks } from "../src/check/drift.js";
+import {
+  computeBaseline,
+  detectDrift,
+  implementsLinks,
+  loadBaseline,
+  saveBaseline,
+} from "../src/check/drift.js";
 import type { RqmlDocument } from "../src/model/types.js";
 import { parse } from "../src/parse/parse.js";
 
@@ -78,5 +87,61 @@ describe("detectDrift", () => {
       "E-IMPL-GONE",
       "E-IMPL-OK",
     ]);
+  });
+});
+
+describe("drift baselines (REQ-CORE-DRIFT-BASELINE)", () => {
+  /** A temp project with both linked files present. */
+  function project(): string {
+    const baseDir = mkdtempSync(join(tmpdir(), "rqml-baseline-"));
+    mkdirSync(join(baseDir, "src"));
+    writeFileSync(join(baseDir, "src", "present.ts"), "export const a = 1;\n");
+    writeFileSync(join(baseDir, "src", "gone.ts"), "export const b = 2;\n");
+    return baseDir;
+  }
+
+  it("computeBaseline hashes every resolvable implements link", () => {
+    const baseDir = project();
+    const baseline = computeBaseline(doc(), { baseDir });
+    expect(Object.keys(baseline).sort()).toEqual(["E-IMPL-GONE", "E-IMPL-OK"]);
+    for (const hash of Object.values(baseline)) {
+      expect(hash).toMatch(/^[0-9a-f]{64}$/);
+    }
+  });
+
+  it("reports changed when an artifact no longer matches its recorded hash", () => {
+    const baseDir = project();
+    const baseline = computeBaseline(doc(), { baseDir });
+    writeFileSync(join(baseDir, "src", "present.ts"), "export const a = 999;\n");
+    const report = detectDrift(doc(), { baseDir, baseline });
+    expect(report.drifted.map((d) => d.edgeId)).toEqual(["E-IMPL-OK"]);
+    expect(report.drifted[0]?.status).toBe("changed");
+    expect(report.diagnostics[0]?.rule).toBe("changed-implementation");
+  });
+
+  it("is clean when artifacts match the baseline", () => {
+    const baseDir = project();
+    const baseline = computeBaseline(doc(), { baseDir });
+    expect(detectDrift(doc(), { baseDir, baseline }).drifted).toEqual([]);
+  });
+
+  it("still reports missing files when a baseline is supplied", () => {
+    const baseDir = project();
+    const baseline = computeBaseline(doc(), { baseDir });
+    // Resolve against an empty base: existence failure must win over hashes.
+    const report = detectDrift(doc(), { baseDir: "/nonexistent-base-xyz", baseline });
+    expect(report.drifted).toHaveLength(2);
+    expect(report.drifted.every((d) => d.status === "missing")).toBe(true);
+  });
+
+  it("save/load round-trips with sorted keys", () => {
+    const baseDir = project();
+    const baseline = { "E-Z": "ff".repeat(32), "E-A": "aa".repeat(32) };
+    saveBaseline(baseDir, baseline);
+    expect(loadBaseline(baseDir)).toEqual(baseline);
+  });
+
+  it("loadBaseline returns undefined when no store exists", () => {
+    expect(loadBaseline("/nonexistent-base-xyz")).toBeUndefined();
   });
 });
