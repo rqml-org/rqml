@@ -27,12 +27,40 @@ import styles from './index.module.css';
       </p>
 
       <div className={styles.heroCtas}>
-        <a className="button button--primary button--lg" href="https://marketplace.visualstudio.com/items?itemName=rqml.rqml-vscode" target="_blank" rel="noopener noreferrer">Try it in VS Code</a>
-        <a className="button button--secondary button--lg" href="/docs/examples">See examples</a>
+        <a className="button button--primary button--lg" href="/docs/quick-start">Get started</a>
+        <a className="button button--secondary button--lg" href="https://github.com/rqml-org/rqml" target="_blank" rel="noopener noreferrer">View on GitHub</a>
+        <a className="button button--secondary button--lg" href="https://marketplace.visualstudio.com/items?itemName=rqml.rqml-vscode" target="_blank" rel="noopener noreferrer">Try it in VS Code</a>
       </div>
+
+      <p className={styles.heroSubtitleCenter}>
+        Scaffold a spec and an <code>AGENTS.md</code> in one command — works with any coding agent:
+      </p>
+      <CodeBlock language="bash">{`npx @rqml/cli init`}</CodeBlock>
+
+      {/* DEMO GIF — run `vhs demo.tape` in static/img/ to generate demo.gif, then uncomment:
+      <div className={styles.heroImageWrap}>
+        <img src="/img/demo.gif" alt="rqml init then rqml check passing in a terminal" width="900" />
+      </div>
+      */}
 
     </div>
   </header>
+
+  {/* WHY XML — disarm the most common objection early */}
+  <section className={`container ${styles.section}`}>
+    <div className="container">
+      <p size="lg" className={styles.heroSubtitleCenter}>
+        <b>Why XML — and not JSON or Markdown?</b> Because the model reads it best.
+        Anthropic, Google, and AWS all recommend XML tags to structure LLM prompts;
+        RQML turns your spec into a self-validating version of exactly that — strict
+        where it matters, readable everywhere else.
+      </p>
+      <div className={styles.heroCtas}>
+        <a className="button button--secondary button--lg" href="/why-xml">Why XML</a>
+        <a className="button button--secondary button--lg" href="/why-rqml">Why RQML</a>
+      </div>
+    </div>
+  </section>
 
   {/* HERO: Workflow */}
   <section id="workflow" className={`container ${styles.section}`}>
@@ -74,6 +102,74 @@ import styles from './index.module.css';
       <a className="button button--secondary button--lg" href="https://marketplace.visualstudio.com/items?itemName=rqml.rqml-vscode" target="_blank" rel="noopener noreferrer">Get the VS Code extension</a>
     </div>
   </section>  
+
+  {/* TOOLING */}
+  <section id="tooling" className={`container ${styles.section}`}>
+    <div className="container">
+      <Heading as="h1" className={styles.centerHeader}>
+        Not just a format — a deterministic toolchain.
+      </Heading>
+      <p size="lg" className={styles.heroSubtitleCenter}>
+        One engine powers a CLI, an MCP server for your agent, and the VS Code extension.
+        It's open source (Apache&#8209;2.0), published on npm, runs fully offline, and keeps
+        <b> no language model in the verdict path</b> — so <code>rqml check</code> is reproducible
+        enough to gate CI on.
+      </p>
+
+      <div className={styles.grid3}>
+        <div className={`card ${styles.featureCard}`}>
+          <div className="card__body">
+            <Heading as="h3" className={styles.cardTitle}>rqml — the CLI</Heading>
+            <p className={styles.cardText}>
+              <code>init</code>, <code>validate</code>, <code>status</code>, and a deterministic
+              <code> check</code> gate for CI and editor/commit hooks.
+            </p>
+            <p className={styles.cardText}><code>npm i -g @rqml/cli</code></p>
+          </div>
+        </div>
+
+        <div className={`card ${styles.featureCard}`}>
+          <div className="card__body">
+            <Heading as="h3" className={styles.cardTitle}>@rqml/core — the engine</Heading>
+            <p className={styles.cardText}>
+              Parse, validate (XSD + referential integrity), lint, trace, coverage, and drift —
+              embed it in your own tools.
+            </p>
+            <p className={styles.cardText}><code>npm i @rqml/core</code></p>
+          </div>
+        </div>
+
+        <div className={`card ${styles.featureCard}`}>
+          <div className="card__body">
+            <Heading as="h3" className={styles.cardTitle}>@rqml/mcp — for agents</Heading>
+            <p className={styles.cardText}>
+              A Model Context Protocol server that gives any coding agent RQML tools to
+              validate and check specs.
+            </p>
+            <p className={styles.cardText}><code>npx @rqml/mcp</code></p>
+          </div>
+        </div>
+      </div>
+
+      <p size="lg" className={styles.heroSubtitleCenter}>
+        Link a requirement to the code that implements it, and <code>rqml check</code> fails —
+        in CI or a commit hook — the moment that code drifts:
+      </p>
+      <CodeBlock language="bash">{`$ rqml check
+✓ check pass (standard) — requirements.rqml
+
+# after the code an "implements" edge points to is deleted:
+$ rqml check
+  error (drift) [missing-implementation]: implements edge "E-IMPL-AUTH"
+    points at "file:src/auth.ts", which does not exist.
+✗ check fail (standard) — requirements.rqml      (exit code 2)`}</CodeBlock>
+
+      <div className={styles.heroCtas}>
+        <a className="button button--primary button--lg" href="/docs/tooling">Explore the tooling</a>
+        <a className="button button--secondary button--lg" href="https://github.com/rqml-org/rqml" target="_blank" rel="noopener noreferrer">Star on GitHub</a>
+      </div>
+    </div>
+  </section>
 
   {/* HERO: Features */}
   {/*
@@ -224,13 +320,13 @@ import styles from './index.module.css';
         <Heading as="h2">Start right now</Heading>
         <ol className={styles.steps}>
           <li>
-            <strong>Create one <code>.rqml</code> file</strong> in your project root (by convention <code>requirements.rqml</code>, or a descriptive name like <code>myapp.rqml</code>)
+            <strong>Scaffold</strong> — <code>npx @rqml/cli init</code> drops a <code>requirements.rqml</code> and an <a href="/AGENTS.md" download><code>AGENTS.md</code></a> in your project root
           </li>
           <li>
-            <strong>Download</strong> <a href="/AGENTS.md" download><code>AGENTS.md</code></a> to your project root—it tells your LLMs to follow spec-first development
+            <strong>Check</strong> — <code>npx @rqml/cli check</code> validates the schema, coverage, and implementation drift (deterministic, offline)
           </li>
           <li>
-            Develop with your <strong>coding agent of choice</strong> and it will use RQML as the source of truth for system intent
+            Develop with your <strong>coding agent of choice</strong> — it uses RQML as the source of truth for system intent, and you gate CI with <code>rqml check</code>
           </li>
         </ol>
 
@@ -359,9 +455,9 @@ import styles from './index.module.css';
       </p>
 
       <div className={styles.heroCtas}>
-        <a className="button button--primary button--lg" href="/docs/user-guide">Read the user guide</a>
-        <a className="button button--secondary button--lg" href="https://rqml.dev">Look at tooling on RQML.dev</a>
-
+        <a className="button button--primary button--lg" href="/docs/quick-start">Get started</a>
+        <a className="button button--secondary button--lg" href="/docs/tooling">Explore the tooling</a>
+        <a className="button button--secondary button--lg" href="https://github.com/rqml-org/rqml" target="_blank" rel="noopener noreferrer">Star on GitHub</a>
       </div>
     </div>
   </section>
