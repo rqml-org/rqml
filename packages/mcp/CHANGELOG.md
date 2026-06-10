@@ -1,4 +1,4 @@
-# @rqml/cli
+# @rqml/mcp
 
 ## 0.2.0
 
@@ -22,14 +22,3 @@
 
 - Updated dependencies [b374d8c]
   - @rqml/core@0.2.0
-  - @rqml/schema@0.1.1
-
-## 0.1.1
-
-### Patch Changes
-
-- 5d41e7a: Fix path-less `rqml check`/`validate`/`status` mistaking the `.rqml/` directory for
-  the spec file, which threw `EISDIR: illegal operation on a directory, read`.
-  Auto-detection now considers only regular files, so the `.rqml/` governance
-  directory is ignored, and an explicit directory path is rejected with a clear
-  message instead of `EISDIR`.

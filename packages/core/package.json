@@ -1,13 +1,21 @@
 {
   "name": "@rqml/core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "The RQML engine: parse, serialize, validate (XSD + referential integrity), lint, trace, coverage, and drift for .rqml requirements documents. The dependency-clean library every RQML surface reuses.",
   "type": "module",
   "license": "Apache-2.0",
   "author": "Gardar Gudgeirsson",
-  "keywords": ["rqml", "requirements", "traceability", "validation", "xsd"],
+  "keywords": [
+    "rqml",
+    "requirements",
+    "traceability",
+    "validation",
+    "xsd"
+  ],
   "sideEffects": false,
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

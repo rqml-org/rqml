@@ -1,8 +1,8 @@
-# @rqml/cli
+# @rqml/schema
 
-## 0.2.0
+## 0.1.1
 
-### Minor Changes
+### Patch Changes
 
 - b374d8c: Agent-loop toolchain (PKG-LOOP): `rqml link` records implements/verifiedBy
   trace edges mechanically and captures a drift baseline (`.rqml/baseline.json`)
@@ -17,19 +17,3 @@
   gains `rqml_show`, `rqml_impact`, `rqml_skeleton`, and `rqml_link` (explicit
   write). The AGENTS.md template now routes agents to the rqml CLI instead of
   raw xmllint.
-
-### Patch Changes
-
-- Updated dependencies [b374d8c]
-  - @rqml/core@0.2.0
-  - @rqml/schema@0.1.1
-
-## 0.1.1
-
-### Patch Changes
-
-- 5d41e7a: Fix path-less `rqml check`/`validate`/`status` mistaking the `.rqml/` directory for
-  the spec file, which threw `EISDIR: illegal operation on a directory, read`.
-  Auto-detection now considers only regular files, so the `.rqml/` governance
-  directory is ignored, and an explicit directory path is rejected with a clear
-  message instead of `EISDIR`.

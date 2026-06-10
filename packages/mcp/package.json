@@ -1,15 +1,23 @@
 {
   "name": "@rqml/mcp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Model Context Protocol server exposing the RQML engine (@rqml/core) as agent tools: validate, status, check, trace, show, impact, link, and skeleton.",
   "type": "module",
   "license": "Apache-2.0",
   "author": "Gardar Gudgeirsson",
-  "keywords": ["rqml", "mcp", "requirements", "agent", "tools"],
+  "keywords": [
+    "rqml",
+    "mcp",
+    "requirements",
+    "agent",
+    "tools"
+  ],
   "bin": {
     "rqml-mcp": "./dist/index.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "exports": {
     "./package.json": "./package.json"
   },
