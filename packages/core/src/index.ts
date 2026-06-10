@@ -26,7 +26,19 @@ export {
   type ResolvedEndpoint,
   type TraceResolution,
 } from "./trace/index.js";
+export {
+  impactOf,
+  type ImpactedArtifact,
+  type ImpactGroup,
+  type ImpactReport,
+  type ImpactStep,
+} from "./trace/impact.js";
 export { checkIntegrity } from "./analyze/integrity.js";
+export {
+  appendTraceEdge,
+  type LinkRequest,
+  type LinkResult,
+} from "./edit/link.js";
 
 export {
   buildOutline,
@@ -40,16 +52,34 @@ export {
   toMarkdown,
   type MarkdownOptions,
 } from "./export/markdown.js";
+export {
+  extractArtifact,
+  sliceToMarkdown,
+  type ArtifactSlice,
+  type SliceEdge,
+} from "./export/extract.js";
+export {
+  SKELETON_KINDS,
+  skeleton,
+  type SkeletonKind,
+  type SkeletonOptions,
+} from "./export/skeleton.js";
 
 export {
+  BASELINE_PATH,
+  computeBaseline,
   computeCoverage,
   detectDrift,
   implementsLinks,
+  loadBaseline,
+  saveBaseline,
   type ArtifactCoverage,
   type ArtifactStatus,
   type CoverageReport,
+  type DriftBaseline,
   type DriftFinding,
   type DriftOptions,
   type DriftReport,
   type ImplementsLink,
+  type PrematureImplementation,
 } from "./check/index.js";

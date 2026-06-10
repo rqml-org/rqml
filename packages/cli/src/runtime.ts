@@ -22,6 +22,8 @@ export interface Args {
   json: boolean;
   strictness: Strictness;
   baseDir: string;
+  /** Every raw `--flag` value, for command-specific options. */
+  flags: Map<string, string | boolean>;
 }
 
 export class UsageError extends Error {}
@@ -62,7 +64,23 @@ export function parseArgs(rest: string[]): Args {
     json: flags.get("json") === true || flags.get("json") === "true",
     strictness,
     baseDir: resolve(String(flags.get("base-dir") ?? process.cwd())),
+    flags,
   };
+}
+
+/** A flag's string value, or `undefined` when absent or value-less. */
+export function flagString(args: Args, name: string): string | undefined {
+  const value = args.flags.get(name);
+  return typeof value === "string" ? value : undefined;
+}
+
+/**
+ * Args for spec resolution in commands whose positionals are not the spec
+ * path: an explicit `--spec <path>` wins, else the base-dir spec is discovered.
+ */
+export function specArgs(args: Args): Args {
+  const override = flagString(args, "spec");
+  return { ...args, positionals: override !== undefined ? [override] : [] };
 }
 
 /**

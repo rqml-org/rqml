@@ -1,5 +1,6 @@
-import { existsSync } from "node:fs";
-import { isAbsolute, resolve as resolvePath } from "node:path";
+import { createHash } from "node:crypto";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, isAbsolute, join, resolve as resolvePath } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Diagnostic } from "../model/diagnostic.js";
 import type { RqmlDocument } from "../model/types.js";
@@ -37,11 +38,84 @@ export interface DriftOptions {
   /** Base directory relative `file:`/path locators resolve against. Defaults to `process.cwd()`. */
   baseDir?: string;
   /**
+   * Recorded content hashes per implements edge (REQ-CORE-DRIFT-BASELINE).
+   * When present, the default resolver reports `changed` for a link whose
+   * artifact exists but no longer matches its recorded hash.
+   */
+  baseline?: DriftBaseline;
+  /**
    * Pluggable artifact resolver. Injected in tests and non-filesystem hosts so
    * drift detection stays deterministic and side-effect-free by default
-   * (REQ-CORE-DRIFT, REQ-CORE-NO-LLM). Defaults to a filesystem existence check.
+   * (REQ-CORE-DRIFT, REQ-CORE-NO-LLM). Defaults to a filesystem existence check
+   * plus a baseline hash comparison when a baseline is provided.
    */
   resolve?: (link: ImplementsLink) => ArtifactStatus;
+}
+
+/**
+ * Content hashes (sha256 hex) per implements-edge id, recorded when a link is
+ * created or its requirement approved (REQ-CORE-DRIFT-BASELINE).
+ */
+export type DriftBaseline = Record<string, string>;
+
+/** Conventional baseline location, relative to the project base directory. */
+export const BASELINE_PATH = ".rqml/baseline.json";
+
+function hashFileAt(filePath: string): string | undefined {
+  try {
+    return createHash("sha256").update(readFileSync(filePath)).digest("hex");
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Hash every filesystem-resolvable implements link of the document, producing
+ * the baseline that future drift runs compare against. Deterministic for a
+ * given document and filesystem state.
+ */
+export function computeBaseline(
+  doc: RqmlDocument,
+  options: { baseDir?: string } = {},
+): DriftBaseline {
+  const baseDir = options.baseDir ?? process.cwd();
+  const baseline: DriftBaseline = {};
+  for (const link of implementsLinks(doc)) {
+    const filePath = filePathFromUri(link.uri, baseDir);
+    if (filePath === undefined) continue;
+    const hash = hashFileAt(filePath);
+    if (hash !== undefined) baseline[link.edgeId] = hash;
+  }
+  return baseline;
+}
+
+/** Read the baseline store under `baseDir`, or `undefined` when absent/invalid. */
+export function loadBaseline(baseDir: string): DriftBaseline | undefined {
+  try {
+    const parsed: unknown = JSON.parse(
+      readFileSync(join(baseDir, BASELINE_PATH), "utf8"),
+    );
+    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+      return undefined;
+    }
+    const out: DriftBaseline = {};
+    for (const [edgeId, hash] of Object.entries(parsed)) {
+      if (typeof hash === "string") out[edgeId] = hash;
+    }
+    return out;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Write the baseline store with sorted keys so repeated saves diff cleanly. */
+export function saveBaseline(baseDir: string, baseline: DriftBaseline): void {
+  const path = join(baseDir, BASELINE_PATH);
+  mkdirSync(dirname(path), { recursive: true });
+  const sorted = Object.fromEntries(
+    Object.entries(baseline).sort(([a], [b]) => a.localeCompare(b)),
+  );
+  writeFileSync(path, `${JSON.stringify(sorted, null, 2)}\n`);
 }
 
 /** Extract every `implements` edge that links a requirement to external code. */
@@ -88,12 +162,18 @@ function filePathFromUri(uri: string, baseDir: string): string | undefined {
   return undefined;
 }
 
-function filesystemResolver(baseDir: string) {
+function filesystemResolver(baseDir: string, baseline?: DriftBaseline) {
   return (link: ImplementsLink): ArtifactStatus => {
     const filePath = filePathFromUri(link.uri, baseDir);
     // Non-filesystem URIs can't be checked offline; treat as present, not drift.
     if (filePath === undefined) return "present";
-    return existsSync(filePath) ? "present" : "missing";
+    if (!existsSync(filePath)) return "missing";
+    const recorded = baseline?.[link.edgeId];
+    if (recorded !== undefined) {
+      const current = hashFileAt(filePath);
+      if (current !== undefined && current !== recorded) return "changed";
+    }
+    return "present";
   };
 }
 
@@ -105,7 +185,7 @@ function filesystemResolver(baseDir: string) {
  */
 export function detectDrift(doc: RqmlDocument, options: DriftOptions = {}): DriftReport {
   const baseDir = options.baseDir ?? process.cwd();
-  const resolve = options.resolve ?? filesystemResolver(baseDir);
+  const resolve = options.resolve ?? filesystemResolver(baseDir, options.baseline);
 
   const links = implementsLinks(doc);
   const drifted: DriftFinding[] = [];

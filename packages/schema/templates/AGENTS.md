@@ -20,6 +20,23 @@ The RQML XSD schema is at https://rqml.org/schema/rqml-2.1.0.xsd (insert correct
 
 ---
 
+## Toolchain
+
+The spec-first loop is enforced by the `rqml` CLI (npm: `@rqml/cli`; the `@rqml/mcp` server exposes the same engine as agent tools):
+
+```bash
+rqml check                 # deterministic gate: validation + coverage + drift (exit 0 = pass)
+rqml status                # re-anchor: spec, coverage, and drift state
+rqml show <REQ-ID>         # one requirement: statement, acceptance criteria, trace neighborhood
+rqml impact <ID>           # what is affected, transitively, if this artifact changes
+rqml link <REQ-ID> <path>  # record an implements edge + drift baseline (--type verifiedBy for tests)
+rqml skeleton <kind>       # schema-valid snippet: req | edge | testCase | stateMachine
+```
+
+Run `rqml status` when you start a session to re-anchor on the spec. Run `rqml check` before finishing any task — it must exit 0.
+
+---
+
 ## Core Principle: Spec-First Development
 
 ```
@@ -43,10 +60,19 @@ Ask clarifying questions until you understand the goal, scope, acceptance criter
 - Get developer confirmation before proceeding
 
 ### 3. Implement
-Reference requirement IDs in code comments. If you discover missing requirements, stop and add them to the spec first.
+Read the requirement first: `rqml show REQ-XXX`. Check blast radius before changing existing artifacts: `rqml impact REQ-XXX`. If you discover missing requirements, stop and add them to the spec first. After implementing, record the trace link:
+
+```bash
+rqml link REQ-XXX src/path/to/implementation.ts
+```
 
 ### 4. Verify
-Add tests that reference requirement IDs. Update `<trace>` section with verification links.
+Add tests that reference requirement IDs, then record verification:
+
+```bash
+rqml link REQ-XXX test/path/to/test.ts --type verifiedBy
+rqml check   # must exit 0 before you are done
+```
 
 ---
 
@@ -91,15 +117,14 @@ For PRs and commits:
 
 The `.rqml` file must remain valid XML conforming to the version of RQML referenced in the version attribute in the spec document.
 
-**To validate:** Try xmllint first (pre-installed on macOS/Linux):
+**To validate:** Use the toolchain — it validates offline against the bundled schema and also checks referential integrity the XSD alone cannot enforce:
 ```bash
-xmllint --schema https://rqml.org/schema/rqml-2.1.0.xsd <rqml-file-name> --noout
+rqml validate
 ```
 
-If xmllint is unavailable, use Python with lxml:
+If the `rqml` CLI is not installed, `npx @rqml/cli validate` works without installation. As a last resort, xmllint (pre-installed on macOS/Linux) checks XSD validity only:
 ```bash
-pip install lxml
-python -c "from lxml import etree; s=etree.XMLSchema(etree.parse('https://rqml.org/schema/rqml-2.1.0.xsd')); print('Valid' if s.validate(etree.parse('<rqml-file-name>')) else s.error_log)"
+xmllint --schema https://rqml.org/schema/rqml-2.1.0.xsd <rqml-file-name> --noout
 ```
 
 **IDE validation:** If the `.rqml` file includes `xsi:schemaLocation`, XML-aware editors (VS Code with XML extension, IntelliJ) validate automatically.
