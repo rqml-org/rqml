@@ -23,14 +23,30 @@ ESM, TypeScript types included, Node 18+.
   `RqmlDocument`; `serialize()` writes a model back to XML. Round-tripping
   preserves structure.
 - **Validate** — XSD validation (via a bundled libxml2 WebAssembly build) plus an
-  in-code referential-integrity pass for the id-uniqueness and trace keyref rules.
+  in-code referential-integrity pass: id uniqueness, trace keyref rules, and
+  state-machine references (the `initial` state resolves, transition endpoints
+  resolve within their machine, `final` states have no outgoing transitions).
 - **Lint** — strictness-aware semantic checks beyond what the schema can express.
 - **Trace** — resolve trace edges, index declared ids, and flag dangling local
   references.
+- **Impact** — `impactOf()` traverses the trace graph transitively in both
+  directions: what is affected if this artifact changes, with paths, grouped by
+  edge type and direction.
 - **Coverage** — which goals lack a satisfying requirement, which requirements are
-  unverified, unimplemented, or orphaned.
+  unverified, unimplemented, or orphaned — plus lifecycle-aware views: the
+  **approved-only** implementation gap, and *premature implementations*
+  (an `implements` edge pointing at a requirement that is not approved).
 - **Drift** — resolve the external locators of `implements` edges and report links
-  whose target is missing or changed.
+  whose target is **missing** or — against a recorded content-hash baseline —
+  **changed**.
+- **Extract** — `extractArtifact()` returns one artifact's statement, acceptance
+  criteria, and trace neighborhood; `sliceToMarkdown()` renders it for agent
+  context, so a consumer reads a slice instead of the whole document.
+- **Edit** — `appendTraceEdge()` records an `implements`/`verifiedBy` edge as a
+  *textual* insertion, preserving XML comments and hand formatting, with
+  deterministic edge-id derivation and integrity checking of the result.
+- **Skeletons** — `skeleton()` emits schema-valid snippets for `req`, `edge`,
+  `testCase`, and `stateMachine`.
 - **Export** — a document outline and a Markdown serializer.
 
 ## Two entry points
@@ -39,7 +55,10 @@ Validation pulls in the libxml2 WASM runtime, so it lives behind a **separate,
 lazily loaded** entry. Consumers that only parse, lint, or trace never pay for it.
 
 ```ts
-import { parse, serialize, lint, resolveTrace, computeCoverage, detectDrift } from "@rqml/core";
+import {
+  parse, serialize, lint, resolveTrace, computeCoverage, detectDrift,
+  impactOf, extractArtifact, appendTraceEdge, skeleton, computeBaseline,
+} from "@rqml/core";
 import { validate } from "@rqml/core/validate"; // loads the XSD engine
 ```
 
@@ -82,19 +101,50 @@ The XSD text is bundled from `@rqml/schema`, so this works with no network acces
 ### Coverage and drift
 
 ```ts
-import { parse, computeCoverage, detectDrift } from "@rqml/core";
+import { parse, computeCoverage, detectDrift, loadBaseline } from "@rqml/core";
 
 const { document } = parse(xmlString) as { document: import("@rqml/core").RqmlDocument };
 
 const coverage = computeCoverage(document);
-// → { uncoveredGoals, unverifiedRequirements, unimplementedRequirements, orphanRequirements, ... }
+// → { uncoveredGoals, unverifiedRequirements, unimplementedRequirements,
+//     unimplementedApprovedRequirements, prematureImplementations,
+//     orphanRequirements, ... }
 
-const drift = detectDrift(document, { baseDir: process.cwd() });
-// → { links, drifted, diagnostics }   (drifted = implements links whose code is missing/changed)
+const drift = detectDrift(document, {
+  baseDir: process.cwd(),
+  baseline: loadBaseline(process.cwd()),   // .rqml/baseline.json, written by `rqml link`
+});
+// → { links, drifted, diagnostics }
+//   drifted = implements links whose code is missing — or changed vs. its baseline hash
 ```
 
 `detectDrift` accepts an injectable `resolve` function, so it stays deterministic
-and testable without touching the filesystem.
+and testable without touching the filesystem. `computeBaseline()` /
+`saveBaseline()` produce and persist the content hashes the `changed` state is
+judged against.
+
+### Impact, extraction, and link recording
+
+```ts
+import { impactOf, extractArtifact, sliceToMarkdown, appendTraceEdge } from "@rqml/core";
+
+const impact = impactOf(document, "REQ-PAY-001");
+// → { affected: [{ id, kind, distance, path }], groups: [{ direction, type, ids }] }
+
+const slice = extractArtifact(document, "REQ-PAY-001");
+if (slice) console.log(sliceToMarkdown(slice));
+// one requirement — statement, acceptance criteria, trace neighborhood — and nothing else
+
+const linked = appendTraceEdge(xmlString, {
+  artifactId: "REQ-PAY-001",
+  uri: "src/payments/capture.ts#capture",
+  type: "implements",
+});
+if (linked.ok) {
+  // linked.xml is the full document with the new edge; comments and formatting intact
+  // linked.edgeId is deterministic: "E-IMPL-PAY-001"
+}
+```
 
 ## Guarantees
 
