@@ -19,11 +19,16 @@ import styles from './index.module.css';
       <Heading as="h1" className={styles.centerHeader}>Make the spec the artifact. Then gate CI on it.</Heading>
 
       <div className={styles.heroSubtitleCenter}>
-        <u>R</u>e<u>q</u>uirements <u>M</u>arkup <u>L</u>anguage is an XML format for software
+        <b>Requirements Markup Language</b> is an XML format for software
         requirements with a deterministic toolchain: validate the spec, trace it to the code
-        and tests that realize it, and fail the build when they drift apart. Built for
-        codebases where an agent writes much of the code — and someone still has to know
+        and tests that realize it, and fail the build when they drift apart. Built <b>for
+        codebases where an agent writes much of the code</b> — and someone still has to know
         what the system is supposed to do.
+      </div>
+
+      <div>
+        RQML is a requirements file plus a checker: the file says what should exist, 
+        and the checker proves the code matches it.
       </div>
 
       <div className={styles.heroCtas}>
