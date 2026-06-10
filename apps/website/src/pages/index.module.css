@@ -278,3 +278,130 @@
   font-size: 1.1rem;
   opacity: 0.95;
 }
+
+/* Breathing room above the scaffold note that follows the hero CTAs. */
+.scaffoldNote {
+  margin-top: 3rem;
+}
+
+/* "Yes, XML" callout — full-bleed band, crisply separated from neighbors. */
+.xmlCallout {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  padding: 3.25rem 0;
+  border-top: 1px solid var(--ifm-toc-border-color);
+  border-bottom: 1px solid var(--ifm-toc-border-color);
+  background: radial-gradient(
+      900px 420px at 50% 0%,
+      rgba(133, 104, 171, 0.18),
+      transparent 65%
+    ),
+    radial-gradient(
+      700px 320px at 85% 100%,
+      rgba(2, 169, 234, 0.1),
+      transparent 60%
+    );
+}
+
+/* Terminal window — macOS/fish-style chrome for the hero demo. */
+.terminal {
+  max-width: 56rem;
+  margin: 0 auto 2rem auto;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: #11131a;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  text-align: left;
+}
+
+.terminalBar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.9rem;
+  background: #1a1d26;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.termDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.termDotRed {
+  background: #ff5f57;
+}
+
+.termDotYellow {
+  background: #febc2e;
+}
+
+.termDotGreen {
+  background: #28c840;
+}
+
+.terminalTitle {
+  flex: 1;
+  text-align: center;
+  margin-right: 52px; /* visually re-center against the traffic lights */
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.terminalBody {
+  margin: 0;
+  padding: 1.1rem 1.25rem;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: #d6dae3;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+/* One terminal line; spans (not divs) keep <pre> content valid for hydration. */
+.termLine {
+  display: block;
+}
+
+.tPath {
+  color: #4fd6be;
+}
+
+.tPrompt {
+  color: #c678dd;
+  font-weight: 700;
+}
+
+.tCmd {
+  color: #f0f2f6;
+}
+
+.tOk {
+  color: #3fd97f;
+}
+
+.tErr {
+  color: #ff6b6b;
+}
+
+.tDim {
+  color: #6b7280;
+  font-style: italic;
+}
+
+.tOut {
+  color: #aab2c0;
+}
+
+.tHl {
+  color: #ffd866;
+}

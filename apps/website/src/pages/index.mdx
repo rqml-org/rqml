@@ -1,6 +1,6 @@
 ---
 title: RQML
-description: Requirements you can compile. Make specs the source of truth—not code.
+description: An XML requirements format plus a deterministic toolchain — validate the spec, trace it to code and tests, and fail CI when implementation drifts.
 slug: /
 ---
 
@@ -16,25 +16,24 @@ import styles from './index.module.css';
     <div className="container">
 
       <img id="heroLogo" width="25%" src="/img/RQML_logo_transparent.png" alt="RQML logo" className={styles.heroLogo} />
-      <Heading as="h1" className={styles.centerHeader}>
-        Spec-first development for the LLM era.
-      </Heading>
+      <Heading as="h1" className={styles.centerHeader}>Make the spec the artifact. Then gate CI on it.</Heading>
 
-      <p size="lg" className={styles.heroSubtitleCenter}>
-        <u>R</u>e<u>q</u>uirements <u>M</u>arkup <u>L</u>anguage is an LLM-first requirements 
-        format that gives coding agents <b>durable project context</b> — so your intent, constraints, 
-        and acceptance criteria stay clear from planning to implementation.
-      </p>
+      <div className={styles.heroSubtitleCenter}>
+        <u>R</u>e<u>q</u>uirements <u>M</u>arkup <u>L</u>anguage is an XML format for software
+        requirements with a deterministic toolchain: validate the spec, trace it to the code
+        and tests that realize it, and fail the build when they drift apart. Built for
+        codebases where an agent writes much of the code — and someone still has to know
+        what the system is supposed to do.
+      </div>
 
       <div className={styles.heroCtas}>
         <a className="button button--primary button--lg" href="/docs/quick-start">Get started</a>
         <a className="button button--secondary button--lg" href="https://github.com/rqml-org/rqml" target="_blank" rel="noopener noreferrer">View on GitHub</a>
-        <a className="button button--secondary button--lg" href="https://marketplace.visualstudio.com/items?itemName=rqml.rqml-vscode" target="_blank" rel="noopener noreferrer">Try it in VS Code</a>
       </div>
 
-      <p className={styles.heroSubtitleCenter}>
-        Scaffold a spec and an <code>AGENTS.md</code> in one command — works with any coding agent:
-      </p>
+      <div className={`${styles.heroSubtitleCenter} ${styles.scaffoldNote}`}>
+        One command scaffolds a spec and an <code>AGENTS.md</code> — works with any coding agent:
+      </div>
       <CodeBlock language="bash">{`npx @rqml/cli init`}</CodeBlock>
 
       {/* DEMO GIF — run `vhs demo.tape` in static/img/ to generate demo.gif, then uncomment:
@@ -46,15 +45,56 @@ import styles from './index.module.css';
     </div>
   </header>
 
-  {/* WHY XML — disarm the most common objection early */}
+  {/* THE PITCH, IN ONE TERMINAL SESSION */}
   <section className={`container ${styles.section}`}>
     <div className="container">
-      <p size="lg" className={styles.heroSubtitleCenter}>
-        <b>Why XML — and not JSON or Markdown?</b> Because the model reads it best.
-        Anthropic, Google, and AWS all recommend XML tags to structure LLM prompts;
-        RQML turns your spec into a self-validating version of exactly that — strict
-        where it matters, readable everywhere else.
-      </p>
+      <Heading as="h1" className={styles.centerHeader}>The whole idea, in one terminal session</Heading>
+
+      {/* TODO: side-by-side validation demo — spec on the left, live rqml check verdicts on the right */}
+
+      <div className={styles.terminal}>
+        <div className={styles.terminalBar}>
+          <span className={`${styles.termDot} ${styles.termDotRed}`} />
+          <span className={`${styles.termDot} ${styles.termDotYellow}`} />
+          <span className={`${styles.termDot} ${styles.termDotGreen}`} />
+          <span className={styles.terminalTitle}>fish — ~/myproject</span>
+        </div>
+        <pre className={styles.terminalBody}>
+          <span className={styles.termLine}><span className={styles.tDim}># the agent implements REQ-AUTH-001, then records the link — no hand-edited XML</span></span>
+          <span className={styles.termLine}><span className={styles.tPath}>~/myproject</span> <span className={styles.tPrompt}>❯</span> <span className={styles.tCmd}>rqml link REQ-AUTH-001 src/auth.ts#verifyToken</span></span>
+          <span className={styles.termLine}><span className={styles.tOk}>✓ REQ-AUTH-001 ← src/auth.ts#verifyToken</span><span className={styles.tOut}> (E-IMPL-AUTH-001, implements, baseline recorded)</span></span>
+          <span className={styles.termLine}>{' '}</span>
+          <span className={styles.termLine}><span className={styles.tPath}>~/myproject</span> <span className={styles.tPrompt}>❯</span> <span className={styles.tCmd}>rqml check</span></span>
+          <span className={styles.termLine}><span className={styles.tOk}>✓ check pass (standard)</span><span className={styles.tOut}> — requirements.rqml</span></span>
+          <span className={styles.termLine}>{' '}</span>
+          <span className={styles.termLine}><span className={styles.tDim}># six weeks later, someone refactors auth without touching the spec…</span></span>
+          <span className={styles.termLine}><span className={styles.tPath}>~/myproject</span> <span className={styles.tPrompt}>❯</span> <span className={styles.tCmd}>rqml check</span></span>
+          <span className={styles.termLine}>{'  '}<span className={styles.tErr}>error (drift) [changed-implementation]:</span><span className={styles.tOut}> implements edge "E-IMPL-AUTH-001"</span></span>
+          <span className={styles.termLine}>{'    '}<span className={styles.tOut}>points at "src/auth.ts#verifyToken", which has changed since approval.</span></span>
+          <span className={styles.termLine}><span className={styles.tErr}>✗ check fail (standard) — requirements.rqml</span>{'      '}<span className={styles.tHl}>(exit 2)</span></span>
+        </pre>
+      </div>
+
+      <div className={styles.heroSubtitleCenter}>
+        No language model is involved in any of those verdicts. <code>rqml check</code> is a
+        pure function of your repository — same input, same answer, on your laptop and in CI.
+        The model proposes; the toolchain disposes.
+      </div>
+    </div>
+  </section>
+
+  {/* WHY XML — meet the objection head-on */}
+  <section className={styles.xmlCallout}>
+    <div className="container">
+      <div className={styles.heroSubtitleCenter}>
+        <b>Yes, XML.</b> Requirements are documents — prose with structure woven through it —
+        and mixed content is the problem XML actually solves; JSON and YAML cannot represent
+        it. It is also what the model vendors already tell you to do: Anthropic, Google, and
+        AWS all recommend XML tags for structuring LLM context. RQML is that advice taken
+        seriously — a schema-validated vocabulary instead of ad-hoc tags — so you get
+        validation, namespaces, comments, and clean diffs. The closing tags cost tokens once;
+        the structure pays rent for the life of the project.
+      </div>
       <div className={styles.heroCtas}>
         <a className="button button--secondary button--lg" href="/why-xml">Why XML</a>
         <a className="button button--secondary button--lg" href="/why-rqml">Why RQML</a>
@@ -62,12 +102,126 @@ import styles from './index.module.css';
     </div>
   </section>
 
-  {/* HERO: Workflow */}
+  {/* TOOLING */}
+  <section id="tooling" className={`container ${styles.section}`}>
+    <div className="container">
+      <Heading as="h1" className={styles.centerHeader}>Not just a format — a deterministic toolchain.</Heading>
+      <div className={styles.heroSubtitleCenter}>
+        One engine powers a CLI, an MCP server for your agent, and the VS Code extension.
+        Open source (Apache&#8209;2.0), published on npm, fully offline, no telemetry, and
+        <b> no language model in the verdict path</b>.
+      </div>
+
+      <div className={styles.grid3}>
+        <div className={`card ${styles.featureCard}`}>
+          <div className="card__body">
+            <Heading as="h3" className={styles.cardTitle}>rqml — the CLI</Heading>
+            <div className={styles.cardText}>
+              <code>init</code>, <code>validate</code>, <code>status</code>, and the
+              <code> check</code> gate — plus the agent loop: <code>show</code>,
+              <code> impact</code>, <code>link</code>, <code>skeleton</code>.
+            </div>
+            <p className={styles.cardText}><code>npm i -g @rqml/cli</code></p>
+          </div>
+        </div>
+
+        <div className={`card ${styles.featureCard}`}>
+          <div className="card__body">
+            <Heading as="h3" className={styles.cardTitle}>@rqml/core — the engine</Heading>
+            <div className={styles.cardText}>
+              Parse, validate (XSD + referential integrity), lint, trace, impact, coverage,
+              drift, and comment-preserving spec edits — embed it in your own tools.
+            </div>
+            <p className={styles.cardText}><code>npm i @rqml/core</code></p>
+          </div>
+        </div>
+
+        <div className={`card ${styles.featureCard}`}>
+          <div className="card__body">
+            <Heading as="h3" className={styles.cardTitle}>@rqml/mcp — for agents</Heading>
+            <div className={styles.cardText}>
+              Eight Model Context Protocol tools backed by the same engine. Reads specs by
+              file path (no pasting 30k tokens into a tool call); writes only on explicit
+              intent.
+            </div>
+            <p className={styles.cardText}><code>npx @rqml/mcp</code></p>
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.heroSubtitleCenter}>
+        The loop an agent actually runs — read one requirement, check the blast radius,
+        implement, record the link, pass the gate:
+      </div>
+      <CodeBlock language="bash">{`rqml show REQ-PAY-001     # one requirement: statement, acceptance criteria, trace neighborhood
+rqml impact REQ-PAY-001   # what is affected, transitively, if this changes?
+rqml link REQ-PAY-001 src/payments/capture.ts   # implements edge + content-hash baseline
+rqml check                # validation + coverage + drift; exit 0 or it isn't done`}</CodeBlock>
+
+      <div className={styles.heroCtas}>
+        <a className="button button--primary button--lg" href="/docs/tooling">Explore the tooling</a>
+        <a className="button button--secondary button--lg" href="https://github.com/rqml-org/rqml" target="_blank" rel="noopener noreferrer">Star on GitHub</a>
+      </div>
+    </div>
+  </section>
+
+  {/* DOGFOOD + WHAT IT IS NOT */}
+  <section className={`container ${styles.section}`}>
+    <div className={styles.twoCol}>
+      <div>
+        <Heading as="h2">It eats its own dog food.</Heading>
+        <div className={styles.lead}>
+          The RQML repository is specified in RQML. <code>requirements.rqml</code> defines
+          the language and the toolchain as requirements; every shipped feature was specified
+          before it was built, is linked to the code that implements it and the tests that
+          verify it, and the repo gates its own CI with <code>rqml check</code>.
+        </div>
+        <div className={styles.lead}>
+          The name is older than you might guess: RQML began as an XML DTD in a 2000 MSc
+          thesis at the University of York. 2.x is a ground-up redesign of that idea for
+          coding agents.
+        </div>
+        <div className={styles.heroCtas}>
+          <a className="button button--outline button--primary" href="https://github.com/rqml-org/rqml/blob/main/requirements.rqml" target="_blank" rel="noopener noreferrer">Read the self-spec →</a>
+          <a className="button button--outline button--secondary" href="/docs/faq">The origin story</a>
+        </div>
+      </div>
+
+      <div className={`card ${styles.card}`}>
+        <div className="card__body">
+          <Heading as="h3" className={styles.cardTitle}>What RQML is not</Heading>
+          <ul className={styles.bullets}>
+            <li><strong>Not a code generator.</strong> It never writes your code — your agent does that. RQML is what keeps the agent honest.</li>
+            <li><strong>Not AI-powered.</strong> No model runs anywhere in the toolchain. Verdicts are reproducible functions of your repo.</li>
+            <li><strong>Not DOORS.</strong> A text file in your repo and a small npm package — not an enterprise requirements suite.</li>
+            <li><strong>Not ceremony.</strong> <code>meta</code> plus one requirement is a valid spec. Everything else is optional and added when it earns its keep.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* HERO: examples */}
+  <section id="examples" className={`${styles.hero}`}>
+    <div className="container">
+      <Heading as="h1" className={styles.centerHeader}>Eleven sections. Two are mandatory.</Heading>
+      <div className={styles.heroSubtitleCenter}>
+        A useful spec fits in 15 lines; a serious one scales to thousands of requirements
+        with goals, scenarios, state machines, and a typed traceability graph. Explore the
+        vocabulary:
+      </div>
+      <RqmlTagExplorer />
+    </div>
+    <div className={styles.heroCtas}>
+      <a className="button button--primary button--lg" href="/docs/introduction">Read the docs</a>
+      <a className="button button--secondary button--lg" href="https://marketplace.visualstudio.com/items?itemName=rqml.rqml-vscode" target="_blank" rel="noopener noreferrer">Get the VS Code extension</a>
+    </div>
+  </section>
+
+  {/* HERO: Workflow — superseded by the terminal demo above; the SVG says less than the shell does
   <section id="workflow" className={`container ${styles.section}`}>
     <div className="container">
-      <Heading as="h1" className={styles.centerHeader}>
-        RQML is the missing piece in your LLM workflow.
-      </Heading>
+      <Heading as="h1" className={styles.centerHeader}>RQML is the missing piece in your LLM workflow.</Heading>
       <div className={styles.heroImageWrap}>
         <img
           className={styles.heroImageWorkflow}
@@ -80,104 +234,13 @@ import styles from './index.module.css';
       </div>
     </div>
   </section>
-
-  {/* HERO: examples */}
-  <section id="examples" className={`${styles.hero}`}>
-    <div className="container">
-      <Heading as="h1" className={styles.centerHeader}>
-        Your LLM writes it. Your code gets better.
-      </Heading>
-      <p size="lg" className={styles.heroSubtitleCenter}>
-        An RQML document is organized into 11 mostly optional sections, 
-        each capturing a different aspect of your requirements.
-      </p>
-      <div className={styles.heroCtas}>
-        <a className="button button--secondary button--lg" href="/why-xml">Why XML</a>
-      </div>
-      <p/>
-      <RqmlTagExplorer />
-    </div>
-    <div className={styles.heroCtas}>
-      <a className="button button--primary button--lg" href="/docs/introduction">Read the docs</a>
-      <a className="button button--secondary button--lg" href="https://marketplace.visualstudio.com/items?itemName=rqml.rqml-vscode" target="_blank" rel="noopener noreferrer">Get the VS Code extension</a>
-    </div>
-  </section>  
-
-  {/* TOOLING */}
-  <section id="tooling" className={`container ${styles.section}`}>
-    <div className="container">
-      <Heading as="h1" className={styles.centerHeader}>
-        Not just a format — a deterministic toolchain.
-      </Heading>
-      <p size="lg" className={styles.heroSubtitleCenter}>
-        One engine powers a CLI, an MCP server for your agent, and the VS Code extension.
-        It's open source (Apache&#8209;2.0), published on npm, runs fully offline, and keeps
-        <b> no language model in the verdict path</b> — so <code>rqml check</code> is reproducible
-        enough to gate CI on.
-      </p>
-
-      <div className={styles.grid3}>
-        <div className={`card ${styles.featureCard}`}>
-          <div className="card__body">
-            <Heading as="h3" className={styles.cardTitle}>rqml — the CLI</Heading>
-            <p className={styles.cardText}>
-              <code>init</code>, <code>validate</code>, <code>status</code>, and a deterministic
-              <code> check</code> gate for CI and editor/commit hooks.
-            </p>
-            <p className={styles.cardText}><code>npm i -g @rqml/cli</code></p>
-          </div>
-        </div>
-
-        <div className={`card ${styles.featureCard}`}>
-          <div className="card__body">
-            <Heading as="h3" className={styles.cardTitle}>@rqml/core — the engine</Heading>
-            <p className={styles.cardText}>
-              Parse, validate (XSD + referential integrity), lint, trace, coverage, and drift —
-              embed it in your own tools.
-            </p>
-            <p className={styles.cardText}><code>npm i @rqml/core</code></p>
-          </div>
-        </div>
-
-        <div className={`card ${styles.featureCard}`}>
-          <div className="card__body">
-            <Heading as="h3" className={styles.cardTitle}>@rqml/mcp — for agents</Heading>
-            <p className={styles.cardText}>
-              A Model Context Protocol server that gives any coding agent RQML tools to
-              validate and check specs.
-            </p>
-            <p className={styles.cardText}><code>npx @rqml/mcp</code></p>
-          </div>
-        </div>
-      </div>
-
-      <p size="lg" className={styles.heroSubtitleCenter}>
-        Link a requirement to the code that implements it, and <code>rqml check</code> fails —
-        in CI or a commit hook — the moment that code drifts:
-      </p>
-      <CodeBlock language="bash">{`$ rqml check
-✓ check pass (standard) — requirements.rqml
-
-# after the code an "implements" edge points to is deleted:
-$ rqml check
-  error (drift) [missing-implementation]: implements edge "E-IMPL-AUTH"
-    points at "file:src/auth.ts", which does not exist.
-✗ check fail (standard) — requirements.rqml      (exit code 2)`}</CodeBlock>
-
-      <div className={styles.heroCtas}>
-        <a className="button button--primary button--lg" href="/docs/tooling">Explore the tooling</a>
-        <a className="button button--secondary button--lg" href="https://github.com/rqml-org/rqml" target="_blank" rel="noopener noreferrer">Star on GitHub</a>
-      </div>
-    </div>
-  </section>
+  */}
 
   {/* HERO: Features */}
   {/*
   <section id="features" className={`container ${styles.section}`}>
     <div className="container">
-      <Heading as="h1" className={styles.centerHeader}>
-        RQML is requirements engineering done properly - benefiting LLMs and humans alike.
-      </Heading>
+      <Heading as="h1" className={styles.centerHeader}>RQML is requirements engineering done properly - benefiting LLMs and humans alike.</Heading>
       <div className={styles.heroImageWrap}>
         <img
           className={styles.heroImageFeatures}
@@ -199,10 +262,10 @@ $ rqml check
     <div className={styles.twoCol}>
       <div>
         <Heading as="h2">LLMs amplify weak requirements.</Heading>
-        <p className={styles.lead}>
+        <div className={styles.lead}>
           Teams already cut corners on requirements because writing “proper specs” feels slow and unrewarding.
           LLM-assisted coding makes that problem sharper.
-        </p>
+        </div>
 
         <ul className={styles.bullets}>
           <li>AI is fast—but it <strong>guesses context</strong> unless you provide it.</li>
@@ -210,10 +273,10 @@ $ rqml check
           <li>Docs rot because they’re <strong>manual</strong>, boring, and hard to keep aligned.</li>
         </ul>
 
-        <p className={styles.punch}>
+        <div className={styles.punch}>
           If you’re using LLMs to write code, you need a better way to communicate intent than scattered chats and
           half-remembered assumptions.
-        </p>
+        </div>
 
         <a className="button button--outline button--primary" href="/docs/why-rqml">
           Read the rationale →
@@ -224,9 +287,9 @@ $ rqml check
         <div className={`card ${styles.card}`}>
           <div className="card__body">
             <Heading as="h3" className={styles.cardTitle}>Before</Heading>
-            <p className={styles.cardText}>
+            <div className={styles.cardText}>
               A thousand tiny assumptions in chat logs, tickets, and tribal knowledge.
-            </p>
+            </div>
             <div className={styles.tagRow}>
               <span className={styles.tag}>Ambiguous</span>
               <span className={styles.tag}>Hard to reuse</span>
@@ -238,9 +301,9 @@ $ rqml check
         <div className={`card ${styles.card}`}>
           <div className="card__body">
             <Heading as="h3" className={styles.cardTitle}>After</Heading>
-            <p className={styles.cardText}>
+            <div className={styles.cardText}>
               One versioned requirements spec that both humans and LLM tools can rely on.
-            </p>
+            </div>
             <div className={styles.tagRow}>
               <span className={styles.tag}>Explicit</span>
               <span className={styles.tag}>Toolable</span>
@@ -259,10 +322,10 @@ $ rqml check
     <div className="container">
       <div className={styles.centerHeader}>
         <Heading as="h2">A shared understanding—between humans and machines.</Heading>
-        <p className={styles.lead}>
+        <div className={styles.lead}>
           RQML gives your project a single place to store the “why” and “what” of the system in a way that scales with
           your codebase and your team.
-        </p>
+        </div>
       </div>
 
       <div className={styles.grid3}>
@@ -326,15 +389,15 @@ $ rqml check
             <strong>Check</strong> — <code>npx @rqml/cli check</code> validates the schema, coverage, and implementation drift (deterministic, offline)
           </li>
           <li>
-            Develop with your <strong>coding agent of choice</strong> — it uses RQML as the source of truth for system intent, and you gate CI with <code>rqml check</code>
+            Develop with your <strong>coding agent of choice</strong> — it works from the spec, records trace links with <code>rqml link</code>, and you gate CI with <code>rqml check</code>
           </li>
         </ol>
 
-        <p className={styles.punch}>
-          <b>Tip:</b> Don't write RQML from scratch. Grab the official VS Code extension on 
-          <a href="http://rqml.dev" target="_blank" rel="noopener noreferrer">RQML.dev</a> 
-          for authoring support, real-time schema validation, spec browsing and export. There's even a built-in agent.
-        </p>
+        <div className={styles.punch}>
+          <b>Tip:</b> Don't write RQML from scratch. Your agent drafts it, <code>rqml skeleton</code> keeps
+          the structure valid, and the <a href="https://marketplace.visualstudio.com/items?itemName=rqml.rqml-vscode" target="_blank" rel="noopener noreferrer">VS Code extension</a> adds
+          authoring support, real-time validation, spec browsing, and export.
+        </div>
 
         <div className={styles.heroCtas}>
           <a className="button button--primary button--lg" href="/docs/quick-start">Quick start</a>
@@ -343,7 +406,7 @@ $ rqml check
 
       <div className={`card ${styles.snippetCard}`}>
         <div className="card__body">
-          <Heading as="h3" className={styles.cardTitle}>Hello world RQML example</Heading>
+          <Heading as="h3" className={styles.cardTitle}>A complete, valid spec</Heading>
           <CodeBlock language="xml">
 {`<rqml xmlns="https://rqml.org/schema/2.1.0"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -416,9 +479,9 @@ $ rqml check
     <div className={styles.twoCol}>
       <div>
         <Heading as="h2">Why not just Markdown?</Heading>
-        <p className={styles.lead}>
+        <div className={styles.lead}>
           Markdown is great for humans—but it’s flexible in ways that make it unreliable as machine-consumable system intent.
-        </p>
+        </div>
 
         <ul className={styles.bullets}>
           <li>Markdown is <strong>ambiguous</strong> unless you enforce strict conventions.</li>
@@ -434,9 +497,9 @@ $ rqml check
       <div className={`card ${styles.card}`}>
         <div className="card__body">
           <Heading as="h3" className={styles.cardTitle}>The goal</Heading>
-          <p className={styles.cardText}>
+          <div className={styles.cardText}>
             Make the requirements spec the durable artifact. Let code be generated, regenerated, and refactored around it.
-          </p>
+          </div>
           <div className={styles.quote}>
             “Stop re-explaining the same context to every tool, every time.”
           </div>
@@ -449,10 +512,10 @@ $ rqml check
   {/* FINAL CTA */}
   <section className={styles.final}>
     <div className="container">
-      <Heading as="h2" className={styles.finalTitle}>Try RQML on your next project.</Heading>
-      <p size="lg" className={styles.heroSubtitleCenter}>
-        Put your intent in the repo. Make LLM output calmer, cleaner, and easier to trust. And finally start doing requirements right.
-      </p>
+      <Heading as="h2" className={styles.finalTitle}>Put the intent in the repo.</Heading>
+      <div className={styles.heroSubtitleCenter}>
+        One file, one gate, any agent. Apache-2.0, offline, no telemetry.
+      </div>
 
       <div className={styles.heroCtas}>
         <a className="button button--primary button--lg" href="/docs/quick-start">Get started</a>

@@ -18,8 +18,8 @@ you ask for it.
 
 | Package | What it is | Use it from |
 |---------|-----------|-------------|
-| [`@rqml/core`](./core.md) | The engine: parse, validate, lint, trace, coverage, drift | Your own TS/JS code, editors, agents |
-| [`@rqml/cli`](./cli.md) (`rqml`) | The command-line interface and CI gate | A terminal, CI, save/commit hooks |
+| [`@rqml/core`](./core.md) | The engine: parse, validate, lint, trace, impact, coverage, drift, link recording | Your own TS/JS code, editors, agents |
+| [`@rqml/cli`](./cli.md) (`rqml`) | The command-line interface, agent-loop commands, and CI gate | A terminal, CI, save/commit hooks |
 | [`@rqml/mcp`](./mcp.md) | A Model Context Protocol server exposing the engine as tools | Coding agents (Claude, etc.) |
 
 There is also [`@rqml/schema`](../reference/index.md) — the canonical XSDs and
@@ -51,6 +51,24 @@ npx @rqml/cli check
 # or wire the engine into your own tool
 npm install @rqml/core
 ```
+
+## The agent loop
+
+Beyond validating and gating, the toolchain serves the *middle* of a spec-first
+task — choosing work, reading one artifact, and recording what was done — so an
+agent never hand-edits trace XML or loads the whole spec into context:
+
+```bash
+rqml show REQ-PAY-001          # one requirement: statement, acceptance, traces
+rqml impact REQ-PAY-001        # what is affected if it changes?
+# … implement …
+rqml link REQ-PAY-001 src/payments/capture.ts   # record the implements edge + drift baseline
+rqml check                     # the gate — validation + coverage + drift
+```
+
+The `link` step also records a content hash of the implementation in
+`.rqml/baseline.json`, so a later `rqml check` catches code that *changed* after
+it was linked — not just code that disappeared.
 
 Head to [`@rqml/core`](./core.md) for the library API, [`@rqml/cli`](./cli.md) for
 the command line, or [`@rqml/mcp`](./mcp.md) to give a coding agent RQML tools.
