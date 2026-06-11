@@ -282,6 +282,9 @@
 /* Breathing room above the scaffold note that follows the hero CTAs. */
 .scaffoldNote {
   margin-top: 3rem;
+  margin-bottom: 1rem;
+  font-size: 1.15rem;
+  opacity: 0.95;
 }
 
 /* "Yes, XML" callout — full-bleed band, crisply separated from neighbors. */

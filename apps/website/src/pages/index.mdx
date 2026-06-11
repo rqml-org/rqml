@@ -21,7 +21,10 @@ import styles from './index.module.css';
       <div className={styles.heroSubtitleCenter}>
         <b>Requirements Markup Language</b> is an XML format for software
         requirements with a deterministic toolchain: validate the spec, trace it to the code
-        and tests that realize it, and fail the build when they drift apart. Built <b>for
+        and tests that realize it, and fail the build when they drift apart. 
+      </div>
+      <div className={styles.heroSubtitleCenter}>
+        <b>Built for
         codebases where an agent writes much of the code</b> — and someone still has to know
         what the system is supposed to do.
       </div>
@@ -31,8 +34,8 @@ import styles from './index.module.css';
         <a className="button button--secondary button--lg" href="https://github.com/rqml-org/rqml" target="_blank" rel="noopener noreferrer">View on GitHub</a>
       </div>
 
-      <div className={`${styles.heroSubtitleCenter} ${styles.scaffoldNote}`}>
-        One command scaffolds a spec and an <code>AGENTS.md</code> — works with any coding agent:
+      <div className={`${styles.scaffoldNote}`}>
+        <center>One command scaffolds a spec and an <code>AGENTS.md</code> — works with any coding agent:</center>
       </div>
       <div className={styles.heroCode}>
         <CodeBlock language="bash">{`npx @rqml/cli init`}</CodeBlock>
@@ -88,14 +91,18 @@ import styles from './index.module.css';
   {/* WHY XML — meet the objection head-on */}
   <section className={styles.xmlCallout}>
     <div className="container">
+    <Heading as="h1" className={styles.centerHeader}>Yes, XML</Heading>
       <div className={styles.heroSubtitleCenter}>
-        <b>Yes, XML.</b> Requirements are documents — prose with structure woven through it —
-        and mixed content is the problem XML actually solves; JSON and YAML cannot represent
-        it. It is also what the model vendors already tell you to do: Anthropic, Google, and
-        AWS all recommend XML tags for structuring LLM context. RQML is that advice taken
-        seriously — a schema-validated vocabulary instead of ad-hoc tags — so you get
-        validation, namespaces, comments, and clean diffs. The closing tags cost tokens once;
-        the structure pays rent for the life of the project.
+        RQML uses XML because requirements are documents, not just data records.
+      </div>
+      <div className={styles.heroSubtitleCenter}>
+        They mix prose, structure, identifiers, references, comments, validation 
+        rules, and future extensions. YAML, TOML, and JSON are excellent for 
+        configuration; RQML needs structured text.
+      </div>
+      <div className={styles.heroSubtitleCenter}>
+        XML is not fashionable, but it is boring in useful ways: mixed content, 
+        schemas, namespaces, and deterministic validation. 
       </div>
       <div className={styles.heroCtas}>
         <a className="button button--secondary button--lg" href="/why-xml">Why XML</a>
@@ -150,7 +157,7 @@ import styles from './index.module.css';
           </div>
         </div>
       </div>
-
+      <p/>
       <div className={styles.heroSubtitleCenter}>
         The loop an agent actually runs — read one requirement, check the blast radius,
         implement, record the link, pass the gate:
@@ -184,8 +191,8 @@ rqml check                # validation + coverage + drift; exit 0 or it isn't do
           coding agents.
         </div>
         <div className={styles.heroCtas}>
-          <a className="button button--outline button--primary" href="https://github.com/rqml-org/rqml/blob/main/requirements.rqml" target="_blank" rel="noopener noreferrer">Read the self-spec →</a>
-          <a className="button button--outline button--secondary" href="/docs/faq">The origin story</a>
+          <a className="button button--primary button--lg" href="https://github.com/rqml-org/rqml/blob/main/requirements.rqml" target="_blank" rel="noopener noreferrer">Read the self-spec →</a>
+          <a className="button button--secondary button--lg" href="/docs/faq/#is-rqml-really-25-years-old">The origin story</a>
         </div>
       </div>
 
