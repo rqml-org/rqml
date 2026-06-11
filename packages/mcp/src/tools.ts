@@ -12,12 +12,14 @@ import {
   detectDrift,
   extractArtifact,
   impactOf,
+  implementsLinks,
   loadBaseline,
   parse,
   resolveTrace,
   saveBaseline,
   skeleton,
   sliceToMarkdown,
+  updateTraceEdge,
 } from "@rqml/core";
 
 /** Minimal JSON-schema tool descriptor (matches the MCP `Tool` shape). */
@@ -119,24 +121,33 @@ export const TOOLS: ToolDef[] = [
   {
     name: "rqml_link",
     description:
-      "Record an implements/verifiedBy trace edge in the spec FILE and its drift baseline. Writes to disk — requires path (explicit caller intent per REQ-MCP-READONLY).",
+      "Record or maintain an implements/verifiedBy trace edge in the spec FILE and its drift baseline. Modes: append (default) adds a new edge; update repoints an existing edge's external locator; refresh re-records the drift baseline for one edge without touching the spec. Writes to disk — requires path (explicit caller intent per REQ-MCP-READONLY).",
     inputSchema: {
       type: "object",
       properties: {
         path: SPEC_INPUTS.path,
         baseDir: SPEC_INPUTS.baseDir,
+        mode: {
+          type: "string",
+          enum: ["append", "update", "refresh"],
+          description:
+            "append (default): add a new edge. update: replace the external locator of an existing edge. refresh: re-record the baseline entry for edgeId only.",
+        },
         artifactId: {
           type: "string",
-          description: "Declared artifact id (usually a requirement).",
+          description:
+            "Declared artifact id (usually a requirement). Required in append/update modes.",
         },
         uri: {
           type: "string",
-          description: "External locator of the code or test artifact.",
+          description:
+            "External locator of the code or test artifact. Required in append/update modes.",
         },
         type: { type: "string", enum: ["implements", "verifiedBy"] },
         edgeId: {
           type: "string",
-          description: "Explicit edge id (derived when omitted).",
+          description:
+            "Explicit edge id (derived from artifactId when omitted). Required in refresh mode.",
         },
         kind: {
           type: "string",
@@ -144,7 +155,7 @@ export const TOOLS: ToolDef[] = [
         },
         title: { type: "string", description: "Locator title hint." },
       },
-      required: ["path", "artifactId", "uri"],
+      required: ["path"],
     },
   },
 ];
@@ -175,8 +186,8 @@ function resolveSpec(args: Record<string, unknown>): { xml: string; baseDir: str
 /**
  * Execute a tool by name. Backed entirely by @rqml/core, so results are
  * equivalent to the corresponding `rqml` CLI command (REQ-MCP-PARITY). Every
- * tool is read-only except rqml_link, which writes the named spec file on
- * explicit caller intent (REQ-MCP-READONLY).
+ * tool is read-only except rqml_link, which writes the named spec file and
+ * the drift baseline store on explicit caller intent (REQ-MCP-READONLY).
  */
 export async function callTool(
   name: string,
@@ -302,10 +313,42 @@ export async function callTool(
       if (path === undefined)
         throw new Error("path is required: rqml_link writes the spec file");
       const { xml, baseDir } = resolveSpec({ ...args, xml: undefined });
+      const mode = str(args, "mode") ?? "append";
+      if (mode !== "append" && mode !== "update" && mode !== "refresh") {
+        throw new Error(`unknown link mode "${mode}" (append|update|refresh)`);
+      }
+
+      if (mode === "refresh") {
+        // Edge-scoped on purpose: the spec document is never touched, and no
+        // other entry is re-hashed (REQ-LOOP-RELINK).
+        const edgeId = str(args, "edgeId");
+        if (edgeId === undefined) throw new Error("edgeId is required in refresh mode");
+        const parsed = parse(xml);
+        if (!parsed.ok) return { ok: false, error: parsed.error.message };
+        const link = implementsLinks(parsed.document).find((l) => l.edgeId === edgeId);
+        if (link === undefined) {
+          return {
+            ok: false,
+            error: `no implements edge "${edgeId}" with an external locator exists (only implements edges carry baselines)`,
+          };
+        }
+        const hash = computeBaseline(parsed.document, { baseDir })[edgeId];
+        if (hash === undefined) {
+          return {
+            ok: false,
+            error: `"${link.uri}" cannot be hashed (missing file or non-filesystem URI)`,
+          };
+        }
+        const baseline = loadBaseline(baseDir) ?? {};
+        baseline[edgeId] = hash;
+        saveBaseline(baseDir, baseline);
+        return { ok: true, mode, edgeId, uri: link.uri, hash };
+      }
+
       const artifactId = str(args, "artifactId");
       const uri = str(args, "uri");
       if (artifactId === undefined || uri === undefined) {
-        throw new Error("artifactId and uri are required");
+        throw new Error(`artifactId and uri are required in ${mode} mode`);
       }
       const type = str(args, "type") ?? "implements";
       if (type !== "implements" && type !== "verifiedBy") {
@@ -319,7 +362,8 @@ export async function callTool(
       const title = str(args, "title");
       if (title !== undefined) request.title = title;
 
-      const result = appendTraceEdge(xml, request);
+      const result =
+        mode === "update" ? updateTraceEdge(xml, request) : appendTraceEdge(xml, request);
       if (!result.ok) return { ok: false, error: result.error };
       const { validate } = await import("@rqml/core/validate");
       const validation = validate(result.xml);
@@ -344,7 +388,16 @@ export async function callTool(
           baselineRecorded = true;
         }
       }
-      return { ok: true, edgeId: result.edgeId, type, artifactId, uri, baselineRecorded };
+      return {
+        ok: true,
+        mode,
+        edgeId: result.edgeId,
+        type,
+        artifactId,
+        uri,
+        baselineRecorded,
+        ...("previousUri" in result ? { previousUri: result.previousUri } : {}),
+      };
     }
     default:
       throw new Error(`unknown tool: ${name}`);

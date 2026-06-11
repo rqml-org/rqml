@@ -115,6 +115,122 @@ describe("MCP tools", () => {
     ).rejects.toThrow(/path is required/);
   });
 
+  it("rqml_link update repoints the edge and its baseline (CRIT-RELINK-UPDATE)", async () => {
+    writeFileSync(join(dir, "src", "b.ts"), "export const b = 1;\n");
+    await callTool("rqml_link", { path: spec, artifactId: "REQ-A", uri: "src/a.ts" });
+
+    const updated = (await callTool("rqml_link", {
+      path: spec,
+      mode: "update",
+      artifactId: "REQ-A",
+      uri: "src/b.ts",
+    })) as {
+      ok: boolean;
+      edgeId: string;
+      previousUri?: string;
+      baselineRecorded: boolean;
+    };
+    expect(updated.ok).toBe(true);
+    expect(updated.edgeId).toBe("E-IMPL-A");
+    expect(updated.previousUri).toBe("src/a.ts");
+    expect(updated.baselineRecorded).toBe(true);
+
+    const xml = readFileSync(spec, "utf8");
+    expect(xml).toContain('uri="src/b.ts"');
+    expect(xml).not.toContain('uri="src/a.ts"');
+    expect(xml.match(/<edge id="E-IMPL-A"/g)).toHaveLength(1);
+
+    // The baseline tracks the new artifact: clean now, drift when b.ts changes.
+    const clean = (await callTool("rqml_check", { path: spec })) as { verdict: string };
+    expect(clean.verdict).toBe("pass");
+    writeFileSync(join(dir, "src", "b.ts"), "export const b = 2;\n");
+    const drifted = (await callTool("rqml_check", { path: spec })) as {
+      verdict: string;
+      drift: { edgeId: string; uri: string }[];
+    };
+    expect(drifted.verdict).toBe("fail");
+    expect(drifted.drift).toEqual([
+      { edgeId: "E-IMPL-A", requirementId: "REQ-A", uri: "src/b.ts", status: "changed" },
+    ]);
+  });
+
+  it("rqml_link refresh blesses an intentional change without touching the spec (CRIT-RELINK-REFRESH)", async () => {
+    await callTool("rqml_link", { path: spec, artifactId: "REQ-A", uri: "src/a.ts" });
+    writeFileSync(join(dir, "src", "a.ts"), "export const a = 2;\n");
+    const drifted = (await callTool("rqml_check", { path: spec })) as { verdict: string };
+    expect(drifted.verdict).toBe("fail");
+
+    const before = readFileSync(spec, "utf8");
+    const refreshed = (await callTool("rqml_link", {
+      path: spec,
+      mode: "refresh",
+      edgeId: "E-IMPL-A",
+    })) as { ok: boolean; mode: string; uri: string; hash: string };
+    expect(refreshed.ok).toBe(true);
+    expect(refreshed.uri).toBe("src/a.ts");
+    expect(readFileSync(spec, "utf8")).toBe(before);
+
+    const clean = (await callTool("rqml_check", { path: spec })) as { verdict: string };
+    expect(clean.verdict).toBe("pass");
+  });
+
+  it("rqml_link update mode matches the rqml CLI (TC-MCP-PARITY)", async () => {
+    writeFileSync(join(dir, "src", "b.ts"), "export const b = 1;\n");
+    await callTool("rqml_link", { path: spec, artifactId: "REQ-A", uri: "src/a.ts" });
+
+    const cliDir = mkdtempSync(join(tmpdir(), "rqml-mcp-cli-"));
+    try {
+      const cliSpec = join(cliDir, "requirements.rqml");
+      writeFileSync(cliSpec, readFileSync(spec, "utf8"));
+      mkdirSync(join(cliDir, "src"));
+      writeFileSync(join(cliDir, "src", "a.ts"), "export const a = 1;\n");
+      writeFileSync(join(cliDir, "src", "b.ts"), "export const b = 1;\n");
+
+      await callTool("rqml_link", {
+        path: spec,
+        mode: "update",
+        artifactId: "REQ-A",
+        uri: "src/b.ts",
+      });
+      execFileSync(
+        process.execPath,
+        [CLI, "link", "REQ-A", "src/b.ts", "--update", "--base-dir", cliDir],
+        { encoding: "utf8" },
+      );
+
+      expect(readFileSync(spec, "utf8")).toBe(readFileSync(cliSpec, "utf8"));
+      expect(readFileSync(join(dir, ".rqml", "baseline.json"), "utf8")).toBe(
+        readFileSync(join(cliDir, ".rqml", "baseline.json"), "utf8"),
+      );
+    } finally {
+      rmSync(cliDir, { recursive: true, force: true });
+    }
+  });
+
+  it("rqml_link validates mode-specific inputs", async () => {
+    await expect(callTool("rqml_link", { path: spec, mode: "refresh" })).rejects.toThrow(
+      /edgeId is required/,
+    );
+    await expect(
+      callTool("rqml_link", { path: spec, mode: "nope", artifactId: "REQ-A", uri: "x" }),
+    ).rejects.toThrow(/unknown link mode/);
+    const noEdge = (await callTool("rqml_link", {
+      path: spec,
+      mode: "update",
+      artifactId: "REQ-A",
+      uri: "src/a.ts",
+    })) as { ok: boolean; error: string };
+    expect(noEdge.ok).toBe(false);
+    expect(noEdge.error).toMatch(/no trace edge/);
+    const noBaseline = (await callTool("rqml_link", {
+      path: spec,
+      mode: "refresh",
+      edgeId: "E-SAT",
+    })) as { ok: boolean; error: string };
+    expect(noBaseline.ok).toBe(false);
+    expect(noBaseline.error).toMatch(/only implements edges carry baselines/);
+  });
+
   it("rqml_show returns the slice with markdown; rqml_impact traverses", async () => {
     const slice = (await callTool("rqml_show", { path: spec, id: "REQ-A" })) as {
       kind: string;
