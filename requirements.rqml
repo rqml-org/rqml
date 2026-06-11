@@ -2058,7 +2058,7 @@
       <to><locator><local id="REQ-SCHEMA-CANONICAL"/></locator></to>
     </edge>
     <edge id="E-IMPL-SCHEMA-URLS" type="implements">
-      <from><locator><external uri="apps/website/static/schema/rqml-2.1.0.xsd" kind="schema" title="Published schema at rqml.org/schema/"/></locator></from>
+      <from><locator><external uri="apps/website/package.json#copy-assets" kind="config" title="Build-time copy of canonical XSDs and AGENTS.md to the stable URLs"/></locator></from>
       <to><locator><local id="REQ-SCHEMA-URLS"/></locator></to>
     </edge>
     <edge id="E-IMPL-VERSION-DECOUPLE" type="implements">
