@@ -2,10 +2,13 @@
   <img src="https://rqml.org/img/RQML_logo_transparent.png" alt="RQML Logo" width="280">
 </p>
 
-<h1 align="center">Requirements Markup Language</h1>
+<h1 align="center">Make the spec the artifact. Then gate CI on it.</h1>
 
 <p align="center">
-  <strong>An LLM-first (but human-readable) software requirements format that captures your intent and turns it into long-term project context — with a toolchain to keep code honest to the spec.</strong>
+  <strong>RQML</strong> (Requirements Markup Language) is an XML format for software requirements
+  with a deterministic toolchain: validate the spec, trace it to the code and tests that realize it,
+  and fail the build when they drift apart. Built for codebases where an agent writes much of the
+  code — and someone still has to know what the system is supposed to do.
 </p>
 
 <p align="center">
@@ -24,39 +27,37 @@
 
 ---
 
-## The problem
+## The whole idea, in one terminal session
 
-LLMs amplify weak requirements. Teams cut corners on specs because writing "proper documentation" feels slow and unrewarding. AI is fast — but it **guesses context** unless you give it some. You end up with prompt soup, inconsistent decisions, and fragile architecture. And even when you do write things down, the spec quietly rots out of sync with the code.
+```console
+# the agent implements REQ-AUTH-001, then records the link — no hand-edited XML
+$ rqml link REQ-AUTH-001 src/auth.ts#verifyToken
+✓ REQ-AUTH-001 ← src/auth.ts#verifyToken (E-IMPL-AUTH-001, implements, baseline recorded)
 
-## The solution
+$ rqml check
+✓ check pass (standard) — requirements.rqml
 
-RQML gives your project a **single source of truth** for system intent — structured enough for tools and LLMs to consume reliably, human-readable enough that your team will actually use it. Then a small, deterministic toolchain **checks that the code still matches the spec** — on every save, commit, and CI run.
+# six weeks later, someone refactors auth without touching the spec…
+$ rqml check
+  error (drift) [changed-implementation]: implements edge "E-IMPL-AUTH-001"
+    points at "src/auth.ts#verifyToken", which has changed since approval.
+✗ check fail (standard) — requirements.rqml      (exit 2)
+```
 
-<p align="center">
-  <img src="https://rqml.org/img/hero_workflow.svg" alt="RQML Workflow" width="720">
-</p>
-
-**RQML is the missing piece in your LLM workflow.**
-
-<p align="center">
-  <img src="https://rqml.org/img/hero_features.svg" alt="RQML Features" width="600">
-</p>
-
----
+No language model is involved in any of those verdicts. `rqml check` is a pure
+function of your repository — same input, same answer, on your laptop and in
+CI. The model proposes; the toolchain disposes.
 
 ## Quick start
 
-The fastest way in — no install required:
-
 ```bash
-# Scaffold a starter spec + an AGENTS.md for your coding agent
 npx @rqml/cli init
-
-# Validate + check coverage and drift (deterministic, offline)
-npx @rqml/cli check
 ```
 
-`init` drops a minimal `requirements.rqml` in your project root:
+This scaffolds two files: `requirements.rqml` (a minimal, valid spec) and
+[`AGENTS.md`](https://rqml.org/AGENTS.md) (the process contract for coding
+agents, with a strictness level from `relaxed` to `certified`). A complete,
+valid spec is small:
 
 ```xml
 <rqml xmlns="https://rqml.org/schema/2.1.0"
@@ -78,80 +79,93 @@ npx @rqml/cli check
 </rqml>
 ```
 
-It also writes an [`AGENTS.md`](https://rqml.org/AGENTS.md) that tells AI coding assistants to follow spec-first development, at a strictness level you choose:
+From there, the loop — for humans and agents alike:
 
-| Level | Description |
-|-------|-------------|
-| `relaxed` | Prototyping. Spec is advisory. Quick iteration allowed. |
-| `standard` | Production default. Spec-first for features. Core traces. |
-| `strict` | Full traceability. All behavior specified. No ghost features. |
-| `certified` | Regulated/safety-critical. Audit-grade traces with metadata. |
+```bash
+rqml show REQ-HELLO-001      # read one requirement: statement, acceptance, traces
+rqml impact REQ-HELLO-001    # what is affected, transitively, if it changes?
+# … implement …
+rqml link REQ-HELLO-001 src/hello.ts             # record the implements edge + drift baseline
+rqml link REQ-HELLO-001 test/hello.test.ts --type verifiedBy
+rqml check                   # the gate: validation + coverage + drift; exit 0 or it isn't done
+```
 
-From there, use it everywhere: prompt your agent with *"implement the requirements in the .rqml file,"* trace tests back to requirements, and gate CI with `rqml check`. **Start minimal. Grow as the system grows. Let the structure do the hard work.**
+And in CI:
 
----
+```yaml
+- run: npx @rqml/cli check --strictness standard
+```
+
+Exit codes are stable: `0` pass · `1` validation failure · `2` blocking drift
+or coverage · `64` usage error.
+
+## Yes, XML.
+
+Requirements are documents — prose with structure woven through it — and mixed
+content is the problem XML actually solves; JSON and YAML cannot represent it.
+It is also what the model vendors already tell you to do: Anthropic, Google,
+and AWS all recommend XML tags for structuring LLM context. RQML is that advice
+taken seriously — a schema-validated vocabulary instead of ad-hoc tags — so you
+get validation, namespaces, comments, and clean diffs. The closing tags cost
+tokens once; the structure pays rent for the life of the project.
+[The longer argument →](https://rqml.org/why-xml)
 
 ## The toolchain
 
-RQML ships a small TypeScript toolchain built around **one engine** — so the CLI, the MCP server, the RQML VS Code extension, and your own tools all agree on what a valid, covered, drift-free spec is. Everything runs **offline**, and **no language model sits in the verdict path** — checks are reproducible and safe to gate on.
+One engine powers every surface, so the CLI, the MCP server, the VS Code
+extension, and your own tools can never disagree about what a valid, covered,
+drift-free spec is. Everything runs offline, there is no telemetry, and no
+model sits in the verdict path.
 
 | Package | Install | What it does |
 |---------|---------|--------------|
-| **[`@rqml/cli`](https://rqml.org/docs/tooling/cli)** &nbsp;(`rqml`) | `npm i -g @rqml/cli` | `init` · `validate` · `status` · `check` — the deterministic gate for CI, save hooks, and commit hooks (stable exit codes, `--json`) |
-| **[`@rqml/core`](https://rqml.org/docs/tooling/core)** | `npm i @rqml/core` | The engine: parse, validate (XSD + referential integrity), lint, trace, coverage, drift. Embed it in your own TS/JS tools |
-| **[`@rqml/mcp`](https://rqml.org/docs/tooling/mcp)** | `npx @rqml/mcp` | A [Model Context Protocol](https://modelcontextprotocol.io) server that gives coding agents RQML tools: `validate`, `status`, `check`, `trace` |
-| **[`@rqml/schema`](https://rqml.org/docs/reference)** | `npm i @rqml/schema` | The canonical XSDs and example documents — the single source of truth |
+| **[`@rqml/cli`](https://rqml.org/docs/tooling/cli)** (`rqml`) | `npm i -g @rqml/cli` | `init` · `validate` · `status` · `check`, plus the agent loop: `show` · `impact` · `link` · `skeleton` |
+| **[`@rqml/core`](https://rqml.org/docs/tooling/core)** | `npm i @rqml/core` | The engine: parse, validate (XSD + referential integrity), lint, trace, impact, coverage, drift, comment-preserving spec edits |
+| **[`@rqml/mcp`](https://rqml.org/docs/tooling/mcp)** | `npx @rqml/mcp` | Eight [MCP](https://modelcontextprotocol.io) tools for coding agents (`rqml_show`, `rqml_impact`, `rqml_link`, `rqml_check`, …) — reads specs by path, writes only on explicit intent |
+| **[`@rqml/schema`](https://rqml.org/docs/reference)** | `npm i @rqml/schema` | The canonical XSDs, examples, and the AGENTS.md template — the single source of truth |
 
-**Using a coding agent?** Point it at the MCP server so it can validate and check specs itself:
+**Using Claude Code?** The [rqml plugin](https://github.com/rqml-org/rqml-claude)
+turns the loop from documented into enforced: sessions start anchored on your
+spec, `.rqml` edits are validated in the same turn, and the session cannot end
+until `rqml check` passes.
+
+```text
+/plugin marketplace add rqml-org/rqml-claude
+/plugin install rqml@rqml
+```
+
+**Any other MCP-capable agent?** Point it at the server:
 
 ```json
 { "mcpServers": { "rqml": { "command": "npx", "args": ["-y", "@rqml/mcp"] } } }
 ```
 
-→ Full tooling docs: **[rqml.org/docs/tooling](https://rqml.org/docs/tooling)**
+## It eats its own dog food
 
----
+This repository is specified in RQML. [`requirements.rqml`](requirements.rqml)
+defines the language and the toolchain as ~70 requirements; every shipped
+feature was specified before it was built, is linked to the code that
+implements it and the tests that verify it, and the repo gates its own CI with
+`rqml check`. The [Claude Code plugin](https://github.com/rqml-org/rqml-claude)
+was built the same way — and once installed, it enforces its own development.
 
-## What RQML captures
+The name is older than you might guess: RQML began as an XML DTD in a 2000 MSc
+thesis at the University of York. 2.x is a ground-up redesign of that idea for
+coding agents. [The origin story →](https://rqml.org/docs/faq)
 
-| Section | Purpose |
-|---------|---------|
-| **Goals** | Business objectives, quality targets, obstacles |
-| **Scenarios** | User stories, use cases, acceptance flows |
-| **Requirements** | Functional and non-functional requirements |
-| **Interfaces** | APIs, data contracts, system boundaries |
-| **Behavior** | State machines, workflows, decision logic |
-| **Verification** | Test cases, acceptance criteria |
-| **Trace** | Links between goals → requirements → tests → code |
+## What RQML is not
 
----
-
-## Why RQML?
-
-- **Clear structure** — Goals, scenarios, requirements, verification, traceability, organized so nothing important gets lost.
-- **Low ceremony** — Enough discipline to be useful, without turning spec writing into a second job.
-- **LLM-ready** — Predictable, structured context that improves codegen, refactors, tests, and architecture decisions.
-- **Diff-friendly** — Review requirements like code. PRs show exactly what changed and why.
-- **Traceable** — Connect goals → requirements → verification → code, so you can prove what you built matches intent.
-- **Enforceable** — `rqml check` is a deterministic gate: same inputs, same verdict. Run it in CI to catch spec/code drift automatically — no model required.
-
----
-
-## Documentation
-
-📖 **[rqml.org](https://rqml.org)** — full documentation
-
-- [Quick Start](https://rqml.org/docs/quick-start) — get up and running
-- [Tooling](https://rqml.org/docs/tooling) — the `@rqml/core` engine, the `rqml` CLI, and the `@rqml/mcp` server
-- [User Guide](https://rqml.org/docs/user-guide) — learn the concepts
-- [Reference](https://rqml.org/docs/reference) — element and attribute index
-- [Examples](https://rqml.org/docs/examples) — real-world RQML documents
-
----
+- **Not a code generator.** It never writes your code — your agent does that.
+  RQML is what keeps the agent honest.
+- **Not AI-powered.** No model runs anywhere in the toolchain. Verdicts are
+  reproducible functions of your repo.
+- **Not DOORS.** A text file in your repo and a small npm package — not an
+  enterprise requirements suite.
+- **Not ceremony.** `meta` plus one requirement is a valid spec. The other
+  nine sections (goals, scenarios, domain, behavior, interfaces, verification,
+  trace, governance, catalogs) are optional and added when they earn their keep.
 
 ## Repository structure
-
-This is a pnpm monorepo:
 
 ```
 rqml/
@@ -166,30 +180,23 @@ rqml/
 └── requirements.rqml  # RQML, specified in RQML (the ultimate dogfood)
 ```
 
----
+## Documentation
+
+Full documentation lives at **[rqml.org](https://rqml.org)**: the
+[Quick Start](https://rqml.org/docs/quick-start), the
+[User Guide](https://rqml.org/docs/user-guide), the complete
+[Tooling](https://rqml.org/docs/tooling) and
+[Reference](https://rqml.org/docs/reference) docs, and
+[real-world examples](https://rqml.org/docs/examples).
 
 ## Contributing
 
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-- **Report issues** — Found a bug or have a suggestion? [Open an issue](https://github.com/rqml-org/rqml/issues)
-- **Propose changes** — Submit RFCs in the `rfc/` directory for significant changes
-- **Improve docs** — Documentation improvements are always welcome
-
----
+Contributions welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
+Bugs and suggestions: [open an issue](https://github.com/rqml-org/rqml/issues).
+Significant changes go through an RFC in [`rfc/`](rfc/). This repo is
+spec-first: features start as requirements in `requirements.rqml`, and
+`rqml check` must pass before you're done. (Yes, really. The gate will tell you.)
 
 ## License
 
-RQML is licensed under the [Apache License 2.0](LICENSE).
-
----
-
-<p align="center">
-  <strong>Put your intent in the repo. Make LLM output calmer, cleaner, and easier to trust.</strong>
-</p>
-
-<p align="center">
-  <a href="https://rqml.org/docs/quick-start">
-    <img src="https://img.shields.io/badge/Get%20Started-8568ab?style=for-the-badge" alt="Get Started">
-  </a>
-</p>
+[Apache License 2.0](LICENSE).

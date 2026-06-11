@@ -32,3 +32,9 @@ jobs:
 
       - name: Test
         run: pnpm test
+
+      # Dogfood: this repo is specified in requirements.rqml; the same gate
+      # we ship is the gate we pass. Validates the spec, checks coverage, and
+      # drift-checks every implements edge against .rqml/baseline.json.
+      - name: RQML gate
+        run: node packages/cli/dist/index.js check
