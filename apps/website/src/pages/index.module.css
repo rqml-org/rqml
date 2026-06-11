@@ -304,6 +304,21 @@
     );
 }
 
+/* Hero code block — same width as the terminal window below it. */
+.heroCode {
+  max-width: 56rem;
+  margin: 0 auto;
+  text-align: left;
+}
+
+/* Escape the MDX page column (col--8) the way .hero does, so a section's
+   content shares the hero's width constraint instead of the column's. */
+.breakout {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+
 /* Terminal window — macOS/fish-style chrome for the hero demo. */
 .terminal {
   max-width: 56rem;
