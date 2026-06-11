@@ -22,6 +22,8 @@ Commands:
   status [path]      Show spec, coverage, and lint summary
   check [path]       Deterministic enforcement gate (validation + coverage + drift)
   link <id> <uri>    Record an implements/verifiedBy edge and its drift baseline
+                     (--update repoints an existing edge; --refresh <edge-id>
+                     re-records only the baseline for an intentional change)
   show <id>          Extract one artifact with its trace neighborhood
   impact <id>        What is affected, transitively, if this artifact changes
   skeleton <kind>    Print a schema-valid snippet (req|edge|testCase|stateMachine)
@@ -35,6 +37,8 @@ Options:
   --id <id>              Explicit edge id (link) or skeleton root id
   --kind <kind>          Locator kind hint for link (default: code/test by type)
   --title <title>        Locator title hint for link
+  --update               Replace the external locator of an existing edge (link)
+  --refresh <edge-id>    Re-record the drift baseline for one edge (link)
   -h, --help             Show this help
   -v, --version          Show version
 

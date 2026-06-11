@@ -45,7 +45,7 @@
     </authors>
     <dates>
       <created>2026-02-01</created>
-      <updated>2026-06-09</updated>
+      <updated>2026-06-11</updated>
       <targetRelease>RQML 2.1.0</targetRelease>
     </dates>
     <conventions>
@@ -1427,6 +1427,41 @@
           </criterion>
         </acceptance>
       </req>
+      <req id="REQ-LOOP-RELINK" type="FR" title="Link maintenance" status="approved" priority="must" appliesTo="core cli">
+        <statement>
+          The link operation SHALL also maintain existing trace edges. In
+          update mode, given an artifact id and a new external locator URI, it
+          SHALL replace the external locator of the existing implements or
+          verifiedBy edge — matched by an explicit edge id or by the same id
+          derivation used when appending — and refresh the edge's drift
+          baseline entry. In refresh mode, given an edge id alone, it SHALL
+          re-record the drift baseline for the edge's current artifact content
+          without modifying the spec document or re-stating the URI.
+        </statement>
+        <rationale>
+          Repointing an edge at a new artifact, or blessing an intentional
+          change to a linked artifact, otherwise forces hand edits of the
+          trace XML and the baseline store — exactly the manual editing
+          REQ-LOOP-LINK exists to eliminate. Both modes stay edge-scoped:
+          re-hashing every link at once would silently bless unrelated drift.
+        </rationale>
+        <notes>
+          The MCP surface is deferred until the rqml_link tool grows update
+          semantics; the CLI and core carry the operation first.
+        </notes>
+        <acceptance>
+          <criterion id="CRIT-RELINK-UPDATE">
+            <given>A spec with an implements edge recorded by the link operation and its baseline entry</given>
+            <when>Update mode runs with the same artifact id and a different existing target URI</when>
+            <then>The edge's external locator holds the new URI, no duplicate edge is created, the document revalidates, and the baseline entry matches the new artifact's content.</then>
+          </criterion>
+          <criterion id="CRIT-RELINK-REFRESH">
+            <given>A linked artifact intentionally modified after its baseline was recorded</given>
+            <when>Refresh mode runs with the edge id</when>
+            <then>The spec document is byte-identical and a subsequent check reports no drift for that edge.</then>
+          </criterion>
+        </acceptance>
+      </req>
       <req id="REQ-LOOP-SHOW" type="FR" title="Artifact extraction" status="approved" priority="must" appliesTo="core cli mcp">
         <statement>
           The toolchain SHALL extract a single artifact by id — its statement,
@@ -1705,6 +1740,16 @@
       <purpose>Verify mechanical trace recording.</purpose>
       <steps>Run the link operation for a requirement and an existing file, then revalidate and recompute coverage.</steps>
       <expected>The document validates and the requirement counts as implemented.</expected>
+    </testCase>
+    <testCase id="TC-RELINK-UPDATE" type="acceptance" title="Update repoints an edge in place">
+      <purpose>Verify mechanical edge maintenance.</purpose>
+      <steps>Link a requirement to a file, then run the link operation in update mode with a different existing file.</steps>
+      <expected>The same edge points at the new URI, the document revalidates, and the baseline entry matches the new file.</expected>
+    </testCase>
+    <testCase id="TC-RELINK-REFRESH" type="integration" title="Refresh blesses an intentional change">
+      <purpose>Verify edge-scoped baseline refresh.</purpose>
+      <steps>Link a requirement to a file, modify the file so check fails on drift, then run refresh mode with the edge id.</steps>
+      <expected>The spec document is unchanged and rqml check passes again.</expected>
     </testCase>
     <testCase id="TC-SHOW-SLICE" type="acceptance" title="Artifact slice is self-contained">
       <purpose>Verify single-artifact extraction.</purpose>
@@ -2255,6 +2300,10 @@
       <from><locator><local id="REQ-LOOP-LINK"/></locator></from>
       <to><locator><local id="GOAL-TRACEABILITY"/></locator></to>
     </edge>
+    <edge id="E-RELINK-TRACE-GOAL" type="satisfies" confidence="0.8">
+      <from><locator><local id="REQ-LOOP-RELINK"/></locator></from>
+      <to><locator><local id="GOAL-TRACEABILITY"/></locator></to>
+    </edge>
     <edge id="E-SHOW-CONTEXT" type="satisfies" confidence="0.9">
       <from><locator><local id="REQ-LOOP-SHOW"/></locator></from>
       <to><locator><local id="GOAL-LLM-CONTEXT"/></locator></to>
@@ -2293,6 +2342,14 @@
       <from><locator><local id="REQ-LOOP-LINK"/></locator></from>
       <to><locator><local id="REQ-CORE-DRIFT-BASELINE"/></locator></to>
     </edge>
+    <edge id="E-RELINK-REFINES" type="refines" confidence="0.9">
+      <from><locator><local id="REQ-LOOP-RELINK"/></locator></from>
+      <to><locator><local id="REQ-LOOP-LINK"/></locator></to>
+    </edge>
+    <edge id="E-RELINK-BASELINE-DEP" type="dependsOn" confidence="0.9">
+      <from><locator><local id="REQ-LOOP-RELINK"/></locator></from>
+      <to><locator><local id="REQ-CORE-DRIFT-BASELINE"/></locator></to>
+    </edge>
     <edge id="E-IMPACT-REFINES" type="refines" confidence="0.9">
       <from><locator><local id="REQ-LOOP-IMPACT"/></locator></from>
       <to><locator><local id="REQ-CORE-TRACE-GRAPH"/></locator></to>
@@ -2311,6 +2368,10 @@
       <from><locator><local id="REQ-LOOP-LINK"/></locator></from>
       <to><locator><local id="OBS-VOLUNTARY"/></locator></to>
     </edge>
+    <edge id="E-RELINK-DRIFT-RISK" type="mitigates" confidence="0.8">
+      <from><locator><local id="REQ-LOOP-RELINK"/></locator></from>
+      <to><locator><local id="RISK-DRIFT"/></locator></to>
+    </edge>
     <edge id="E-TEMPLATE-VOLUNTARY" type="mitigates" confidence="0.7">
       <from><locator><local id="REQ-AGENTS-TEMPLATE"/></locator></from>
       <to><locator><local id="OBS-VOLUNTARY"/></locator></to>
@@ -2328,6 +2389,14 @@
     <edge id="E-LINK-TEST" type="verifiedBy">
       <from><locator><local id="REQ-LOOP-LINK"/></locator></from>
       <to><locator><local id="TC-LINK-ROUNDTRIP"/></locator></to>
+    </edge>
+    <edge id="E-RELINK-UPDATE-TEST" type="verifiedBy">
+      <from><locator><local id="REQ-LOOP-RELINK"/></locator></from>
+      <to><locator><local id="TC-RELINK-UPDATE"/></locator></to>
+    </edge>
+    <edge id="E-RELINK-REFRESH-TEST" type="verifiedBy">
+      <from><locator><local id="REQ-LOOP-RELINK"/></locator></from>
+      <to><locator><local id="TC-RELINK-REFRESH"/></locator></to>
     </edge>
     <edge id="E-SHOW-TEST" type="verifiedBy">
       <from><locator><local id="REQ-LOOP-SHOW"/></locator></from>
@@ -2464,6 +2533,22 @@
     <edge id="E-VER-MCP-PARITY-CODE" type="verifiedBy">
       <from><locator><local id="REQ-MCP-PARITY"/></locator></from>
       <to><locator><external uri="packages/mcp/test/tools.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-LOOP-RELINK-CORE" type="implements">
+      <from><locator><external uri="packages/core/src/edit/link.ts#updateTraceEdge" kind="code"/></locator></from>
+      <to><locator><local id="REQ-LOOP-RELINK"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-LOOP-RELINK-CLI" type="implements">
+      <from><locator><external uri="packages/cli/src/commands/link.ts#runLink" kind="code"/></locator></from>
+      <to><locator><local id="REQ-LOOP-RELINK"/></locator></to>
+    </edge>
+    <edge id="E-VER-LOOP-RELINK-CORE" type="verifiedBy">
+      <from><locator><local id="REQ-LOOP-RELINK"/></locator></from>
+      <to><locator><external uri="packages/core/test/link.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-VER-LOOP-RELINK-CLI" type="verifiedBy">
+      <from><locator><local id="REQ-LOOP-RELINK"/></locator></from>
+      <to><locator><external uri="packages/cli/test/commands.test.ts" kind="test"/></locator></to>
     </edge>
   </trace>
 

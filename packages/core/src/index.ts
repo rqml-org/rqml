@@ -36,8 +36,11 @@ export {
 export { checkIntegrity } from "./analyze/integrity.js";
 export {
   appendTraceEdge,
+  updateTraceEdge,
   type LinkRequest,
   type LinkResult,
+  type UpdateLinkRequest,
+  type UpdateLinkResult,
 } from "./edit/link.js";
 
 export {

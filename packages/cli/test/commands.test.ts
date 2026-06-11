@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -83,6 +84,65 @@ describe("loop commands", () => {
     expect(code).toBe(EXIT.OK);
     const spec = readFileSync(join(dir, "requirements.rqml"), "utf8");
     expect(spec).toContain('<edge id="E-VER-A" type="verifiedBy">');
+  });
+
+  it("link --update repoints an edge and refreshes its baseline (CRIT-RELINK-UPDATE)", async () => {
+    await runLink(["REQ-A", "src/a.ts", "--base-dir", dir]);
+    const bContent = "export const b = 1;\n";
+    writeFileSync(join(dir, "src", "b.ts"), bContent);
+
+    const code = await runLink(["REQ-A", "src/b.ts", "--update", "--base-dir", dir]);
+    expect(code).toBe(EXIT.OK);
+
+    const spec = readFileSync(join(dir, "requirements.rqml"), "utf8");
+    expect(spec).toContain('<external uri="src/b.ts" kind="code"/>');
+    expect(spec).not.toContain('uri="src/a.ts"');
+    expect(spec.match(/id="E-IMPL-A"/g)).toHaveLength(1);
+
+    const baseline = JSON.parse(
+      readFileSync(join(dir, ".rqml", "baseline.json"), "utf8"),
+    ) as Record<string, string>;
+    expect(baseline["E-IMPL-A"]).toBe(
+      createHash("sha256").update(bContent).digest("hex"),
+    );
+
+    // The repointed link tracks the new artifact: drifting the old one is fine…
+    writeFileSync(join(dir, "src", "a.ts"), "export const a = 99;\n");
+    expect(await runCheck(["--base-dir", dir])).toBe(EXIT.OK);
+    // …drifting the new one is caught.
+    writeFileSync(join(dir, "src", "b.ts"), "export const b = 2;\n");
+    expect(await runCheck(["--base-dir", dir])).toBe(EXIT.CHECK);
+  });
+
+  it("link --update refuses a missing edge without touching the spec", async () => {
+    const code = await runLink(["REQ-A", "src/a.ts", "--update", "--base-dir", dir]);
+    expect(code).toBe(EXIT.VALIDATION);
+    expect(readFileSync(join(dir, "requirements.rqml"), "utf8")).toBe(SPEC);
+  });
+
+  it("link --refresh blesses an intentional change (CRIT-RELINK-REFRESH)", async () => {
+    await runLink(["REQ-A", "src/a.ts", "--base-dir", dir]);
+    const specAfterLink = readFileSync(join(dir, "requirements.rqml"), "utf8");
+
+    writeFileSync(join(dir, "src", "a.ts"), "export const a = 2;\n");
+    expect(await runCheck(["--base-dir", dir])).toBe(EXIT.CHECK);
+
+    const code = await runLink(["--refresh", "E-IMPL-A", "--base-dir", dir]);
+    expect(code).toBe(EXIT.OK);
+    // The spec document is byte-identical; only the baseline store changed.
+    expect(readFileSync(join(dir, "requirements.rqml"), "utf8")).toBe(specAfterLink);
+    expect(await runCheck(["--base-dir", dir])).toBe(EXIT.OK);
+  });
+
+  it("link --refresh rejects unknown edges and unhashable artifacts", async () => {
+    await runLink(["REQ-A", "src/a.ts", "--base-dir", dir]);
+    expect(await runLink(["--refresh", "E-NOPE", "--base-dir", dir])).toBe(
+      EXIT.VALIDATION,
+    );
+    rmSync(join(dir, "src", "a.ts"));
+    expect(await runLink(["--refresh", "E-IMPL-A", "--base-dir", dir])).toBe(
+      EXIT.VALIDATION,
+    );
   });
 
   it("show extracts a known artifact and rejects an unknown id", async () => {

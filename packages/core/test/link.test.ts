@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { computeCoverage } from "../src/check/coverage.js";
-import { appendTraceEdge } from "../src/edit/link.js";
+import { appendTraceEdge, updateTraceEdge } from "../src/edit/link.js";
 import { parse } from "../src/parse/parse.js";
 import { validate } from "../src/validate/index.js";
 
@@ -149,6 +149,140 @@ describe("appendTraceEdge (REQ-LOOP-LINK)", () => {
     const request = { artifactId: "REQ-A", uri: "src/a.ts", type: "implements" as const };
     expect(appendTraceEdge(WITH_TRACE, request)).toEqual(
       appendTraceEdge(WITH_TRACE, request),
+    );
+  });
+});
+
+describe("updateTraceEdge (REQ-LOOP-RELINK)", () => {
+  /** WITH_TRACE plus an implements edge recorded the mechanical way. */
+  function linked(
+    uri = "src/a.ts",
+    extra: Partial<Parameters<typeof appendTraceEdge>[1]> = {},
+  ) {
+    const result = appendTraceEdge(WITH_TRACE, {
+      artifactId: "REQ-A",
+      uri,
+      type: "implements",
+      ...extra,
+    });
+    if (!result.ok) throw new Error(result.error);
+    return result;
+  }
+
+  it("repoints the edge in place without duplicating it (CRIT-RELINK-UPDATE)", () => {
+    const result = updateTraceEdge(linked().xml, {
+      artifactId: "REQ-A",
+      uri: "src/b.ts",
+      type: "implements",
+    });
+    if (!result.ok) throw new Error(result.error);
+    expect(result.edgeId).toBe("E-IMPL-A");
+    expect(result.previousUri).toBe("src/a.ts");
+    expect(result.xml).toContain('uri="src/b.ts"');
+    expect(result.xml).not.toContain('uri="src/a.ts"');
+    expect(result.xml.match(/id="E-IMPL-A"/g)).toHaveLength(1);
+    expect(validate(result.xml).valid).toBe(true);
+  });
+
+  it("preserves comments, formatting, and the existing kind and title", () => {
+    const start = linked("src/a.ts", { title: "the impl" });
+    const result = updateTraceEdge(start.xml, {
+      artifactId: "REQ-A",
+      uri: "src/b.ts",
+      type: "implements",
+    });
+    if (!result.ok) throw new Error(result.error);
+    expect(result.xml).toContain("a load-bearing comment that must survive editing");
+    expect(result.xml).toContain('    <edge id="E-SAT" type="satisfies">');
+    expect(result.edgeXml).toContain('uri="src/b.ts" kind="code" title="the impl"');
+  });
+
+  it("overrides kind and title when provided", () => {
+    const result = updateTraceEdge(linked().xml, {
+      artifactId: "REQ-A",
+      uri: "config/b.json",
+      type: "implements",
+      kind: "config",
+      title: "new title",
+    });
+    if (!result.ok) throw new Error(result.error);
+    expect(result.edgeXml).toContain(
+      'uri="config/b.json" kind="config" title="new title"',
+    );
+  });
+
+  it("matches an explicitly named edge via edgeId", () => {
+    const start = linked("src/a.ts", { edgeId: "E-IMPL-CUSTOM" });
+    const derived = updateTraceEdge(start.xml, {
+      artifactId: "REQ-A",
+      uri: "src/b.ts",
+      type: "implements",
+    });
+    expect(derived.ok).toBe(false); // E-IMPL-A does not exist
+
+    const explicit = updateTraceEdge(start.xml, {
+      artifactId: "REQ-A",
+      uri: "src/b.ts",
+      type: "implements",
+      edgeId: "E-IMPL-CUSTOM",
+    });
+    if (!explicit.ok) throw new Error(explicit.error);
+    expect(explicit.edgeId).toBe("E-IMPL-CUSTOM");
+    expect(explicit.xml).toContain('uri="src/b.ts"');
+  });
+
+  it("rejects missing edges, type mismatches, and artifact mismatches", () => {
+    const start = linked();
+
+    const missing = updateTraceEdge(start.xml, {
+      artifactId: "REQ-A",
+      uri: "x.ts",
+      type: "verifiedBy", // derives E-VER-A, which does not exist
+    });
+    expect(missing.ok).toBe(false);
+
+    const typeMismatch = updateTraceEdge(start.xml, {
+      artifactId: "REQ-A",
+      uri: "x.ts",
+      type: "implements",
+      edgeId: "E-SAT", // exists, but is a satisfies edge
+    });
+    expect(typeMismatch.ok).toBe(false);
+    if (!typeMismatch.ok) expect(typeMismatch.error).toContain("satisfies");
+
+    const wrongArtifact = updateTraceEdge(start.xml, {
+      artifactId: "G1", // declared, but not the edge's local endpoint
+      uri: "x.ts",
+      type: "implements",
+      edgeId: "E-IMPL-A",
+    });
+    expect(wrongArtifact.ok).toBe(false);
+  });
+
+  it("rejects an edge with no external locator", () => {
+    const localOnly = WITH_TRACE.replace(
+      "</trace>",
+      `  <edge id="E-IMPL-LOCAL" type="implements">
+      <from><locator><local id="REQ-A"/></locator></from>
+      <to><locator><local id="G1"/></locator></to>
+    </edge>
+  </trace>`,
+    );
+    const result = updateTraceEdge(localOnly, {
+      artifactId: "REQ-A",
+      uri: "x.ts",
+      type: "implements",
+      edgeId: "E-IMPL-LOCAL",
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toContain("no external locator");
+  });
+
+  it("is deterministic", () => {
+    const start = linked();
+    const request = { artifactId: "REQ-A", uri: "src/b.ts", type: "implements" as const };
+    expect(updateTraceEdge(start.xml, request)).toEqual(
+      updateTraceEdge(start.xml, request),
     );
   });
 });
