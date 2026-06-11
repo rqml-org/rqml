@@ -44,7 +44,9 @@ ESM, TypeScript types included, Node 18+.
   context, so a consumer reads a slice instead of the whole document.
 - **Edit** — `appendTraceEdge()` records an `implements`/`verifiedBy` edge as a
   *textual* insertion, preserving XML comments and hand formatting, with
-  deterministic edge-id derivation and integrity checking of the result.
+  deterministic edge-id derivation and integrity checking of the result;
+  `updateTraceEdge()` repoints an existing edge's external locator in place
+  under the same guarantees.
 - **Skeletons** — `skeleton()` emits schema-valid snippets for `req`, `edge`,
   `testCase`, and `stateMachine`.
 - **Export** — a document outline and a Markdown serializer.
@@ -57,7 +59,8 @@ lazily loaded** entry. Consumers that only parse, lint, or trace never pay for i
 ```ts
 import {
   parse, serialize, lint, resolveTrace, computeCoverage, detectDrift,
-  impactOf, extractArtifact, appendTraceEdge, skeleton, computeBaseline,
+  impactOf, extractArtifact, appendTraceEdge, updateTraceEdge, skeleton,
+  computeBaseline,
 } from "@rqml/core";
 import { validate } from "@rqml/core/validate"; // loads the XSD engine
 ```
@@ -143,6 +146,16 @@ const linked = appendTraceEdge(xmlString, {
 if (linked.ok) {
   // linked.xml is the full document with the new edge; comments and formatting intact
   // linked.edgeId is deterministic: "E-IMPL-PAY-001"
+}
+
+const repointed = updateTraceEdge(linked.ok ? linked.xml : xmlString, {
+  artifactId: "REQ-PAY-001",
+  uri: "src/payments/charge.ts#charge",   // the implementation moved
+  type: "implements",                      // matches E-IMPL-PAY-001; pass edgeId for a custom id
+});
+if (repointed.ok) {
+  // only the <external> locator changed — same edge id, same orientation;
+  // existing kind/title are preserved, and repointed.previousUri holds the old URI
 }
 ```
 

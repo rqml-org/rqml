@@ -64,7 +64,9 @@ rqml check                   # the gate: validation + coverage + drift
 linked file in `.rqml/baseline.json` (commit it). From then on, `rqml check`
 fails not only when linked code is *deleted* but when it *changes* without the
 spec changing — that's drift detection, and it's a pure function of your repo:
-no language model is involved in any verdict.
+no language model is involved in any verdict. When a change *is* intentional,
+`rqml link --refresh <edge-id>` blesses it (and `--update` repoints an edge
+whose implementation moved), so the trace never needs hand-editing either.
 
 ## 4. Gate CI
 

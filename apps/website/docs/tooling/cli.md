@@ -29,6 +29,8 @@ rqml <command> [spec.rqml] [options]
   status [path]      Spec summary: requirement count, coverage, lint findings
   check [path]       Deterministic enforcement gate (validation + coverage + drift)
   link <id> <uri>    Record an implements/verifiedBy trace edge and its drift baseline
+                     (--update repoints an existing edge; --refresh <edge-id>
+                     re-records only the baseline for an intentional change)
   show <id>          One artifact: statement, acceptance criteria, trace neighborhood
   impact <id>        What is affected, transitively, if this artifact changes
   skeleton <kind>    Print a schema-valid snippet (req | edge | testCase | stateMachine)
@@ -47,7 +49,9 @@ When no path is given, the lone `*.rqml` document in the working directory is us
 | `--spec <path>` | Explicit spec file for `link`, `show`, and `impact` (whose positional argument is an artifact id, not a path) |
 | `--type <type>` | Link type: `implements` (default) · `verifiedBy` |
 | `--id <id>` | Explicit edge id for `link`, or the root id for `skeleton` |
-| `--kind`, `--title` | Optional locator hints recorded on the edge by `link` |
+| `--kind`, `--title` | Optional locator hints recorded on the edge by `link` (preserved on `--update` unless re-stated) |
+| `--update` | For `link`: replace the external locator of the *existing* edge — matched by `--id` or the derived id — instead of appending, and re-record its baseline entry |
+| `--refresh <edge-id>` | For `link`: re-record the drift baseline for one intentionally changed artifact; the spec file is not touched |
 
 ## The agent loop
 
@@ -76,6 +80,10 @@ rqml check                                             # the gate — must exit 
   `--id` to override.
 - For `implements` links it records a **drift baseline**: a content hash of the
   linked artifact, stored in `.rqml/baseline.json` (commit it — see below).
+- It also **maintains** links as they age: `--update` repoints the existing edge
+  in place — same id, same orientation, only the locator changes — and
+  `--refresh <edge-id>` re-blesses one artifact's baseline without re-stating
+  the URI (see [Drift baselines](#drift-baselines)).
 
 `skeleton` exists so nobody hand-rolls invalid structure:
 
@@ -119,6 +127,20 @@ git add requirements.rqml .rqml/baseline.json
 rqml check                                       # ✗ changed-implementation, exit 2
 ```
 
+When the failure is *unintentional* drift, fix the code or the spec. When the
+change is **intentional** — the implementation was legitimately revised, or it
+moved — bless it explicitly instead of hand-editing the trace XML or the
+baseline file:
+
+```bash
+rqml link --refresh E-IMPL-PAY-001                       # content changed: re-record this edge's hash
+rqml link REQ-PAY-001 src/payments/charge.ts --update    # artifact moved: repoint the edge + baseline
+rqml check                                               # ✓ exit 0
+```
+
+Both forms are deliberately **edge-scoped**: nothing else is re-hashed, so
+unrelated drift is never silently blessed along the way.
+
 Without a baseline, drift detection falls back to existence checks only.
 
 ## Exit codes
@@ -141,6 +163,7 @@ rqml status --json | jq .       # coverage/lint summary as JSON
 rqml show REQ-PAY-001           # one requirement as markdown (add --json for data)
 rqml impact GOAL-CHECKOUT       # everything that traces to/from this goal, transitively
 rqml link REQ-PAY-001 src/payments/capture.ts#capture
+rqml link --refresh E-IMPL-PAY-001   # bless an intentional change to linked code
 rqml skeleton stateMachine      # a valid lifecycle snippet to fill in
 rqml check --strictness strict  # CI gate
 ```
