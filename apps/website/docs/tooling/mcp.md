@@ -27,7 +27,7 @@ npm install -g @rqml/mcp     # provides the `rqml-mcp` binary
 | `rqml_show` | One artifact: statement, acceptance criteria, trace neighborhood (+ rendered markdown) | `xml` or `path`, `id` |
 | `rqml_impact` | What is affected, transitively, if this artifact changes | `xml` or `path`, `id` |
 | `rqml_skeleton` | A schema-valid snippet: `req`, `edge`, `testCase`, or `stateMachine` | `kind`, `id?` |
-| `rqml_link` | Record an `implements`/`verifiedBy` edge and its drift baseline — **writes the spec file** | `path`, `artifactId`, `uri`, `type?`, `edgeId?`, `kind?`, `title?` |
+| `rqml_link` | Record or maintain an `implements`/`verifiedBy` edge and its drift baseline — **writes to disk** | `path`, `mode?`, `artifactId`, `uri`, `type?`, `edgeId?`, `kind?`, `title?` |
 
 Every document-reading tool accepts either the document text (`xml`) or a
 filesystem `path` — prefer `path`, so the agent never inlines a multi-thousand-line
@@ -37,6 +37,16 @@ against the spec's directory unless `baseDir` overrides it. `strictness` is
 
 `rqml_show` and `rqml_impact` are the context-economy tools: an agent working on
 one requirement reads a few-hundred-token slice instead of the whole document.
+
+`rqml_link` is the one writing tool, and mirrors [`rqml link`](./cli.md) mode for
+mode: `mode: "append"` (the default) adds a new edge and records the linked
+artifact's hash in `.rqml/baseline.json`; `mode: "update"` repoints the
+*existing* edge's external locator in place — matched by `edgeId` or the same
+derived id used when appending — and re-records its baseline entry;
+`mode: "refresh"` takes an `edgeId` alone and re-blesses one intentionally
+changed artifact's baseline without touching the spec document. The maintenance
+modes are deliberately edge-scoped, so unrelated drift is never silently blessed
+along the way (see [Drift baselines](./cli.md#drift-baselines)).
 
 ## Connecting an agent
 
@@ -61,12 +71,12 @@ stdio. For example:
 - **Engine parity.** Every tool is backed by `@rqml/core`, so results match the
   corresponding [`rqml`](./cli.md) CLI command — covered by an integration test
   that runs both against the same project.
-- **Read-mostly.** Every tool is read-only except `rqml_link`, which writes the
-  named spec file — it requires an explicit `path` (no inline-XML form), appends
-  the edge textually so comments and formatting survive, and writes only when
-  the edited document still validates. It also records the linked artifact's
-  hash in `.rqml/baseline.json`, so subsequent `rqml_check` calls detect
-  *changed* implementations, not just missing ones.
+- **Read-mostly.** Every tool is read-only except `rqml_link`, which requires an
+  explicit `path` (no inline-XML form). Its append and update modes edit the
+  spec textually — comments and formatting survive — and write the file only
+  when the edited document still validates; refresh mode writes only the
+  baseline store. The recorded hashes are what let subsequent `rqml_check`
+  calls detect *changed* implementations, not just missing ones.
 - **Deterministic.** Like the rest of the toolchain, the verdicts involve no
   language model — the agent proposes RQML, the engine disposes.
 
