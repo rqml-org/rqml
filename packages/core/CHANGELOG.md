@@ -1,5 +1,16 @@
 # @rqml/core
 
+## 0.3.0
+
+### Minor Changes
+
+- ee580a4: Trace links are now maintainable, not just creatable: `rqml link --update`
+  repoints an existing edge's external locator (refreshing its drift baseline),
+  and `rqml link --refresh <edge-id>` re-records the baseline to bless an
+  intentional implementation change — no more hand-editing trace XML or
+  baseline.json. The MCP `rqml_link` tool gains the same `update` and `refresh`
+  modes, and @rqml/core exports the new `updateTraceEdge` primitive.
+
 ## 0.2.0
 
 ### Minor Changes

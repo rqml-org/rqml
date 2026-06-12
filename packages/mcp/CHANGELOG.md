@@ -1,5 +1,24 @@
 # @rqml/mcp
 
+## 0.3.0
+
+### Minor Changes
+
+- ee580a4: Trace links are now maintainable, not just creatable: `rqml link --update`
+  repoints an existing edge's external locator (refreshing its drift baseline),
+  and `rqml link --refresh <edge-id>` re-records the baseline to bless an
+  intentional implementation change — no more hand-editing trace XML or
+  baseline.json. The MCP `rqml_link` tool gains the same `update` and `refresh`
+  modes, and @rqml/core exports the new `updateTraceEdge` primitive.
+
+### Patch Changes
+
+- 78aaf74: `rqml --version` (and the MCP server's declared version) now report the real
+  installed package version instead of a hardcoded constant that went stale on
+  release: 0.2.0 shipped while `--version` still printed 0.1.0.
+- Updated dependencies [ee580a4]
+  - @rqml/core@0.3.0
+
 ## 0.2.0
 
 ### Minor Changes
