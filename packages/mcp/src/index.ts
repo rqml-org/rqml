@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { createRequire } from "node:module";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -14,7 +15,12 @@ import { TOOLS, callTool } from "./tools.js";
  * with the `rqml` CLI for CLI/MCP parity (REQ-MCP-PARITY).
  */
 const server = new Server(
-  { name: "rqml", version: "0.1.0" },
+  // Version from package.json so the server reports what is actually installed.
+  {
+    name: "rqml",
+    version: (createRequire(import.meta.url)("../package.json") as { version: string })
+      .version,
+  },
   { capabilities: { tools: {} } },
 );
 

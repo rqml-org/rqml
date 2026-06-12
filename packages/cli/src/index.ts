@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { createRequire } from "node:module";
 import { runCheck } from "./commands/check.js";
 import { runImpact } from "./commands/impact.js";
 import { runInit } from "./commands/init.js";
@@ -9,7 +10,12 @@ import { runStatus } from "./commands/status.js";
 import { runValidate } from "./commands/validate.js";
 import { EXIT, UsageError } from "./runtime.js";
 
-const VERSION = "0.1.0";
+// The version lives in package.json (changesets bumps it there); resolving it
+// at runtime keeps `rqml --version` truthful. From dist/index.js and from
+// src/index.ts alike, ../package.json is this package's manifest.
+const VERSION = (
+  createRequire(import.meta.url)("../package.json") as { version: string }
+).version;
 
 const HELP = `rqml — RQML reference CLI (v${VERSION})
 
