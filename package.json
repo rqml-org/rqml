@@ -1,5 +1,5 @@
 {
-  "name": "rqml-monorepo",
+  "name": "rqml",
   "version": "0.0.0",
   "private": true,
   "description": "RQML reference toolchain: the @rqml/schema source of truth, the @rqml/core engine, the rqml CLI, the @rqml/mcp server, and the documentation site.",

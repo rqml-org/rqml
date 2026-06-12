@@ -13,9 +13,8 @@ import { EXIT, UsageError } from "./runtime.js";
 // The version lives in package.json (changesets bumps it there); resolving it
 // at runtime keeps `rqml --version` truthful. From dist/index.js and from
 // src/index.ts alike, ../package.json is this package's manifest.
-const VERSION = (
-  createRequire(import.meta.url)("../package.json") as { version: string }
-).version;
+const VERSION = (createRequire(import.meta.url)("../package.json") as { version: string })
+  .version;
 
 const HELP = `rqml — RQML reference CLI (v${VERSION})
 
