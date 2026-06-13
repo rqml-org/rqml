@@ -90,6 +90,11 @@ rqml link REQ-HELLO-001 test/hello.test.ts --type verifiedBy
 rqml check                   # the gate: validation + coverage + drift; exit 0 or it isn't done
 ```
 
+This `show` → `impact` → implement → `link` → `check` rhythm is the **Code** and
+**Verify** half of RQML's [five-stage development process](https://rqml.org/docs/development-process)
+(Spec → Design → Plan → Code → Verify) — where design decisions are recorded as
+ADRs in `.rqml/adr/` and the implementation plan lives in `.rqml/plan.md`.
+
 And in CI:
 
 ```yaml

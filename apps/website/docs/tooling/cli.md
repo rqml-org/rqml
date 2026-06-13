@@ -58,7 +58,8 @@ When no path is given, the lone `*.rqml` document in the working directory is us
 `validate` and `check` guard the *ends* of a spec-first task. The loop commands
 serve the middle — choosing work, reading one artifact, and recording what was
 done — so an agent (or a human) never has to hold the whole document in view or
-hand-edit trace XML:
+hand-edit trace XML. This is the **Code** and **Verify** half of the
+[five-stage development process](../development-process/index.md):
 
 ```bash
 rqml show REQ-PAY-001                                  # read the requirement: statement,

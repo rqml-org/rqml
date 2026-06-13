@@ -6,7 +6,7 @@ This directory captures the major architecture and design decisions for the
 merged into the RQML monorepo as `packages/core` (see ADR-0008). Each ADR is
 short, immutable once accepted, and follows the
 RQML development-process design format
-(https://www.rqml.dev/vscode/docs/development-process/design): a metadata block
+(https://rqml.org/docs/development-process/design): a metadata block
 (Status, Date, Classification, Related requirements, Related ADRs, Affected
 components) followed by Context, Decision drivers, Options considered, Decision,
 Consequences, and Supersession.
