@@ -45,7 +45,7 @@
     </authors>
     <dates>
       <created>2026-02-01</created>
-      <updated>2026-06-11</updated>
+      <updated>2026-06-13</updated>
       <targetRelease>RQML 2.1.0</targetRelease>
     </dates>
     <conventions>
@@ -460,6 +460,35 @@
         <consequences>
           Engine patches do not perturb the language version, and old documents
           keep validating after new schema versions ship.
+        </consequences>
+      </decision>
+      <decision id="DEC-FIVE-STAGE" status="approved">
+        <context>
+          The spec-first loop was historically described as
+          Elicit-Specify-Implement-Verify-Trace, which collapsed architecture and
+          planning into "implement" and left design decisions undocumented. The
+          VS Code extension proved a fuller five-stage shape — Spec, Design, Plan,
+          Code, Verify — with ADRs and a plan file as first-class artifacts.
+        </context>
+        <decision>
+          Adopt the five-stage Spec-Design-Plan-Code-Verify process as the
+          standard RQML development process: design decisions recorded as ADRs in
+          .rqml/adr/, the implementation plan in .rqml/plan.md. Promote the
+          definition into the core rqml.org documentation; editor and
+          coding-agent integrations supply the per-stage commands.
+        </decision>
+        <alternatives>
+          Keep the four-stage loop (rejected: it hides the Design and Plan stages,
+          the two points where involving a human before code is written pays off
+          most). Make the deterministic check gate ADR/plan-aware (deferred:
+          keeps a model out of the verdict path and avoids changing the gate's
+          contract; see ISS-PROCESS-GATE).
+        </alternatives>
+        <consequences>
+          The AGENTS.md template, the rqml.org docs, and downstream agent plugins
+          teach the same five stages; the ADR and plan conventions are documented
+          project-wide. The deterministic check gate is unchanged — ADR and plan
+          adherence is guided by integrations, not gated by a model.
         </consequences>
       </decision>
     </decisions>
@@ -1079,9 +1108,10 @@
           obligation levels are unambiguous.
         </statement>
       </req>
-      <req id="REQ-AGENTS-TEMPLATE" type="PR" title="Template routes agents to the toolchain" status="approved" priority="should">
+      <req id="REQ-AGENTS-TEMPLATE" type="PR" title="Template teaches the process and routes agents to the toolchain" status="approved" priority="should">
         <statement>
-          The published AGENTS.md template SHALL direct agents to the rqml CLI —
+          The published AGENTS.md template SHALL teach the five-stage development
+          process (REQ-DESIGN-PROCESS) and SHALL direct agents to the rqml CLI —
           check, status, and the loop operations — as the primary validation and
           traceability workflow, rather than ad hoc schema validation.
         </statement>
@@ -1090,6 +1120,63 @@
           against a network URL; agents follow what the marker file says, so
           the process is only as enforced as the template is current.
         </rationale>
+      </req>
+      <req id="REQ-DESIGN-PROCESS" type="PR" title="Five-stage development process" status="approved" priority="should">
+        <statement>
+          RQML SHALL define and document a recommended five-stage development
+          process — Spec, Design, Plan, Code, Verify — in which each stage
+          produces a durable, version-controlled artifact (the spec, ADRs, the
+          plan, code and tests, and the trace graph respectively).
+        </statement>
+        <rationale>
+          The earlier Elicit-Specify-Implement-Verify-Trace framing collapsed
+          architecture and planning into "implement" and left design decisions
+          undocumented; naming Design and Plan as explicit stages surfaces the
+          two points where human judgement matters most before code is written.
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-PROCESS-DOC">
+            <given>The rqml.org documentation</given>
+            <when>A reader opens the Development Process page</when>
+            <then>The five stages and the artifact each produces are described.</then>
+          </criterion>
+        </acceptance>
+      </req>
+      <req id="REQ-ADR-CONVENTION" type="PR" title="Design decisions recorded as ADRs" status="approved" priority="should">
+        <statement>
+          Design decisions of architectural significance SHOULD be recorded as
+          Architecture Decision Records in a .rqml/adr/ directory beside the
+          spec, following the canonical ADR format — numbered NNNN-slug.md files,
+          immutable once accepted, superseded rather than edited. A significant
+          decision MAY additionally be summarized as a &lt;decision&gt; element
+          for in-spec traceability.
+        </statement>
+        <rationale>
+          Code records what was built and the spec records what is required, but
+          neither records why one design was chosen over the alternatives; ADRs
+          give that rationale a durable, searchable home that agents can read.
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-ADR-DIR">
+            <given>An RQML-governed project that makes a significant design decision</given>
+            <when>The decision is recorded</when>
+            <then>An ADR exists in .rqml/adr/ following the canonical format and naming.</then>
+          </criterion>
+        </acceptance>
+      </req>
+      <req id="REQ-PLAN-CONVENTION" type="PR" title="Implementation plan in .rqml/plan.md" status="approved" priority="may">
+        <statement>
+          A multi-stage implementation plan SHOULD be recorded at .rqml/plan.md,
+          framed for coding agents — each stage naming its goal, the requirement
+          ids it addresses, the files it touches, and how to verify it.
+        </statement>
+        <acceptance>
+          <criterion id="CRIT-PLAN-FILE">
+            <given>A project planning multi-stage implementation work</given>
+            <when>The plan is drafted</when>
+            <then>It lives at .rqml/plan.md with per-stage goals, requirement ids, and verification steps.</then>
+          </criterion>
+        </acceptance>
       </req>
     </reqPackage>
 
@@ -1401,9 +1488,10 @@
       <description>
         Deterministic spec operations serving the middle of the agent loop —
         choosing work, reading one artifact, and recording trace links — so the
-        toolchain supports the whole Elicit-Specify-Implement-Verify-Trace
-        cycle, not only validation at the start and the gate at the end.
-        Generation of target-language code or tests is intentionally excluded
+        toolchain supports the Code and Verify stages of the five-stage
+        Spec-Design-Plan-Code-Verify process (REQ-DESIGN-PROCESS), not only
+        validation at the start and the gate at the end. Generation of
+        target-language code or tests is intentionally excluded
         (DEC-DETERMINISTIC-CHECK: the model proposes, the toolchain disposes).
       </description>
       <req id="REQ-LOOP-LINK" type="FR" title="Link recording" status="approved" priority="must" appliesTo="core cli mcp">
@@ -2554,6 +2642,52 @@
       <from><locator><local id="REQ-LOOP-RELINK"/></locator></from>
       <to><locator><external uri="packages/mcp/test/tools.test.ts" kind="test"/></locator></to>
     </edge>
+
+    <!-- The five-stage development process (DEC-FIVE-STAGE) -->
+    <edge id="E-DESIGNPROC-RE" type="satisfies" confidence="0.85">
+      <from><locator><local id="REQ-DESIGN-PROCESS"/></locator></from>
+      <to><locator><local id="GOAL-RE-OPERATIONALIZE"/></locator></to>
+    </edge>
+    <edge id="E-ADRCONV-TRACE" type="satisfies" confidence="0.8">
+      <from><locator><local id="REQ-ADR-CONVENTION"/></locator></from>
+      <to><locator><local id="GOAL-TRACEABILITY"/></locator></to>
+    </edge>
+    <edge id="E-ADRCONV-RE" type="satisfies" confidence="0.7">
+      <from><locator><local id="REQ-ADR-CONVENTION"/></locator></from>
+      <to><locator><local id="GOAL-RE-OPERATIONALIZE"/></locator></to>
+    </edge>
+    <edge id="E-PLANCONV-RE" type="satisfies" confidence="0.75">
+      <from><locator><local id="REQ-PLAN-CONVENTION"/></locator></from>
+      <to><locator><local id="GOAL-RE-OPERATIONALIZE"/></locator></to>
+    </edge>
+    <edge id="E-DESIGNPROC-DEC" type="dependsOn" confidence="1.0">
+      <from><locator><local id="REQ-DESIGN-PROCESS"/></locator></from>
+      <to><locator><local id="DEC-FIVE-STAGE"/></locator></to>
+    </edge>
+    <edge id="E-ADRCONV-DEC" type="dependsOn" confidence="1.0">
+      <from><locator><local id="REQ-ADR-CONVENTION"/></locator></from>
+      <to><locator><local id="DEC-FIVE-STAGE"/></locator></to>
+    </edge>
+    <edge id="E-PLANCONV-DEC" type="dependsOn" confidence="1.0">
+      <from><locator><local id="REQ-PLAN-CONVENTION"/></locator></from>
+      <to><locator><local id="DEC-FIVE-STAGE"/></locator></to>
+    </edge>
+    <edge id="E-AGENTS-FIVE-STAGE" type="dependsOn" confidence="0.8">
+      <from><locator><local id="REQ-AGENTS-TEMPLATE"/></locator></from>
+      <to><locator><local id="DEC-FIVE-STAGE"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-DESIGN-PROCESS" type="implements">
+      <from><locator><external uri="apps/website/docs/development-process/index.md" kind="doc" title="Development Process page"/></locator></from>
+      <to><locator><local id="REQ-DESIGN-PROCESS"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-ADR-CONVENTION" type="implements">
+      <from><locator><external uri="apps/website/docs/development-process/design.md" kind="doc" title="ADR convention page"/></locator></from>
+      <to><locator><local id="REQ-ADR-CONVENTION"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-PLAN-CONVENTION" type="implements">
+      <from><locator><external uri="apps/website/docs/development-process/plan.md" kind="doc" title="Implementation plan page"/></locator></from>
+      <to><locator><local id="REQ-PLAN-CONVENTION"/></locator></to>
+    </edge>
   </trace>
 
   <!-- ============================================================= -->
@@ -2627,6 +2761,18 @@
         resolution, deferred until a multi-document consumer exists.
       </statement>
       <notes>Boundary recorded 2026-06-09 to keep the toolchain lightweight.</notes>
+    </issue>
+    <issue id="ISS-PROCESS-GATE" status="review" owner="STK-MAINTAINER">
+      <statement>
+        Whether the deterministic check gate should become ADR- and plan-aware —
+        e.g. flagging an approved ADR-worthy decision with no .rqml/adr/ file, or
+        a missing .rqml/plan.md for multi-stage work. Deferred (DEC-FIVE-STAGE):
+        the gate stays validation+coverage+drift so no model enters the verdict
+        path and the documented exit-code contract is unchanged; Design and Plan
+        adherence is guided by agent integrations for now. Revisit once the
+        five-stage process has field experience across the plugins.
+      </statement>
+      <notes>Recorded 2026-06-13 alongside adoption of the five-stage process.</notes>
     </issue>
     <approval id="APR-MAINTAINER" role="RQML Maintainer" status="review">
       <description>Maintainer sign-off on the RQML self-specification.</description>

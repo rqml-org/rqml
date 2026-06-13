@@ -49,7 +49,9 @@ rqml validate       # XSD + referential integrity — offline, instant
 
 ## 3. Develop in the loop
 
-This is the daily rhythm, for humans and agents alike:
+`show` → `impact` → implement → `link` → `check` is the **Code** and **Verify**
+half of the [five-stage RQML process](/docs/development-process) (Spec → Design →
+Plan → Code → Verify). This is the daily rhythm, for humans and agents alike:
 
 ```bash
 rqml show REQ-PAY-001        # read one requirement: statement, acceptance, traces
@@ -116,8 +118,10 @@ covers:
 
 - **Strictness levels** — how aggressively the gate blocks, from `relaxed`
   (advisory) to `certified` (audit-grade traces)
-- **The spec-first workflow** — Elicit → Specify → Implement → Verify → Trace,
-  expressed as toolchain commands
+- **The development process** — the five stages Spec → Design → Plan → Code →
+  Verify, the artifact each produces (`requirements.rqml`, `.rqml/adr/`,
+  `.rqml/plan.md`, code, trace graph), and the toolchain commands that drive them
+  (see [Development Process](/docs/development-process))
 - **The divergence protocol** — what to do when code and spec disagree (never
   silently change the spec to match the code)
 - **A change-summary template** for PRs and commits

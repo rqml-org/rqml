@@ -70,5 +70,10 @@ The `link` step also records a content hash of the implementation in
 `.rqml/baseline.json`, so a later `rqml check` catches code that *changed* after
 it was linked — not just code that disappeared.
 
+This loop is the **Code** and **Verify** half of the
+[five-stage RQML development process](../development-process/index.md); the
+earlier stages (Spec, Design → ADRs, Plan) produce the spec and the artifacts in
+`.rqml/` that this loop draws on.
+
 Head to [`@rqml/core`](./core.md) for the library API, [`@rqml/cli`](./cli.md) for
 the command line, or [`@rqml/mcp`](./mcp.md) to give a coding agent RQML tools.
