@@ -29,8 +29,11 @@ rqml check                 # deterministic gate: validation + coverage + drift (
 rqml status                # re-anchor: spec, coverage, and drift state
 rqml show <REQ-ID>         # one requirement: statement, acceptance criteria, trace neighborhood
 rqml impact <ID>           # what is affected, transitively, if this artifact changes
+rqml overview              # readable projection of the spec (--section/--id to scope)
 rqml matrix                # traceability matrix: status, goals, code, tests, coverage gaps
 rqml link <REQ-ID> <path>  # record an implements edge + drift baseline (--type verifiedBy for tests)
+rqml approve <REQ-ID>      # transition a requirement's status (default approved)
+rqml gate                  # block implementation of non-approved requirements
 rqml skeleton <kind>       # schema-valid snippet: req | edge | testCase | stateMachine
 ```
 

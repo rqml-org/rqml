@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { SERVER_CAPABILITIES } from "../src/capabilities.js";
 import { TOOLS, callTool } from "../src/tools.js";
 
 const CLI = fileURLToPath(new URL("../../cli/dist/index.js", import.meta.url));
@@ -42,16 +43,26 @@ describe("MCP tools", () => {
 
   it("exposes the agent-loop toolset", () => {
     expect(TOOLS.map((t) => t.name).sort()).toEqual([
+      "rqml_approve",
       "rqml_check",
+      "rqml_gate",
       "rqml_impact",
       "rqml_link",
       "rqml_matrix",
+      "rqml_overview",
       "rqml_show",
       "rqml_skeleton",
       "rqml_status",
       "rqml_trace",
       "rqml_validate",
     ]);
+  });
+
+  it("advertises only the tools capability (REQ-MCP-INTERACTION-BOUNDARY)", () => {
+    expect(Object.keys(SERVER_CAPABILITIES)).toEqual(["tools"]);
+    for (const feature of ["resources", "prompts", "elicitation", "sampling"]) {
+      expect(feature in SERVER_CAPABILITIES).toBe(false);
+    }
   });
 
   it("builds a traceability matrix, equal by path and inline (REQ-MCP-PARITY)", async () => {
@@ -61,6 +72,37 @@ describe("MCP tools", () => {
     const m = byPath as { rows: Array<{ id: string }>; markdown: string };
     expect(m.rows.map((r) => r.id)).toContain("REQ-A");
     expect(m.markdown).toContain("Traceability matrix");
+  });
+
+  it("projects an overview, equal by path and inline (REQ-LOOP-OVERVIEW)", async () => {
+    const byPath = await callTool("rqml_overview", { path: spec });
+    const inline = await callTool("rqml_overview", { xml: SPEC });
+    expect(byPath).toEqual(inline);
+    const o = byPath as {
+      outline: { sections: Array<{ title: string }> };
+      markdown: string;
+    };
+    expect(o.outline.sections.some((s) => s.title === "Requirements")).toBe(true);
+  });
+
+  it("approves a requirement, writing the spec file (REQ-LOOP-APPROVE)", async () => {
+    const r = (await callTool("rqml_approve", {
+      path: spec,
+      id: "REQ-A",
+      status: "review",
+    })) as { ok: boolean; previousStatus: string | null };
+    expect(r.ok).toBe(true);
+    expect(r.previousStatus).toBe("approved");
+    expect(readFileSync(spec, "utf8")).toContain(
+      'id="REQ-A" type="FR" title="r" status="review"',
+    );
+  });
+
+  it("returns a read-only gate verdict, equal by path and inline (REQ-ENFORCE-APPROVAL-GATE)", async () => {
+    const byPath = await callTool("rqml_gate", { path: spec });
+    const inline = await callTool("rqml_gate", { xml: SPEC });
+    expect(byPath).toEqual(inline);
+    expect((byPath as { blocked: boolean }).blocked).toBe(false);
   });
 
   it("accepts a path argument equivalent to inline xml (CRIT-MCP-PATH)", async () => {

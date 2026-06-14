@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 import { createRequire } from "node:module";
+import { runApprove } from "./commands/approve.js";
 import { runCheck } from "./commands/check.js";
+import { runGate } from "./commands/gate.js";
 import { runImpact } from "./commands/impact.js";
 import { runInit } from "./commands/init.js";
 import { runLink } from "./commands/link.js";
 import { runMatrix } from "./commands/matrix.js";
+import { runOverview } from "./commands/overview.js";
 import { runShow } from "./commands/show.js";
 import { runSkeleton } from "./commands/skeleton.js";
 import { runStatus } from "./commands/status.js";
@@ -31,13 +34,18 @@ Commands:
                      (--update repoints an existing edge; --refresh <edge-id>
                      re-records only the baseline for an intentional change)
   show <id>          Extract one artifact with its trace neighborhood
+  overview [path]    Readable spec projection (whole, or --section/--id scoped)
   impact <id>        What is affected, transitively, if this artifact changes
   matrix [path]      Traceability matrix: status, goals, code, tests, warnings
+  approve <id>       Transition a requirement's status (--status, default approved)
+  gate [paths...]    Block implementation of non-approved requirements (exit 2)
   skeleton <kind>    Print a schema-valid snippet (req|edge|testCase|stateMachine)
 
 Options:
-  --json                 Emit machine-readable JSON (status, check, validate, link, show, impact, matrix)
-  --status/--type/--warning  Filter matrix rows (comma-separated, e.g. --warning unverified)
+  --json                 Emit machine-readable JSON (reporting commands)
+  --section, --id        Scope overview (comma-separated section titles or element ids)
+  --status, --type, --warning  Filter matrix rows; for approve, --status sets the target (default approved)
+  --changed <paths>      Scope gate to changed paths (or pass paths as positionals)
   --strictness <level>   relaxed | standard | strict | certified (default: standard)
   --base-dir <dir>       Directory to resolve the spec and code links against
   --spec <path>          Explicit spec file (link, show, impact)
@@ -72,6 +80,12 @@ async function main(argv: string[]): Promise<number> {
       return runImpact(rest);
     case "matrix":
       return runMatrix(rest);
+    case "overview":
+      return runOverview(rest);
+    case "approve":
+      return runApprove(rest);
+    case "gate":
+      return runGate(rest);
     case "skeleton":
       return runSkeleton(rest);
     case "-v":

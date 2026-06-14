@@ -1383,7 +1383,7 @@
           </criterion>
         </acceptance>
       </req>
-      <req id="REQ-CORE-PROJECTION" type="FR" title="Scoped document projection" status="draft" priority="must" appliesTo="core">
+      <req id="REQ-CORE-PROJECTION" type="FR" title="Scoped document projection" status="approved" priority="must" appliesTo="core">
         <statement>
           @rqml/core SHALL project a document, or a caller-selected subset of
           it (by section, package, or id), into the normalized document outline
@@ -1429,7 +1429,7 @@
           </criterion>
         </acceptance>
       </req>
-      <req id="REQ-CORE-SETSTATUS" type="FR" title="Status-transition edit" status="draft" priority="must" appliesTo="core">
+      <req id="REQ-CORE-SETSTATUS" type="FR" title="Status-transition edit" status="approved" priority="must" appliesTo="core">
         <statement>
           @rqml/core SHALL provide a status-transition edit that changes the
           lifecycle status of a named artifact in the document text in place —
@@ -1452,7 +1452,7 @@
           </criterion>
         </acceptance>
       </req>
-      <req id="REQ-CORE-APPROVAL-VERDICT" type="FR" title="Non-approved-implementation verdict" status="draft" priority="should" appliesTo="core">
+      <req id="REQ-CORE-APPROVAL-VERDICT" type="FR" title="Non-approved-implementation verdict" status="approved" priority="should" appliesTo="core">
         <statement>
           @rqml/core SHALL expose a deterministic verdict that identifies
           implementation linked to requirements that are not approved — given
@@ -1574,7 +1574,7 @@
           </criterion>
         </acceptance>
       </req>
-      <req id="REQ-MCP-INTERACTION-BOUNDARY" type="CR" title="Data plane, not interaction surface" status="draft" priority="must" appliesTo="mcp">
+      <req id="REQ-MCP-INTERACTION-BOUNDARY" type="CR" title="Data plane, not interaction surface" status="approved" priority="must" appliesTo="mcp">
         <statement>
           The MCP server SHALL expose RQML capabilities as text and JSON tool
           results and SHALL NOT depend on optional MCP client features —
@@ -1714,7 +1714,7 @@
           </criterion>
         </acceptance>
       </req>
-      <req id="REQ-LOOP-OVERVIEW" type="FR" title="Spec overview" status="draft" priority="must" appliesTo="core cli mcp">
+      <req id="REQ-LOOP-OVERVIEW" type="FR" title="Spec overview" status="approved" priority="must" appliesTo="core cli mcp">
         <statement>
           The toolchain SHALL provide an overview operation, on both the CLI and
           MCP surfaces, that renders the spec — whole, or scoped to named
@@ -1759,7 +1759,7 @@
           </criterion>
         </acceptance>
       </req>
-      <req id="REQ-LOOP-APPROVE" type="FR" title="Requirement approval" status="draft" priority="must" appliesTo="core cli mcp">
+      <req id="REQ-LOOP-APPROVE" type="FR" title="Requirement approval" status="approved" priority="must" appliesTo="core cli mcp">
         <statement>
           The toolchain SHALL provide an approve operation, on both the CLI and
           MCP surfaces, that transitions a named requirement's lifecycle status
@@ -1831,7 +1831,7 @@
           level (relaxed, standard, strict, certified).
         </statement>
       </req>
-      <req id="REQ-ENFORCE-APPROVAL-GATE" type="PR" title="Approval-before-implementation gate" status="draft" priority="should">
+      <req id="REQ-ENFORCE-APPROVAL-GATE" type="PR" title="Approval-before-implementation gate" status="approved" priority="should">
         <statement>
           The toolchain SHALL provide a deterministic approval-gate primitive —
           the non-approved-implementation verdict — so external control loops
@@ -3004,6 +3004,62 @@
     </edge>
     <edge id="E-VER-LOOP-MATRIX-2" type="verifiedBy">
       <from><locator><local id="REQ-LOOP-MATRIX"/></locator></from>
+      <to><locator><external uri="packages/mcp/test/tools.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-CORE-PROJECTION" type="implements">
+      <from><locator><external uri="packages/core/src/export/project.ts" kind="code"/></locator></from>
+      <to><locator><local id="REQ-CORE-PROJECTION"/></locator></to>
+    </edge>
+    <edge id="E-VER-CORE-PROJECTION" type="verifiedBy">
+      <from><locator><local id="REQ-CORE-PROJECTION"/></locator></from>
+      <to><locator><external uri="packages/core/test/project.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-CORE-SETSTATUS" type="implements">
+      <from><locator><external uri="packages/core/src/edit/status.ts" kind="code"/></locator></from>
+      <to><locator><local id="REQ-CORE-SETSTATUS"/></locator></to>
+    </edge>
+    <edge id="E-VER-CORE-SETSTATUS" type="verifiedBy">
+      <from><locator><local id="REQ-CORE-SETSTATUS"/></locator></from>
+      <to><locator><external uri="packages/core/test/status.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-CORE-APPROVAL-VERDICT" type="implements">
+      <from><locator><external uri="packages/core/src/analyze/gate.ts" kind="code"/></locator></from>
+      <to><locator><local id="REQ-CORE-APPROVAL-VERDICT"/></locator></to>
+    </edge>
+    <edge id="E-VER-CORE-APPROVAL-VERDICT" type="verifiedBy">
+      <from><locator><local id="REQ-CORE-APPROVAL-VERDICT"/></locator></from>
+      <to><locator><external uri="packages/core/test/gate.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-LOOP-OVERVIEW" type="implements">
+      <from><locator><external uri="packages/cli/src/commands/overview.ts" kind="code"/></locator></from>
+      <to><locator><local id="REQ-LOOP-OVERVIEW"/></locator></to>
+    </edge>
+    <edge id="E-VER-LOOP-OVERVIEW" type="verifiedBy">
+      <from><locator><local id="REQ-LOOP-OVERVIEW"/></locator></from>
+      <to><locator><external uri="packages/cli/test/commands.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-LOOP-APPROVE" type="implements">
+      <from><locator><external uri="packages/cli/src/commands/approve.ts" kind="code"/></locator></from>
+      <to><locator><local id="REQ-LOOP-APPROVE"/></locator></to>
+    </edge>
+    <edge id="E-VER-LOOP-APPROVE" type="verifiedBy">
+      <from><locator><local id="REQ-LOOP-APPROVE"/></locator></from>
+      <to><locator><external uri="packages/cli/test/commands.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-ENFORCE-APPROVAL-GATE" type="implements">
+      <from><locator><external uri="packages/cli/src/commands/gate.ts" kind="code"/></locator></from>
+      <to><locator><local id="REQ-ENFORCE-APPROVAL-GATE"/></locator></to>
+    </edge>
+    <edge id="E-VER-ENFORCE-APPROVAL-GATE" type="verifiedBy">
+      <from><locator><local id="REQ-ENFORCE-APPROVAL-GATE"/></locator></from>
+      <to><locator><external uri="packages/cli/test/commands.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-MCP-INTERACTION-BOUNDARY" type="implements">
+      <from><locator><external uri="packages/mcp/src/capabilities.ts" kind="code"/></locator></from>
+      <to><locator><local id="REQ-MCP-INTERACTION-BOUNDARY"/></locator></to>
+    </edge>
+    <edge id="E-VER-MCP-INTERACTION-BOUNDARY" type="verifiedBy">
+      <from><locator><local id="REQ-MCP-INTERACTION-BOUNDARY"/></locator></from>
       <to><locator><external uri="packages/mcp/test/tools.test.ts" kind="test"/></locator></to>
     </edge>
   </trace>

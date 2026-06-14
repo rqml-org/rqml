@@ -14,6 +14,9 @@ the RQML engine (`@rqml/core`) to coding agents as tools over stdio.
 | `rqml_show` | One artifact: statement, acceptance criteria, trace neighborhood — data + markdown |
 | `rqml_impact` | What is affected, transitively, if an artifact changes |
 | `rqml_matrix` | Traceability matrix: per-requirement status, goals, code, tests, coverage warnings — data + markdown |
+| `rqml_overview` | Readable spec projection: whole document or scoped by section/id — outline + markdown |
+| `rqml_approve` | Transition a requirement's lifecycle status (writes on explicit intent) |
+| `rqml_gate` | Approval-before-implementation verdict (optionally scoped to changed paths) |
 | `rqml_skeleton` | Generate a schema-valid RQML snippet (req / edge / testCase / stateMachine) |
 | `rqml_link` | Record/maintain an implements/verifiedBy edge and its drift baseline (writes on explicit intent) |
 

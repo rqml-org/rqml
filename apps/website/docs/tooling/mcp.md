@@ -27,6 +27,9 @@ npm install -g @rqml/mcp     # provides the `rqml-mcp` binary
 | `rqml_show` | One artifact: statement, acceptance criteria, trace neighborhood (+ rendered markdown) | `xml` or `path`, `id` |
 | `rqml_impact` | What is affected, transitively, if this artifact changes | `xml` or `path`, `id` |
 | `rqml_matrix` | Traceability matrix: per-requirement status, goals, code, tests, and coverage warnings (+ rendered markdown) | `xml` or `path`, `status?`, `type?`, `warning?` |
+| `rqml_overview` | Readable spec projection: whole document or scoped by section/id — outline + markdown | `xml` or `path`, `section?`, `id?` |
+| `rqml_approve` | Transition a requirement's lifecycle status — **writes to disk** | `path`, `id`, `status?` |
+| `rqml_gate` | Approval-before-implementation verdict (optionally scoped to changed paths) | `xml` or `path`, `changed?` |
 | `rqml_skeleton` | A schema-valid snippet: `req`, `edge`, `testCase`, or `stateMachine` | `kind`, `id?` |
 | `rqml_link` | Record or maintain an `implements`/`verifiedBy` edge and its drift baseline — **writes to disk** | `path`, `mode?`, `artifactId`, `uri`, `type?`, `edgeId?`, `kind?`, `title?` |
 

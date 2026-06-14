@@ -6,6 +6,7 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
+import { SERVER_CAPABILITIES } from "./capabilities.js";
 import { TOOLS, callTool } from "./tools.js";
 
 /**
@@ -21,7 +22,7 @@ const server = new Server(
     version: (createRequire(import.meta.url)("../package.json") as { version: string })
       .version,
   },
-  { capabilities: { tools: {} } },
+  { capabilities: SERVER_CAPABILITIES },
 );
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));

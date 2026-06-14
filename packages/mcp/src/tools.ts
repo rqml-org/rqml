@@ -3,10 +3,13 @@ import { dirname, resolve } from "node:path";
 import {
   type LinkRequest,
   type MatrixFilter,
+  type ProjectionFilter,
   SKELETON_KINDS,
   type SkeletonKind,
   appendTraceEdge,
+  approvalGate,
   buildMatrix,
+  buildOutline,
   checkIntegrity,
   computeBaseline,
   computeCoverage,
@@ -17,9 +20,12 @@ import {
   implementsLinks,
   loadBaseline,
   matrixToMarkdown,
+  outlineToMarkdown,
   parse,
+  projectOutline,
   resolveTrace,
   saveBaseline,
+  setStatus,
   skeleton,
   sliceToMarkdown,
   updateTraceEdge,
@@ -131,6 +137,62 @@ export const TOOLS: ToolDef[] = [
           type: "string",
           description:
             "Comma-separated warning codes to filter to: unverified, unimplemented, orphan, premature, broken-trace.",
+        },
+      },
+    },
+  },
+  {
+    name: "rqml_overview",
+    description:
+      "A readable projection of the spec — the whole document, or a subset scoped by section title or element id — as a structured outline plus markdown.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        xml: SPEC_INPUTS.xml,
+        path: SPEC_INPUTS.path,
+        section: {
+          type: "string",
+          description:
+            "Comma-separated section titles to keep (e.g. Goals,Requirements).",
+        },
+        id: {
+          type: "string",
+          description:
+            "Comma-separated element ids to keep (a package id keeps the whole package).",
+        },
+      },
+    },
+  },
+  {
+    name: "rqml_approve",
+    description:
+      "Transition a requirement's lifecycle status (default approved). Writes the spec FILE textually, re-validating first — requires path (explicit caller intent per REQ-MCP-READONLY).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        path: SPEC_INPUTS.path,
+        id: { type: "string", description: "Declared artifact id to transition." },
+        status: {
+          type: "string",
+          enum: ["draft", "review", "approved", "deprecated"],
+          description: "Target lifecycle status (default approved).",
+        },
+      },
+      required: ["path", "id"],
+    },
+  },
+  {
+    name: "rqml_gate",
+    description:
+      "Approval-before-implementation verdict: implements edges whose requirement is not approved, optionally scoped to changed paths. blocked=true means an external control loop should block the edit.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        xml: SPEC_INPUTS.xml,
+        path: SPEC_INPUTS.path,
+        changed: {
+          type: "string",
+          description: "Comma-separated changed paths to scope the verdict to.",
         },
       },
     },
@@ -351,6 +413,52 @@ export async function callTool(
         status !== undefined || type !== undefined || warning !== undefined;
       const matrix = buildMatrix(parsed.document, filtered ? filter : undefined);
       return { ...matrix, markdown: matrixToMarkdown(matrix) };
+    }
+    case "rqml_overview": {
+      const { xml } = resolveSpec(args);
+      const parsed = parse(xml);
+      if (!parsed.ok) return { ok: false, error: parsed.error };
+      const list = (v: string | undefined): string[] | undefined =>
+        v === undefined
+          ? undefined
+          : v
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean);
+      const filter: ProjectionFilter = {};
+      const sections = list(str(args, "section"));
+      const ids = list(str(args, "id"));
+      if (sections) filter.sections = sections;
+      if (ids) filter.ids = ids;
+      const outline = projectOutline(buildOutline(parsed.document), filter);
+      return { outline, markdown: outlineToMarkdown(outline) };
+    }
+    case "rqml_approve": {
+      const path = str(args, "path");
+      if (path === undefined)
+        throw new Error("path is required: rqml_approve writes the spec file");
+      const { xml } = resolveSpec({ ...args, xml: undefined });
+      const id = str(args, "id");
+      if (id === undefined) throw new Error("id is required");
+      const status = str(args, "status") ?? "approved";
+      const result = setStatus(xml, { artifactId: id, status });
+      if (!result.ok) return { ok: false, error: result.error };
+      writeFileSync(resolve(path), result.xml);
+      return { ok: true, id, status, previousStatus: result.previousStatus ?? null };
+    }
+    case "rqml_gate": {
+      const { xml } = resolveSpec(args);
+      const parsed = parse(xml);
+      if (!parsed.ok) return { ok: false, error: parsed.error };
+      const list = (v: string | undefined): string[] | undefined =>
+        v === undefined
+          ? undefined
+          : v
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean);
+      const changed = list(str(args, "changed"));
+      return approvalGate(parsed.document, changed ? { changedPaths: changed } : {});
     }
     case "rqml_skeleton": {
       const kind = str(args, "kind");
