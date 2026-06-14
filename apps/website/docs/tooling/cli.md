@@ -33,6 +33,7 @@ rqml <command> [spec.rqml] [options]
                      re-records only the baseline for an intentional change)
   show <id>          One artifact: statement, acceptance criteria, trace neighborhood
   impact <id>        What is affected, transitively, if this artifact changes
+  matrix [path]      Traceability matrix: status, goals, code, tests, coverage gaps
   skeleton <kind>    Print a schema-valid snippet (req | edge | testCase | stateMachine)
 ```
 
@@ -43,7 +44,7 @@ When no path is given, the lone `*.rqml` document in the working directory is us
 
 | Flag | Meaning |
 |------|---------|
-| `--json` | Emit machine-readable JSON (for `status`, `check`, `validate`, `link`, `show`, `impact`) — for control loops and editor hooks |
+| `--json` | Emit machine-readable JSON (for `status`, `check`, `validate`, `link`, `show`, `impact`, `matrix`) — for control loops and editor hooks |
 | `--strictness <level>` | `relaxed` · `standard` (default) · `strict` · `certified` — how aggressively `check` gates |
 | `--base-dir <dir>` | Directory to resolve the spec and `implements` code links against |
 | `--spec <path>` | Explicit spec file for `link`, `show`, and `impact` (whose positional argument is an artifact id, not a path) |
@@ -90,6 +91,15 @@ rqml check                                             # the gate — must exit 
 
 ```bash
 rqml skeleton req --id REQ-PAY-002    # a ready-to-fill <req> with acceptance criteria
+```
+
+`matrix` is the spec-health view: one row per requirement with its status, the
+goals it satisfies, the code that implements it, the tests that verify it, and
+any coverage warnings — derived from the same coverage pass as `check`, as a
+markdown table or `--json`, and filterable by `--status` / `--type` / `--warning`:
+
+```bash
+rqml matrix --warning unverified      # requirements still lacking a test
 ```
 
 ## The `check` gate

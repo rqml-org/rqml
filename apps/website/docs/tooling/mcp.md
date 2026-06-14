@@ -26,6 +26,7 @@ npm install -g @rqml/mcp     # provides the `rqml-mcp` binary
 | `rqml_trace` | Resolve the trace graph and report dangling local references | `xml` or `path` |
 | `rqml_show` | One artifact: statement, acceptance criteria, trace neighborhood (+ rendered markdown) | `xml` or `path`, `id` |
 | `rqml_impact` | What is affected, transitively, if this artifact changes | `xml` or `path`, `id` |
+| `rqml_matrix` | Traceability matrix: per-requirement status, goals, code, tests, and coverage warnings (+ rendered markdown) | `xml` or `path`, `status?`, `type?`, `warning?` |
 | `rqml_skeleton` | A schema-valid snippet: `req`, `edge`, `testCase`, or `stateMachine` | `kind`, `id?` |
 | `rqml_link` | Record or maintain an `implements`/`verifiedBy` edge and its drift baseline — **writes to disk** | `path`, `mode?`, `artifactId`, `uri`, `type?`, `edgeId?`, `kind?`, `title?` |
 
@@ -37,6 +38,9 @@ against the spec's directory unless `baseDir` overrides it. `strictness` is
 
 `rqml_show` and `rqml_impact` are the context-economy tools: an agent working on
 one requirement reads a few-hundred-token slice instead of the whole document.
+`rqml_matrix` is the spec-health surface — one row per requirement with coverage
+status and warnings, filterable by `status` / `type` / `warning` — for reviewing
+what is implemented, verified, or still has gaps without reading the raw spec.
 
 `rqml_link` is the one writing tool, and mirrors [`rqml link`](./cli.md) mode for
 mode: `mode: "append"` (the default) adds a new edge and records the linked
