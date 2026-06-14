@@ -1,5 +1,13 @@
 # @rqml/cli
 
+## 0.4.1
+
+### Patch Changes
+
+- 2f765a3: Republish the CLI so `rqml init` scaffolds the matrix-aware `AGENTS.md`. The CLI bundles the template from `@rqml/schema` (`tsup` `noExternal`), so it needs a rebuild to pick up the 0.1.2 template that documents `rqml matrix`.
+- Updated dependencies [33ac705]
+  - @rqml/schema@0.1.2
+
 ## 0.4.0
 
 ### Minor Changes
