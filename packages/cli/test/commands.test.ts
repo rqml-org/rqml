@@ -3,10 +3,13 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { runApprove } from "../src/commands/approve.js";
 import { runCheck } from "../src/commands/check.js";
+import { runGate } from "../src/commands/gate.js";
 import { runImpact } from "../src/commands/impact.js";
 import { runLink } from "../src/commands/link.js";
 import { runMatrix } from "../src/commands/matrix.js";
+import { runOverview } from "../src/commands/overview.js";
 import { runShow } from "../src/commands/show.js";
 import { runSkeleton } from "../src/commands/skeleton.js";
 import { EXIT, UsageError } from "../src/runtime.js";
@@ -188,5 +191,64 @@ describe("loop commands", () => {
     } finally {
       process.stdout.write = orig;
     }
+  });
+
+  it("overview projects the spec and scopes by section (REQ-LOOP-OVERVIEW)", async () => {
+    const out: string[] = [];
+    const orig = process.stdout.write.bind(process.stdout);
+    process.stdout.write = ((s: string | Uint8Array) => {
+      out.push(String(s));
+      return true;
+    }) as typeof process.stdout.write;
+    const sections = (): string[] => {
+      const o = JSON.parse(out.join("")) as { sections: Array<{ title: string }> };
+      out.length = 0;
+      return o.sections.map((s) => s.title);
+    };
+    try {
+      expect(await runOverview(["--base-dir", dir, "--json"])).toBe(EXIT.OK);
+      expect(sections()).toContain("Requirements");
+      expect(await runOverview(["--base-dir", dir, "--section", "Goals", "--json"])).toBe(
+        EXIT.OK,
+      );
+      expect(sections()).toEqual(["Goals"]);
+    } finally {
+      process.stdout.write = orig;
+    }
+  });
+
+  it("approve transitions a requirement's status (REQ-LOOP-APPROVE)", async () => {
+    expect(await runApprove(["REQ-A", "--status", "review", "--base-dir", dir])).toBe(
+      EXIT.OK,
+    );
+    expect(readFileSync(join(dir, "requirements.rqml"), "utf8")).toContain(
+      'id="REQ-A" type="FR" title="r" status="review"',
+    );
+  });
+
+  it("approve rejects an unknown id without writing the spec", async () => {
+    const before = readFileSync(join(dir, "requirements.rqml"), "utf8");
+    expect(await runApprove(["REQ-NOPE", "--base-dir", dir])).toBe(EXIT.VALIDATION);
+    expect(readFileSync(join(dir, "requirements.rqml"), "utf8")).toBe(before);
+  });
+
+  it("gate blocks non-approved implementation and clears once approved (REQ-ENFORCE-APPROVAL-GATE)", async () => {
+    const GATE_SPEC = `<?xml version="1.0" encoding="UTF-8"?>
+<rqml xmlns="https://rqml.org/schema/2.1.0" version="2.1.0" docId="GATECLI-1" status="draft">
+  <meta><title>t</title><system>s</system></meta>
+  <requirements>
+    <req id="REQ-B" type="FR" title="b" status="draft"><statement>b SHALL.</statement></req>
+  </requirements>
+  <trace>
+    <edge id="E-IMPL-B" type="implements">
+      <from><locator><external uri="src/b.ts" kind="code"/></locator></from>
+      <to><locator><local id="REQ-B"/></locator></to>
+    </edge>
+  </trace>
+</rqml>`;
+    writeFileSync(join(dir, "requirements.rqml"), GATE_SPEC);
+    expect(await runGate(["--base-dir", dir])).toBe(EXIT.CHECK);
+    expect(await runApprove(["REQ-B", "--base-dir", dir])).toBe(EXIT.OK);
+    expect(await runGate(["--base-dir", dir])).toBe(EXIT.OK);
   });
 });

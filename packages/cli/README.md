@@ -20,14 +20,19 @@ rqml <command> [spec.rqml] [options]
   check [path]     Deterministic enforcement gate (validation + coverage + drift)
   show <id>        One artifact: statement, acceptance criteria, trace neighborhood
   impact <id>      What is affected, transitively, if this artifact changes
+  overview [path]  Readable spec projection (whole, or --section/--id scoped)
   matrix [path]    Traceability matrix: status, goals, code, tests, coverage gaps
   link <id> <uri>  Record an implements/verifiedBy edge and its drift baseline
+  approve <id>     Transition a requirement's status (--status, default approved)
+  gate [paths...]  Block implementation of non-approved requirements (exit 2)
   skeleton <kind>  Print a schema-valid snippet (req|edge|testCase|stateMachine)
 
   --json                     Machine-readable output (REQ-CLI-JSON)
   --strictness <level>       relaxed | standard | strict | certified
   --base-dir <dir>           Resolve the spec and implements code links against <dir>
-  --status/--type/--warning  Filter matrix rows (comma-separated, e.g. --warning unverified)
+  --status/--type/--warning  Filter matrix rows; --status also sets approve's target
+  --section/--id             Scope overview to sections or element ids (comma-separated)
+  --changed <paths>          Scope gate to changed paths (or pass them as positionals)
 ```
 
 When no spec path is given, the lone `*.rqml` in the working directory is used

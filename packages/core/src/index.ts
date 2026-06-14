@@ -55,6 +55,20 @@ export {
   toMarkdown,
   type MarkdownOptions,
 } from "./export/markdown.js";
+export { projectOutline, type ProjectionFilter } from "./export/project.js";
+export {
+  setStatus,
+  STATUS_VALUES,
+  type SetStatusRequest,
+  type SetStatusResult,
+  type StatusValue,
+} from "./edit/status.js";
+export {
+  approvalGate,
+  type GateFinding,
+  type GateOptions,
+  type GateVerdict,
+} from "./analyze/gate.js";
 export {
   extractArtifact,
   sliceToMarkdown,

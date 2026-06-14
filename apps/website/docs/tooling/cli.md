@@ -33,7 +33,10 @@ rqml <command> [spec.rqml] [options]
                      re-records only the baseline for an intentional change)
   show <id>          One artifact: statement, acceptance criteria, trace neighborhood
   impact <id>        What is affected, transitively, if this artifact changes
+  overview [path]    Readable spec projection (whole, or --section/--id scoped)
   matrix [path]      Traceability matrix: status, goals, code, tests, coverage gaps
+  approve <id>       Transition a requirement's status (--status, default approved)
+  gate [paths...]    Block implementation of non-approved requirements (exit 2)
   skeleton <kind>    Print a schema-valid snippet (req | edge | testCase | stateMachine)
 ```
 
