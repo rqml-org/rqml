@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { runCheck } from "../src/commands/check.js";
 import { runImpact } from "../src/commands/impact.js";
 import { runLink } from "../src/commands/link.js";
+import { runMatrix } from "../src/commands/matrix.js";
 import { runShow } from "../src/commands/show.js";
 import { runSkeleton } from "../src/commands/skeleton.js";
 import { EXIT, UsageError } from "../src/runtime.js";
@@ -158,5 +159,34 @@ describe("loop commands", () => {
   it("skeleton prints snippets and rejects unknown kinds", async () => {
     expect(await runSkeleton(["req"])).toBe(EXIT.OK);
     await expect(runSkeleton(["nope"])).rejects.toThrow(UsageError);
+  });
+
+  it("matrix renders rows and filters by warning (CRIT-MATRIX-SURFACE)", async () => {
+    const out: string[] = [];
+    const orig = process.stdout.write.bind(process.stdout);
+    process.stdout.write = ((s: string | Uint8Array) => {
+      out.push(String(s));
+      return true;
+    }) as typeof process.stdout.write;
+    const rows = (): string[] => {
+      const j = JSON.parse(out.join("")) as { rows: Array<{ id: string }> };
+      out.length = 0;
+      return j.rows.map((r) => r.id);
+    };
+    try {
+      expect(await runMatrix(["--base-dir", dir, "--json"])).toBe(EXIT.OK);
+      expect(rows()).toEqual(["REQ-A"]);
+      // REQ-A is approved, satisfies G1, but has no verifiedBy edge → unverified.
+      expect(
+        await runMatrix(["--base-dir", dir, "--warning", "unverified", "--json"]),
+      ).toBe(EXIT.OK);
+      expect(rows()).toEqual(["REQ-A"]);
+      expect(
+        await runMatrix(["--base-dir", dir, "--warning", "premature", "--json"]),
+      ).toBe(EXIT.OK);
+      expect(rows()).toEqual([]);
+    } finally {
+      process.stdout.write = orig;
+    }
   });
 });

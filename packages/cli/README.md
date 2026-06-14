@@ -18,10 +18,16 @@ rqml <command> [spec.rqml] [options]
   validate [path]  XML well-formedness, XSD, and referential integrity
   status [path]    Spec, coverage, and lint summary
   check [path]     Deterministic enforcement gate (validation + coverage + drift)
+  show <id>        One artifact: statement, acceptance criteria, trace neighborhood
+  impact <id>      What is affected, transitively, if this artifact changes
+  matrix [path]    Traceability matrix: status, goals, code, tests, coverage gaps
+  link <id> <uri>  Record an implements/verifiedBy edge and its drift baseline
+  skeleton <kind>  Print a schema-valid snippet (req|edge|testCase|stateMachine)
 
-  --json                 Machine-readable output (REQ-CLI-JSON)
-  --strictness <level>   relaxed | standard | strict | certified
-  --base-dir <dir>       Resolve the spec and implements code links against <dir>
+  --json                     Machine-readable output (REQ-CLI-JSON)
+  --strictness <level>       relaxed | standard | strict | certified
+  --base-dir <dir>           Resolve the spec and implements code links against <dir>
+  --status/--type/--warning  Filter matrix rows (comma-separated, e.g. --warning unverified)
 ```
 
 When no spec path is given, the lone `*.rqml` in the working directory is used

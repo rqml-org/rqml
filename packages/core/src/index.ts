@@ -67,6 +67,18 @@ export {
   type SkeletonKind,
   type SkeletonOptions,
 } from "./export/skeleton.js";
+export {
+  buildMatrix,
+  matrixToMarkdown,
+  type ImplementationStatus,
+  type MatrixFilter,
+  type MatrixRef,
+  type MatrixReport,
+  type MatrixRow,
+  type MatrixSummary,
+  type MatrixWarning,
+  type VerificationStatus,
+} from "./analyze/matrix.js";
 
 export {
   BASELINE_PATH,
