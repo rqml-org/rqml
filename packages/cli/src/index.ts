@@ -4,6 +4,7 @@ import { runCheck } from "./commands/check.js";
 import { runImpact } from "./commands/impact.js";
 import { runInit } from "./commands/init.js";
 import { runLink } from "./commands/link.js";
+import { runMatrix } from "./commands/matrix.js";
 import { runShow } from "./commands/show.js";
 import { runSkeleton } from "./commands/skeleton.js";
 import { runStatus } from "./commands/status.js";
@@ -31,10 +32,12 @@ Commands:
                      re-records only the baseline for an intentional change)
   show <id>          Extract one artifact with its trace neighborhood
   impact <id>        What is affected, transitively, if this artifact changes
+  matrix [path]      Traceability matrix: status, goals, code, tests, warnings
   skeleton <kind>    Print a schema-valid snippet (req|edge|testCase|stateMachine)
 
 Options:
-  --json                 Emit machine-readable JSON (status, check, validate, link, show, impact)
+  --json                 Emit machine-readable JSON (status, check, validate, link, show, impact, matrix)
+  --status/--type/--warning  Filter matrix rows (comma-separated, e.g. --warning unverified)
   --strictness <level>   relaxed | standard | strict | certified (default: standard)
   --base-dir <dir>       Directory to resolve the spec and code links against
   --spec <path>          Explicit spec file (link, show, impact)
@@ -67,6 +70,8 @@ async function main(argv: string[]): Promise<number> {
       return runShow(rest);
     case "impact":
       return runImpact(rest);
+    case "matrix":
+      return runMatrix(rest);
     case "skeleton":
       return runSkeleton(rest);
     case "-v":

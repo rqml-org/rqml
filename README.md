@@ -124,9 +124,9 @@ model sits in the verdict path.
 
 | Package | Install | What it does |
 |---------|---------|--------------|
-| **[`@rqml/cli`](https://rqml.org/docs/tooling/cli)** (`rqml`) | `npm i -g @rqml/cli` | `init` · `validate` · `status` · `check`, plus the agent loop: `show` · `impact` · `link` · `skeleton` |
+| **[`@rqml/cli`](https://rqml.org/docs/tooling/cli)** (`rqml`) | `npm i -g @rqml/cli` | `init` · `validate` · `status` · `check`, plus the agent loop: `show` · `impact` · `matrix` · `link` · `skeleton` |
 | **[`@rqml/core`](https://rqml.org/docs/tooling/core)** | `npm i @rqml/core` | The engine: parse, validate (XSD + referential integrity), lint, trace, impact, coverage, drift, comment-preserving spec edits |
-| **[`@rqml/mcp`](https://rqml.org/docs/tooling/mcp)** | `npx @rqml/mcp` | Eight [MCP](https://modelcontextprotocol.io) tools for coding agents (`rqml_show`, `rqml_impact`, `rqml_link`, `rqml_check`, …) — reads specs by path, writes only on explicit intent |
+| **[`@rqml/mcp`](https://rqml.org/docs/tooling/mcp)** | `npx @rqml/mcp` | Nine [MCP](https://modelcontextprotocol.io) tools for coding agents (`rqml_show`, `rqml_matrix`, `rqml_impact`, `rqml_link`, `rqml_check`, …) — reads specs by path, writes only on explicit intent |
 | **[`@rqml/schema`](https://rqml.org/docs/reference)** | `npm i @rqml/schema` | The canonical XSDs, examples, and the AGENTS.md template — the single source of truth |
 
 **Using Claude Code?** The [rqml plugin](https://github.com/rqml-org/rqml-claude)

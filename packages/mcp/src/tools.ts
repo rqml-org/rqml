@@ -2,9 +2,11 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import {
   type LinkRequest,
+  type MatrixFilter,
   SKELETON_KINDS,
   type SkeletonKind,
   appendTraceEdge,
+  buildMatrix,
   checkIntegrity,
   computeBaseline,
   computeCoverage,
@@ -14,6 +16,7 @@ import {
   impactOf,
   implementsLinks,
   loadBaseline,
+  matrixToMarkdown,
   parse,
   resolveTrace,
   saveBaseline,
@@ -105,6 +108,32 @@ export const TOOLS: ToolDef[] = [
     description:
       "What is affected, transitively, if this artifact changes? Trace-graph traversal in both directions.",
     inputSchema: specAndId,
+  },
+  {
+    name: "rqml_matrix",
+    description:
+      "Traceability matrix: one row per requirement with status, upstream goals, implementing code, verifying tests, and coverage warnings — as structured data plus a markdown table. Optional status/type/warning filters (comma-separated).",
+    inputSchema: {
+      type: "object",
+      properties: {
+        xml: SPEC_INPUTS.xml,
+        path: SPEC_INPUTS.path,
+        status: {
+          type: "string",
+          description:
+            "Comma-separated requirement statuses to include (e.g. draft,review).",
+        },
+        type: {
+          type: "string",
+          description: "Comma-separated requirement types to include (e.g. FR,NFR).",
+        },
+        warning: {
+          type: "string",
+          description:
+            "Comma-separated warning codes to filter to: unverified, unimplemented, orphan, premature, broken-trace.",
+        },
+      },
+    },
   },
   {
     name: "rqml_skeleton",
@@ -299,6 +328,29 @@ export async function callTool(
         return { ok: false, error: `no artifact with id "${id}"` };
       }
       return impactOf(parsed.document, id);
+    }
+    case "rqml_matrix": {
+      const { xml } = resolveSpec(args);
+      const parsed = parse(xml);
+      if (!parsed.ok) return { ok: false, error: parsed.error };
+      const list = (v: string | undefined): string[] | undefined =>
+        v === undefined
+          ? undefined
+          : v
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean);
+      const status = list(str(args, "status"));
+      const type = list(str(args, "type"));
+      const warning = list(str(args, "warning"));
+      const filter: MatrixFilter = {};
+      if (status) filter.status = status;
+      if (type) filter.type = type;
+      if (warning) filter.warning = warning;
+      const filtered =
+        status !== undefined || type !== undefined || warning !== undefined;
+      const matrix = buildMatrix(parsed.document, filtered ? filter : undefined);
+      return { ...matrix, markdown: matrixToMarkdown(matrix) };
     }
     case "rqml_skeleton": {
       const kind = str(args, "kind");

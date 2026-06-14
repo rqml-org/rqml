@@ -104,3 +104,83 @@ The spec is detailed, internally consistent, and backed by three ADRs with expli
 - Soft acceptance terms ("typical project", "~1s") need a fixed benchmark fixture for `REQ-CLI-SPEED`/`QGOAL-CHECK-SPEED`.
 
 **Hard blockers:** None.
+
+---
+
+# Interactive RQML capabilities (1–6) — Implementation Plan
+
+Makes RQML development more interactive inside coding agents: text read-surfaces
+(spec overview, traceability matrix) and a review→accept-before-implementation
+workflow. Decisions are recorded in ADR-0006 … ADR-0011; the requirements are
+`draft` in `requirements.rqml` (PKG-CORE, PKG-LOOP, PKG-MCP, PKG-ENFORCEMENT) and
+in the plugin/extension specs.
+
+**Precondition (spec-first):** these requirements are `status="draft"`. Promote
+the load-bearing ones to `approved` before implementing them — only approved
+requirements drive implementation (REQ-STATUS-ENUM). Add `implements` edges with
+`rqml link` as each stage lands. Stages are ordered by dependency: the engine
+(11–13) lands before the surfaces (14), which land before the plugins (15) and the
+editor (16). Stage 17 is gated on ADR-0011 sign-off.
+
+## Stage 11 — Traceability matrix in core (capability 1, engine)
+- **Scope:** `REQ-CORE-MATRIX`
+- **Key output:** `@rqml/core` derives a `MatrixReport` (one row per requirement: status, upstream goals, implementing artifacts, verifying tests, verification/implementation status, warnings) plus a `matrixToMarkdown` renderer; deterministic
+- **Do:** Add a matrix derivation composing `computeCoverage` + `resolveTrace` + shared title collection; plain TypeScript types (no Zod); stable, sorted output. Export from the core entry.
+- **Touch:** `packages/core/src/analyze/matrix.ts`, `packages/core/src/export/markdown.ts`, `packages/core/src/index.ts`
+- **Inputs:** ADR-0006; reuse `check/coverage.ts`, `trace/index.ts`, `export/outline.ts` (`collectTitles`)
+- **Verify:** `CRIT-MATRIX-DERIVED` — a requirement with an implements edge and no verifiedBy edge yields an unverified row whose values equal the coverage report; repeated runs byte-identical
+- [ ] Complete
+
+## Stage 12 — Scoped document projection in core (capability 5, engine)
+- **Scope:** `REQ-CORE-PROJECTION`
+- **Key output:** additive scoping options (section / package / id-set) on the existing outline + markdown projection; whole-document output unchanged
+- **Do:** Extend `MarkdownOptions` with deterministic selection; filter the outline by id/section. No new renderer.
+- **Touch:** `packages/core/src/export/markdown.ts`, `packages/core/src/export/outline.ts`, `packages/core/src/index.ts`
+- **Inputs:** ADR-0010; reuse `buildOutline`, `outlineToMarkdown`
+- **Verify:** `CRIT-PROJECTION-SCOPE` — a filter naming a subset of ids renders exactly those with their resolved refs; the default whole-document render is byte-identical to today
+- [ ] Complete
+
+## Stage 13 — Status-transition edit + approval verdict in core (capabilities 3 & 4, engine)
+- **Scope:** `REQ-CORE-SETSTATUS`, `REQ-CORE-APPROVAL-VERDICT`
+- **Key output:** `edit/status.ts` `setStatus` (textual, comment-preserving, integrity-checked status edit); a deterministic non-approved-implementation verdict
+- **Do:** Mirror `edit/link.ts` (parse-guard → textual edit → reparse → integrity-guard → return) for `setStatus`. Build the verdict on `computeCoverage().prematureImplementations`, optionally filtered to changed paths.
+- **Touch:** `packages/core/src/edit/status.ts`, `packages/core/src/analyze/` (verdict), `packages/core/src/index.ts`
+- **Inputs:** ADR-0009, ADR-0008; reuse `edit/link.ts`, `check/coverage.ts` (REQ-CORE-STATUS-AWARE)
+- **Verify:** `CRIT-SETSTATUS-INPLACE` (only the status attribute changes, document revalidates, byte-identical elsewhere); `CRIT-VERDICT-NONAPPROVED` (a `review`-status target is flagged identically every run)
+- [ ] Complete
+
+## Stage 14 — CLI + MCP surfaces at parity (capabilities 1, 4, 5 + verdict)
+- **Scope:** `REQ-LOOP-OVERVIEW`, `REQ-LOOP-MATRIX`, `REQ-LOOP-APPROVE`, `REQ-MCP-INTERACTION-BOUNDARY`, `REQ-ENFORCE-APPROVAL-GATE`
+- **Key output:** `rqml overview|matrix|approve` and `rqml_overview|rqml_matrix|rqml_approve`; the approval-gate verdict exposed for hooks/CI; MCP stays text/JSON with no resources/elicitation dependency
+- **Do:** Add CLI commands mirroring `commands/show.ts` / `commands/link.ts`; add MCP tools mirroring `rqml_show` / `rqml_link`; `approve` is an explicit-intent write; surface the verdict (CLI flag/JSON field + MCP tool).
+- **Touch:** `packages/cli/src/commands/{overview,matrix,approve}.ts`, `packages/cli/src/index.ts`, `packages/mcp/src/tools.ts`
+- **Inputs:** ADR-0007, ADR-0006, ADR-0009, ADR-0010; `REQ-MCP-PARITY`
+- **Verify:** parity tests `CRIT-OVERVIEW-PARITY`, `CRIT-MATRIX-SURFACE`, `CRIT-APPROVE-WRITE`, `CRIT-MCP-TOOLS-ONLY` (capability reachable and equal to CLI on a tools-only host)
+- [ ] Complete
+
+## Stage 15 — Plugin review/accept choreography + PreToolUse gate (capability 3, enforcement)
+- **Scope:** rqml-claude `REQ-CMD-REVIEW`, `REQ-HOOK-PREIMPL`; rqml-codex `REQ-SKILL-REVIEW`, `REQ-HOOK-PREIMPL`
+- **Key output:** `/rqml:review` command (Claude) + `rqml-review` skill (Codex) that render the overview + matrix of draft/review requirements and drive acceptance via `rqml approve`; a `PreToolUse` hook denying edits to code linked to non-approved requirements (fail-open; Codex degrades to stop gate + review skill where it has no pre-edit event)
+- **Do:** Claude — `commands/review.md`, register a `PreToolUse` hook in `hooks.json` + a hook script that consults the verdict via the CLI. Codex — `skills/rqml-review/SKILL.md`, a `pre-tool-use` branch in `lib/rqml-codex-core.mjs` + `hooks.json`. Human decides; toolchain performs the edit.
+- **Touch:** `rqml-claude/commands/review.md`, `rqml-claude/hooks/{hooks.json,scripts/pre-impl-gate.mjs}`; `rqml-codex/skills/rqml-review/SKILL.md`, `rqml-codex/{hooks/hooks.json,lib/rqml-codex-core.mjs}`
+- **Inputs:** ADR-0008, ADR-0007; reuse `stop-gate.mjs` / `lib.mjs` fail-open pattern
+- **Verify:** `CRIT-PREIMPL-DENY` (edit to code linked to a draft req denied naming it; toolchain-unavailable proceeds with one warning); `CRIT-REVIEW-ACCEPT` (only confirmed requirements transition to approved)
+- [ ] Complete
+
+## Stage 16 — VS Code matrix adapter; retire duplication (capability 1, consumer)
+- **Scope:** rqml-vscode `REQ-MAT-DELEGATE`
+- **Key output:** the extension's matrix derived from `@rqml/core`'s `MatrixReport` via an adapter to its webview shape; the extension's own derivation retired
+- **Do:** Bump the `@rqml/core` dependency; write a `MatrixReport → MatrixData` adapter feeding the existing webview Zod contract; delete `matrixDerive.ts`'s duplicated classification. Sequence adapter-first so the editor keeps shipping.
+- **Touch:** `rqml-vscode/extension/src/transformers/rqmlToMatrix.ts` (→ adapter), `extension/src/services/core.ts`; remove `extension/src/transformers/matrixDerive.ts`
+- **Inputs:** ADR-0006; rqml-vscode ADR-0004
+- **Verify:** `AC-MAT-DELEGATE-01` (each row's verification/implementation status equals `@rqml/core`'s value for the same requirement); existing matrix webview tests pass
+- [ ] Complete
+
+## Stage 17 — Certified approval provenance metadata (capability 6) — gated on ADR-0011
+- **Scope:** `REQ-APPROVAL-PROVENANCE`
+- **Key output:** optional `approvedBy` / `approvedAt` schema metadata; a certified-only validation/coverage check; provenance surfaced in overview and matrix
+- **Do:** Additive XSD change (optional attributes only); certified-mode check in core; surface in CLI/MCP. **Do not start until ADR-0011 is accepted** — it changes the published schema contract.
+- **Touch:** `packages/schema/versions/<ver>/*.xsd` (additive), `packages/core/src/check/*` (certified), CLI/MCP surfaces
+- **Inputs:** ADR-0011 (Proposed); `REQ-BACKWARD-COMPAT`, `REQ-ENFORCE-CERTIFIED`
+- **Verify:** `CRIT-PROVENANCE-OPTIONAL` (minimal spec without provenance valid under standard; certified flags missing provenance on an approved artifact); documents valid under earlier 2.x still validate
+- [ ] Complete (blocked: ADR-0011 sign-off)

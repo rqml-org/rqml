@@ -65,7 +65,7 @@ function locatorLabel(loc: Locator): string {
  * non-requirement targets (goals, risks, states, …) read meaningfully. First
  * declaration wins, mirroring `declaredElements`/`declaredIdIndex`.
  */
-function collectTitles(doc: RqmlDocument): Map<string, string> {
+export function collectTitles(doc: RqmlDocument): Map<string, string> {
   const m = new Map<string, string>();
   const set = (id: string | undefined, title: string | undefined): void => {
     if (id !== undefined && title !== undefined && title !== "" && !m.has(id)) {

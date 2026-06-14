@@ -45,12 +45,22 @@ describe("MCP tools", () => {
       "rqml_check",
       "rqml_impact",
       "rqml_link",
+      "rqml_matrix",
       "rqml_show",
       "rqml_skeleton",
       "rqml_status",
       "rqml_trace",
       "rqml_validate",
     ]);
+  });
+
+  it("builds a traceability matrix, equal by path and inline (REQ-MCP-PARITY)", async () => {
+    const byPath = await callTool("rqml_matrix", { path: spec });
+    const inline = await callTool("rqml_matrix", { xml: SPEC });
+    expect(byPath).toEqual(inline);
+    const m = byPath as { rows: Array<{ id: string }>; markdown: string };
+    expect(m.rows.map((r) => r.id)).toContain("REQ-A");
+    expect(m.markdown).toContain("Traceability matrix");
   });
 
   it("accepts a path argument equivalent to inline xml (CRIT-MCP-PATH)", async () => {

@@ -1383,6 +1383,98 @@
           </criterion>
         </acceptance>
       </req>
+      <req id="REQ-CORE-PROJECTION" type="FR" title="Scoped document projection" status="draft" priority="must" appliesTo="core">
+        <statement>
+          @rqml/core SHALL project a document, or a caller-selected subset of
+          it (by section, package, or id), into the normalized document outline
+          and render that projection as deterministic markdown, so any surface
+          can present a readable view of the whole spec or of named parts
+          without re-deriving structure.
+        </statement>
+        <rationale>
+          The outline and markdown serializer already exist; what is missing is
+          scoping — selecting sections, packages, or ids — so an agent can show
+          "the MCP requirements" rather than the entire document. Scoping SHALL
+          be additive options that leave the existing whole-document output
+          unchanged.
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-PROJECTION-SCOPE">
+            <given>A document and a filter naming a subset of requirement ids</given>
+            <when>The projection is rendered</when>
+            <then>The markdown contains exactly those requirements with their resolved trace refs and nothing outside the selection, identically on repeated runs.</then>
+          </criterion>
+        </acceptance>
+      </req>
+      <req id="REQ-CORE-MATRIX" type="FR" title="Traceability matrix derivation" status="approved" priority="must" appliesTo="core">
+        <statement>
+          @rqml/core SHALL derive a traceability matrix — one row per
+          requirement carrying its status, upstream goals, implementing
+          artifacts, verifying tests, and derived verification and
+          implementation coverage — deterministically from the trace graph and
+          coverage report, as the single source every surface renders.
+        </statement>
+        <rationale>
+          A matrix is a presentation of coverage plus resolved titles, both
+          already computed by the engine. Deriving it once in @rqml/core keeps
+          the CLI, the MCP server, and the editor from disagreeing about spec
+          health (REQ-CORE-API, REQ-MCP-PARITY); re-deriving it downstream is
+          the divergence this requirement forbids.
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-MATRIX-DERIVED">
+            <given>A requirement with one implements edge and no verifiedBy edge</given>
+            <when>The matrix is built</when>
+            <then>Its row reports the implementing artifact and an unverified verification status, matching the coverage report for the same document.</then>
+          </criterion>
+        </acceptance>
+      </req>
+      <req id="REQ-CORE-SETSTATUS" type="FR" title="Status-transition edit" status="draft" priority="must" appliesTo="core">
+        <statement>
+          @rqml/core SHALL provide a status-transition edit that changes the
+          lifecycle status of a named artifact in the document text in place —
+          preserving comments and hand formatting, re-parsing and
+          integrity-checking the result before returning it, and rejecting the
+          edit if it would not parse or would introduce an integrity violation.
+        </statement>
+        <rationale>
+          Approving a requirement today means hand-editing status="draft" to
+          status="approved". Mechanizing it mirrors the link operation
+          (REQ-LOOP-LINK) and is the deterministic primitive the review/accept
+          workflow records its decision through; the textual edit keeps the
+          document diffable (QGOAL-DIFF).
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-SETSTATUS-INPLACE">
+            <given>A valid spec and a draft requirement id</given>
+            <when>The status is transitioned to approved</when>
+            <then>Only that requirement's status attribute changes, the document revalidates, and all other content is byte-identical.</then>
+          </criterion>
+        </acceptance>
+      </req>
+      <req id="REQ-CORE-APPROVAL-VERDICT" type="FR" title="Non-approved-implementation verdict" status="draft" priority="should" appliesTo="core">
+        <statement>
+          @rqml/core SHALL expose a deterministic verdict that identifies
+          implementation linked to requirements that are not approved — given
+          the spec and, optionally, a set of changed artifact paths — so
+          external control loops can decide whether implementation may proceed
+          without a language model in the verdict path.
+        </statement>
+        <rationale>
+          REQ-CORE-STATUS-AWARE already flags an implements edge whose
+          requirement is not approved; exposing that judgement as a reusable
+          predicate lets editor and agent hooks and CI gate on one engine
+          result (REQ-ENFORCE-DETERMINISM), and lets the check gate later
+          subsume it (ISS-PROCESS-GATE) without a rewrite.
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-VERDICT-NONAPPROVED">
+            <given>An implements edge whose target requirement has status review</given>
+            <when>The verdict runs</when>
+            <then>It reports that requirement and edge as not-yet-approved, identically on every run.</then>
+          </criterion>
+        </acceptance>
+      </req>
     </reqPackage>
 
     <reqPackage id="PKG-CLI" title="Command-line interface (rqml)" ownerRef="STK-TOOLBUILDERS">
@@ -1479,6 +1571,29 @@
             <given>A tool call providing a path argument and no inline document</given>
             <when>The tool executes</when>
             <then>The result equals the result for the same document passed inline.</then>
+          </criterion>
+        </acceptance>
+      </req>
+      <req id="REQ-MCP-INTERACTION-BOUNDARY" type="CR" title="Data plane, not interaction surface" status="draft" priority="must" appliesTo="mcp">
+        <statement>
+          The MCP server SHALL expose RQML capabilities as text and JSON tool
+          results and SHALL NOT depend on optional MCP client features —
+          resources, prompts, elicitation, or sampling — for any core workflow,
+          so every capability remains reachable on hosts that implement tools
+          alone and stays at parity with the CLI.
+        </statement>
+        <rationale>
+          Resources and elicitation have no CLI equivalent and uneven client
+          support; making a workflow such as accepting a requirement depend on
+          them would break CLI/MCP parity (REQ-MCP-PARITY) and fail silently on
+          hosts that lack them. Human interaction belongs to the host
+          integration, not the data plane.
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-MCP-TOOLS-ONLY">
+            <given>A host that supports MCP tools but not resources or elicitation</given>
+            <when>Any RQML capability is invoked</when>
+            <then>It succeeds and returns the same result the corresponding CLI command would.</then>
           </criterion>
         </acceptance>
       </req>
@@ -1599,6 +1714,73 @@
           </criterion>
         </acceptance>
       </req>
+      <req id="REQ-LOOP-OVERVIEW" type="FR" title="Spec overview" status="draft" priority="must" appliesTo="core cli mcp">
+        <statement>
+          The toolchain SHALL provide an overview operation, on both the CLI and
+          MCP surfaces, that renders the spec — whole, or scoped to named
+          sections, packages, or ids — as markdown and as JSON, backed by the
+          core projection, so an agent or human can read an orienting view of
+          the requirements without opening the raw document.
+        </statement>
+        <rationale>
+          rqml status gives metrics and rqml show gives one artifact, but
+          nothing renders a readable overview of the spec or a chosen part of
+          it (QGOAL-HUMAN, GOAL-LLM-CONTEXT). Both surfaces SHALL return
+          equivalent results for the same input (REQ-MCP-PARITY).
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-OVERVIEW-PARITY">
+            <given>A spec and a section selection</given>
+            <when>Overview is requested on the CLI and via the MCP tool</when>
+            <then>Both return the same projection content.</then>
+          </criterion>
+        </acceptance>
+      </req>
+      <req id="REQ-LOOP-MATRIX" type="FR" title="Traceability matrix view" status="approved" priority="must" appliesTo="core cli mcp">
+        <statement>
+          The toolchain SHALL provide a traceability-matrix operation, on both
+          the CLI and MCP surfaces, that renders the core matrix as a text table
+          and as JSON, with optional filtering by status, type, or coverage gap,
+          so an agent or human can review requirement-to-implementation-to-test
+          coverage in one view.
+        </statement>
+        <rationale>
+          The matrix is the spec-health surface the VS Code extension already
+          offers; agents have no text equivalent (GOAL-TRACEABILITY,
+          QGOAL-HUMAN). Derivation is REQ-CORE-MATRIX; this requirement is its
+          CLI and MCP exposure, returning equivalent results on both
+          (REQ-MCP-PARITY).
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-MATRIX-SURFACE">
+            <given>A spec with mixed coverage</given>
+            <when>The matrix operation runs with a filter for unverified requirements</when>
+            <then>The output lists exactly the requirements lacking a verifiedBy edge.</then>
+          </criterion>
+        </acceptance>
+      </req>
+      <req id="REQ-LOOP-APPROVE" type="FR" title="Requirement approval" status="draft" priority="must" appliesTo="core cli mcp">
+        <statement>
+          The toolchain SHALL provide an approve operation, on both the CLI and
+          MCP surfaces, that transitions a named requirement's lifecycle status
+          — backed by the core status-transition edit — recording the change as
+          an explicit, intent-bearing write consistent with the MCP read-mostly
+          contract.
+        </statement>
+        <rationale>
+          Once requirements can be reviewed in an overview and a matrix,
+          accepting them must be a mechanical, auditable step rather than a hand
+          edit (GOAL-PRIMARY-ARTIFACT, GOAL-ENFORCEMENT). The write is explicit
+          caller intent, like REQ-LOOP-LINK, consistent with REQ-MCP-READONLY.
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-APPROVE-WRITE">
+            <given>A draft requirement</given>
+            <when>Approve is invoked with explicit intent</when>
+            <then>The requirement's status becomes approved, the document revalidates, and no other content changes.</then>
+          </criterion>
+        </acceptance>
+      </req>
     </reqPackage>
 
     <reqPackage id="PKG-ENFORCEMENT" title="Spec-first enforcement" ownerRef="STK-TEAMS">
@@ -1648,6 +1830,54 @@
           Enforcement intensity SHALL be governed by the configured strictness
           level (relaxed, standard, strict, certified).
         </statement>
+      </req>
+      <req id="REQ-ENFORCE-APPROVAL-GATE" type="PR" title="Approval-before-implementation gate" status="draft" priority="should">
+        <statement>
+          The toolchain SHALL provide a deterministic approval-gate primitive —
+          the non-approved-implementation verdict — so external control loops
+          (editor hooks, agent hooks, CI) can block implementation of
+          requirements that are not yet approved, without a language model in
+          the verdict path.
+        </statement>
+        <rationale>
+          Spec-first means only approved requirements drive implementation
+          (REQ-STATUS-ENUM), yet today nothing blocks code written against a
+          draft requirement until the end-of-session check. Exposing the
+          verdict as a primitive lets enforcement happen at the moment of the
+          change; whether the standard check gate itself adopts it is deferred
+          to ISS-PROCESS-GATE.
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-GATE-PRIMITIVE">
+            <given>A change implementing a requirement that is not approved</given>
+            <when>The approval-gate primitive is consulted</when>
+            <then>It returns a blocking verdict naming the requirement, reproducibly.</then>
+          </criterion>
+        </acceptance>
+      </req>
+      <req id="REQ-APPROVAL-PROVENANCE" type="DR" title="Approval provenance under certified" status="draft" priority="should">
+        <statement>
+          Under the certified strictness level, the spec SHALL be able to record
+          approval provenance — the approver identity and the approval timestamp
+          — for an approved artifact, through optional, backward-compatible
+          metadata that documents valid under earlier 2.x schemas continue to
+          satisfy.
+        </statement>
+        <rationale>
+          The current approval model is role-based with no individual approver
+          or timestamp, so an accepted requirement carries no durable record of
+          who accepted it or when — insufficient as audit-grade evidence for
+          regulated domains (REQ-ENFORCE-CERTIFIED). The metadata SHALL be
+          optional and additive so lightweight projects are unaffected
+          (REQ-BACKWARD-COMPAT).
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-PROVENANCE-OPTIONAL">
+            <given>A minimal spec with no provenance metadata</given>
+            <when>It is validated under standard strictness</when>
+            <then>It remains valid; and under certified strictness, an approved artifact missing provenance yields a finding requesting it.</then>
+          </criterion>
+        </acceptance>
       </req>
     </reqPackage>
 
@@ -2687,6 +2917,94 @@
     <edge id="E-IMPL-PLAN-CONVENTION" type="implements">
       <from><locator><external uri="apps/website/docs/development-process/plan.md" kind="doc" title="Implementation plan page"/></locator></from>
       <to><locator><local id="REQ-PLAN-CONVENTION"/></locator></to>
+    </edge>
+
+    <!-- Interactive RQML capabilities (1-6): requirements satisfy goals -->
+    <edge id="E-CORE-PROJ-HUMAN" type="satisfies" confidence="0.9">
+      <from><locator><local id="REQ-CORE-PROJECTION"/></locator></from>
+      <to><locator><local id="QGOAL-HUMAN"/></locator></to>
+    </edge>
+    <edge id="E-CORE-MATRIX-TRACE" type="satisfies" confidence="0.9">
+      <from><locator><local id="REQ-CORE-MATRIX"/></locator></from>
+      <to><locator><local id="GOAL-TRACEABILITY"/></locator></to>
+    </edge>
+    <edge id="E-CORE-SETSTATUS-PRIMARY" type="satisfies" confidence="0.85">
+      <from><locator><local id="REQ-CORE-SETSTATUS"/></locator></from>
+      <to><locator><local id="GOAL-PRIMARY-ARTIFACT"/></locator></to>
+    </edge>
+    <edge id="E-CORE-VERDICT-ENF" type="satisfies" confidence="0.9">
+      <from><locator><local id="REQ-CORE-APPROVAL-VERDICT"/></locator></from>
+      <to><locator><local id="GOAL-ENFORCEMENT"/></locator></to>
+    </edge>
+    <edge id="E-LOOP-OVERVIEW-HUMAN" type="satisfies" confidence="0.9">
+      <from><locator><local id="REQ-LOOP-OVERVIEW"/></locator></from>
+      <to><locator><local id="QGOAL-HUMAN"/></locator></to>
+    </edge>
+    <edge id="E-LOOP-MATRIX-TRACE" type="satisfies" confidence="0.9">
+      <from><locator><local id="REQ-LOOP-MATRIX"/></locator></from>
+      <to><locator><local id="GOAL-TRACEABILITY"/></locator></to>
+    </edge>
+    <edge id="E-LOOP-APPROVE-PRIMARY" type="satisfies" confidence="0.9">
+      <from><locator><local id="REQ-LOOP-APPROVE"/></locator></from>
+      <to><locator><local id="GOAL-PRIMARY-ARTIFACT"/></locator></to>
+    </edge>
+    <edge id="E-MCP-BOUNDARY-ENGINE" type="satisfies" confidence="0.85">
+      <from><locator><local id="REQ-MCP-INTERACTION-BOUNDARY"/></locator></from>
+      <to><locator><local id="GOAL-REUSABLE-ENGINE"/></locator></to>
+    </edge>
+    <edge id="E-ENF-GATE-ENF" type="satisfies" confidence="0.9">
+      <from><locator><local id="REQ-ENFORCE-APPROVAL-GATE"/></locator></from>
+      <to><locator><local id="GOAL-ENFORCEMENT"/></locator></to>
+    </edge>
+    <edge id="E-PROV-TRACE" type="satisfies" confidence="0.8">
+      <from><locator><local id="REQ-APPROVAL-PROVENANCE"/></locator></from>
+      <to><locator><local id="GOAL-TRACEABILITY"/></locator></to>
+    </edge>
+
+    <!-- Interactive RQML capabilities (1-6): surface operations depend on engine primitives -->
+    <edge id="E-LOOP-OVERVIEW-DEP" type="dependsOn" confidence="1.0">
+      <from><locator><local id="REQ-LOOP-OVERVIEW"/></locator></from>
+      <to><locator><local id="REQ-CORE-PROJECTION"/></locator></to>
+    </edge>
+    <edge id="E-LOOP-MATRIX-DEP" type="dependsOn" confidence="1.0">
+      <from><locator><local id="REQ-LOOP-MATRIX"/></locator></from>
+      <to><locator><local id="REQ-CORE-MATRIX"/></locator></to>
+    </edge>
+    <edge id="E-LOOP-APPROVE-DEP" type="dependsOn" confidence="1.0">
+      <from><locator><local id="REQ-LOOP-APPROVE"/></locator></from>
+      <to><locator><local id="REQ-CORE-SETSTATUS"/></locator></to>
+    </edge>
+    <edge id="E-ENF-GATE-DEP" type="dependsOn" confidence="1.0">
+      <from><locator><local id="REQ-ENFORCE-APPROVAL-GATE"/></locator></from>
+      <to><locator><local id="REQ-CORE-APPROVAL-VERDICT"/></locator></to>
+    </edge>
+    <edge id="E-VERDICT-STATUSAWARE-DEP" type="dependsOn" confidence="1.0">
+      <from><locator><local id="REQ-CORE-APPROVAL-VERDICT"/></locator></from>
+      <to><locator><local id="REQ-CORE-STATUS-AWARE"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-CORE-MATRIX" type="implements">
+      <from><locator><external uri="packages/core/src/analyze/matrix.ts" kind="code"/></locator></from>
+      <to><locator><local id="REQ-CORE-MATRIX"/></locator></to>
+    </edge>
+    <edge id="E-VER-CORE-MATRIX" type="verifiedBy">
+      <from><locator><local id="REQ-CORE-MATRIX"/></locator></from>
+      <to><locator><external uri="packages/core/test/matrix.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-LOOP-MATRIX" type="implements">
+      <from><locator><external uri="packages/cli/src/commands/matrix.ts" kind="code"/></locator></from>
+      <to><locator><local id="REQ-LOOP-MATRIX"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-LOOP-MATRIX-2" type="implements">
+      <from><locator><external uri="packages/mcp/src/tools.ts" kind="code"/></locator></from>
+      <to><locator><local id="REQ-LOOP-MATRIX"/></locator></to>
+    </edge>
+    <edge id="E-VER-LOOP-MATRIX" type="verifiedBy">
+      <from><locator><local id="REQ-LOOP-MATRIX"/></locator></from>
+      <to><locator><external uri="packages/cli/test/commands.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-VER-LOOP-MATRIX-2" type="verifiedBy">
+      <from><locator><local id="REQ-LOOP-MATRIX"/></locator></from>
+      <to><locator><external uri="packages/mcp/test/tools.test.ts" kind="test"/></locator></to>
     </edge>
   </trace>
 
