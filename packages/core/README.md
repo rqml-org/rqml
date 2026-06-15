@@ -15,15 +15,18 @@ reuses, so there is one implementation of how RQML is parsed and checked
   offline and deterministic (`REQ-CORE-VALIDATE`, `REQ-CORE-NO-LLM`).
 - **Lint** — strictness-aware semantic checks (`lint()`).
 - **Trace** — resolve trace edges, index declared ids, find dangling references.
-- **Coverage** — deterministic coverage, drift, and impact over the trace graph.
-- **Export** — document outline, Markdown serialization, and the **traceability
-  matrix** (`buildMatrix`): one row per requirement with status, goals, code,
-  tests, and verification/implementation coverage, rendered for any surface.
+- **Coverage / gate** — deterministic coverage, drift, and impact over the trace
+  graph; `approvalGate()` flags implementation linked to non-approved requirements.
+- **Edit** — `appendTraceEdge`/`updateTraceEdge` record trace links and
+  `setStatus` transitions a requirement's status, all as safe textual edits.
+- **Export** — document outline + Markdown (`buildOutline`/`outlineToMarkdown`,
+  `projectOutline` to scope), and the **traceability matrix** (`buildMatrix`):
+  one row per requirement with status, goals, code, tests, and coverage.
 
 ## Entry points
 
 ```ts
-import { parse, serialize, lint, resolveTrace, checkIntegrity, buildMatrix } from "@rqml/core";
+import { parse, serialize, lint, resolveTrace, buildMatrix, projectOutline, setStatus, approvalGate } from "@rqml/core";
 import { validate } from "@rqml/core/validate"; // separate entry: loads the XSD engine
 ```
 

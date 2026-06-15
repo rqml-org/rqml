@@ -67,10 +67,12 @@ The process is tool-agnostic — the artifacts and their locations are the
 standard; how you produce them is up to your tooling. Two layers help:
 
 - **The deterministic toolchain.** The [`rqml` CLI](../tooling/cli.md) and the
-  [`@rqml/mcp`](../tooling/mcp.md) server serve the middle of the loop — `rqml show`
-  to read one requirement, `rqml impact` to assess blast radius, `rqml link` to
-  record a trace edge and its drift baseline, and `rqml check` as the gate. No
-  language model sits in any verdict.
+  [`@rqml/mcp`](../tooling/mcp.md) server serve the middle of the loop — `rqml
+  overview` / `rqml matrix` to survey the spec and its coverage, `rqml show` to
+  read one requirement, `rqml impact` to assess blast radius, `rqml approve` to
+  accept a requirement before it drives code, `rqml link` to record a trace edge
+  and its drift baseline, `rqml gate` to block implementation of a non-approved
+  requirement, and `rqml check` as the gate. No language model sits in any verdict.
 - **RQML agent integrations.** Editor and coding-agent integrations add guided,
   per-stage commands on top of those primitives — for example the
   [VS Code extension](https://marketplace.visualstudio.com/items?itemName=rqml.rqml-vscode)
