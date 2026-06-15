@@ -55,14 +55,19 @@ npm install @rqml/core
 ## The agent loop
 
 Beyond validating and gating, the toolchain serves the *middle* of a spec-first
-task — choosing work, reading one artifact, and recording what was done — so an
-agent never hand-edits trace XML or loads the whole spec into context:
+task — surveying coverage, reading one artifact, accepting requirements, and
+recording what was done — so an agent never hand-edits trace XML or loads the
+whole spec into context:
 
 ```bash
+rqml overview                  # readable projection of the spec (--section/--id to scope)
+rqml matrix                    # traceability matrix: coverage, goals, code, tests, gaps
 rqml show REQ-PAY-001          # one requirement: statement, acceptance, traces
 rqml impact REQ-PAY-001        # what is affected if it changes?
+rqml approve REQ-PAY-001       # accept a requirement before implementing it
 # … implement …
 rqml link REQ-PAY-001 src/payments/capture.ts   # record the implements edge + drift baseline
+rqml gate src/payments/capture.ts               # block code implementing a non-approved requirement
 rqml check                     # the gate — validation + coverage + drift
 ```
 

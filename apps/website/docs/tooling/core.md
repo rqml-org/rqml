@@ -36,6 +36,9 @@ ESM, TypeScript types included, Node 18+.
   unverified, unimplemented, or orphaned — plus lifecycle-aware views: the
   **approved-only** implementation gap, and *premature implementations*
   (an `implements` edge pointing at a requirement that is not approved).
+- **Approval gate** — `approvalGate()` reports implementation linked to a
+  requirement that is not approved (optionally scoped to a set of changed
+  paths), so an editor/agent hook or CI can block before non-approved code lands.
 - **Drift** — resolve the external locators of `implements` edges and report links
   whose target is **missing** or — against a recorded content-hash baseline —
   **changed**.
@@ -46,10 +49,15 @@ ESM, TypeScript types included, Node 18+.
   *textual* insertion, preserving XML comments and hand formatting, with
   deterministic edge-id derivation and integrity checking of the result;
   `updateTraceEdge()` repoints an existing edge's external locator in place
-  under the same guarantees.
+  under the same guarantees; `setStatus()` transitions an artifact's lifecycle
+  status (e.g. draft → approved) as the same kind of safe textual edit.
 - **Skeletons** — `skeleton()` emits schema-valid snippets for `req`, `edge`,
   `testCase`, and `stateMachine`.
-- **Export** — a document outline and a Markdown serializer.
+- **Project / export** — a document outline and a Markdown serializer
+  (`buildOutline`/`outlineToMarkdown`); `projectOutline()` scopes the outline to
+  chosen sections or ids; `buildMatrix()` derives the traceability matrix — one
+  row per requirement (status, goals, implementing code, verifying tests,
+  coverage), the single source every surface renders.
 
 ## Two entry points
 
@@ -59,8 +67,8 @@ lazily loaded** entry. Consumers that only parse, lint, or trace never pay for i
 ```ts
 import {
   parse, serialize, lint, resolveTrace, computeCoverage, detectDrift,
-  impactOf, extractArtifact, appendTraceEdge, updateTraceEdge, skeleton,
-  computeBaseline,
+  impactOf, extractArtifact, appendTraceEdge, updateTraceEdge, setStatus,
+  skeleton, computeBaseline, buildMatrix, projectOutline, approvalGate,
 } from "@rqml/core";
 import { validate } from "@rqml/core/validate"; // loads the XSD engine
 ```
