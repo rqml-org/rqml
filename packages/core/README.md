@@ -45,5 +45,9 @@ DOM globals so it remains portable, but the browser is not a supported target.
 
 This package is the former standalone `rqml-core` library, merged into the RQML
 monorepo and renamed `@rqml/core`. Its bundled XSD copies were removed in favor of
-the single canonical source in `@rqml/schema`. See `packages/core/.rqml/adr/` for
-the design decisions carried over from the original project.
+the single canonical source in `@rqml/schema`. Core's requirements live in the
+root `requirements.rqml`, and the engine's design decisions are recorded in the
+root ADR set: [ADR-0013](../../.rqml/adr/0013-core-engine-runtime-and-packaging.md)
+(runtime & packaging), [ADR-0014](../../.rqml/adr/0014-core-typed-model-and-versioned-roundtrip.md)
+(typed model & round-trip), and [ADR-0015](../../.rqml/adr/0015-core-outline-and-markdown-projection.md)
+(outline & markdown), which consolidate the original project's ADRs.

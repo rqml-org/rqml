@@ -4,7 +4,7 @@
 - Date: 2026-06-14
 - Classification: discretionary_design_choice
 - Related requirements: REQ-CORE-PROJECTION, REQ-LOOP-OVERVIEW, REQ-HUMAN, REQ-MCP-PARITY
-- Related ADRs: ADR-0006 (matrix surface companion); historical rqml-core ADR-0007 (document outline + markdown serializer)
+- Related ADRs: ADR-0006 (matrix surface companion); ADR-0015 (the document-outline + markdown serializer this scopes — consolidated from historical rqml-core ADR-0007)
 - Affected components: core (markdown/outline options), cli (overview), mcp (overview tool)
 
 ## Context
