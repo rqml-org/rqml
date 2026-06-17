@@ -1,6 +1,6 @@
 {
   "name": "@rqml/mcp",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Model Context Protocol server exposing the RQML engine (@rqml/core) as agent tools: validate, status, check, trace, show, impact, link, and skeleton.",
   "type": "module",
   "license": "Apache-2.0",
