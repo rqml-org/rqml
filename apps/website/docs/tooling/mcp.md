@@ -24,6 +24,7 @@ npm install -g @rqml/mcp     # provides the `rqml-mcp` binary
 | `rqml_status` | Requirement count, trace coverage, dangling references | `xml` or `path` |
 | `rqml_check` | The deterministic gate (validation + coverage + drift) → `pass`/`fail` | `xml` or `path`, `baseDir?`, `strictness?` |
 | `rqml_trace` | Resolve the trace graph and report dangling local references | `xml` or `path` |
+| `rqml_discover` | Enumerate the governing specs in a repository, and resolve the spec governing a `file` — for monorepos | `root`, `file?` |
 | `rqml_show` | One artifact: statement, acceptance criteria, trace neighborhood (+ rendered markdown) | `xml` or `path`, `id` |
 | `rqml_impact` | What is affected, transitively, if this artifact changes | `xml` or `path`, `id` |
 | `rqml_matrix` | Traceability matrix: per-requirement status, goals, code, tests, and coverage warnings (+ rendered markdown) | `xml` or `path`, `status?`, `type?`, `warning?` |
@@ -33,11 +34,13 @@ npm install -g @rqml/mcp     # provides the `rqml-mcp` binary
 | `rqml_skeleton` | A schema-valid snippet: `req`, `edge`, `testCase`, or `stateMachine` | `kind`, `id?` |
 | `rqml_link` | Record or maintain an `implements`/`verifiedBy` edge and its drift baseline — **writes to disk** | `path`, `mode?`, `artifactId`, `uri`, `type?`, `edgeId?`, `kind?`, `title?` |
 
-Every document-reading tool accepts either the document text (`xml`) or a
-filesystem `path` — prefer `path`, so the agent never inlines a multi-thousand-line
-spec into a tool call. When `path` is given, `implements` code links resolve
-against the spec's directory unless `baseDir` overrides it. `strictness` is
-`relaxed` · `standard` · `strict` · `certified`.
+Every document-reading tool accepts the document text (`xml`), a filesystem
+`path`, or a `file` — a path whose **governing spec** is resolved by nearest-wins
+discovery (handy in monorepos; see the [Monorepo guide](/docs/monorepo)). Prefer
+`path` or `file`, so the agent never inlines a multi-thousand-line spec into a tool
+call. When `path` is given, `implements` code links resolve against the spec's
+directory unless `baseDir` overrides it. `strictness` is `relaxed` · `standard` ·
+`strict` · `certified`.
 
 `rqml_show` and `rqml_impact` are the context-economy tools: an agent working on
 one requirement reads a few-hundred-token slice instead of the whole document.

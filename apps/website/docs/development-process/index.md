@@ -44,7 +44,9 @@ project/
 ```
 
 In monorepo setups, each spec gets its own `.rqml/` directory, co-located with
-that spec file, so a package's design and plan travel with its requirements.
+that spec file, so a package's design and plan travel with its requirements. See
+the [Monorepo guide](/docs/monorepo) for how RQML decides which spec governs which
+code, and how to check every spec at once.
 
 ## The chain of reasoning
 
