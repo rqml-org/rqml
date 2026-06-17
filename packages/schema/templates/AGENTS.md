@@ -13,7 +13,7 @@
 
 This project uses **RQML** as the single source of truth for system intent. Familiarize yourself with the documentation at https://rqml.org/docs/user-guide/ and the development process at https://rqml.org/docs/development-process/
 
-**Specification file:** Specification lives in a single .rqml file in the root of the project - convention is `requirements.rqml`. Multiple .rqml files may be employed in multirepo projects, in such cases a .rqml spec applies to everything that is higher in the project tree, unless overridden by another .rqml file.
+**Specification file:** A spec lives in one `.rqml` file — by convention `requirements.rqml` — alongside its own `.rqml/` directory (which holds `adr/`, `plan.md`, and the drift baseline) in the directory it governs. That spec governs its directory and every subdirectory beneath it, **down to any nested spec that takes over its own subtree**; it never governs a parent directory. In a monorepo, give a project unit (package, app, service) its own spec where it needs distinct requirements; a file is then governed by the spec in its nearest enclosing directory (no inheritance or merging across that boundary). A directory holding several `*.rqml` files and no `requirements.rqml` is ambiguous — name one `requirements.rqml`. The toolchain resolves the governing spec automatically by walking up from the working directory, and `rqml check --workspace` runs the gate across every spec in the repository.
 
 **Schema file:**
 The RQML XSD schema is at https://rqml.org/schema/rqml-2.1.0.xsd (insert correct version number). Make sure to adhere to the schema at all times and follow guidelines in schema comments. Use as much of the RQML tagset as is necessary to capture and describe high quality requirements.

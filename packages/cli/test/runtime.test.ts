@@ -88,4 +88,19 @@ describe("resolveSpecPath", () => {
     mkdirSync(join(dir, ".rqml")); // a dir, but no actual spec file
     expect(() => resolveSpecPath(args(dir))).toThrow(UsageError);
   });
+
+  it("walks up to the governing spec in a parent directory (nearest-wins)", () => {
+    mkdirSync(join(dir, ".git"));
+    writeFileSync(join(dir, "requirements.rqml"), "<rqml/>");
+    mkdirSync(join(dir, "packages", "api"), { recursive: true });
+    expect(resolveSpecPath(args(join(dir, "packages", "api")))).toBe(
+      join(dir, "requirements.rqml"),
+    );
+  });
+
+  it("reports an ambiguous directory rather than guessing a spec", () => {
+    writeFileSync(join(dir, "a.rqml"), "<rqml/>");
+    writeFileSync(join(dir, "b.rqml"), "<rqml/>");
+    expect(() => resolveSpecPath(args(dir))).toThrow(UsageError);
+  });
 });

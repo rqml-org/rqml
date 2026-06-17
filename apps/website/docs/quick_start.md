@@ -97,8 +97,8 @@ locally, in your agent's hooks, and in CI, the verdicts never disagree.
 
   (The hooks need the CLI: `npm install -g @rqml/cli`.)
 
-- **[@rqml/mcp](/docs/tooling/mcp)** — for any MCP-capable agent: twelve tools
-  (`rqml_show`, `rqml_overview`, `rqml_matrix`, `rqml_approve`, `rqml_gate`, `rqml_check`, …) backed by the same
+- **[@rqml/mcp](/docs/tooling/mcp)** — for any MCP-capable agent: thirteen tools
+  (`rqml_show`, `rqml_overview`, `rqml_matrix`, `rqml_check`, `rqml_discover`, …) backed by the same
   engine as the CLI. Point tools at the spec by `path` — no pasting documents
   into tool calls.
 

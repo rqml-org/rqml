@@ -2,7 +2,7 @@
 id: faq
 title: Frequently Asked Questions
 sidebar_label: FAQ
-sidebar_position: 7
+sidebar_position: 8
 ---
 
 ## Why does RQML use XML (and not JSON or some other thing)?
@@ -76,6 +76,12 @@ Yes. Use `doc` locators with `uri` and `id` attributes, optionally pinned to a `
   <to><locator><doc uri="auth-spec.rqml" docId="AUTH-001" id="REQ-AUTH-001" version="2.1.0"/></locator></to>
 </edge>
 ```
+
+## How does RQML work in a monorepo?
+
+One repository can hold many specs — one per package, app, or service. A spec governs its own directory and everything beneath it, a nested spec takes over its own subtree, and the **nearest** spec to a file wins — the same model as `.editorconfig` or `tsconfig.json`. The `rqml` CLI resolves the governing spec automatically, and `rqml check --workspace` gates every spec in the repository with a single exit code.
+
+See the [**Monorepo guide**](/docs/monorepo) for the full model, the design decisions behind it, and the workspace and `rqml_discover` tooling. To reference a requirement that lives in *another* spec, use the `doc` locator shown above.
 
 ## What requirement types does RQML support?
 

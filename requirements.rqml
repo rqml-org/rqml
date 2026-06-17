@@ -850,7 +850,11 @@
   <scenarios>
     <scenario id="SCN-AUTHOR" title="Authoring a specification" actorRef="ACT-AUTHOR">
       <narrative>
-        1. An author (often with an LLM) creates one .rqml file in the project root.
+        1. An author (often with an LLM) creates one spec file — conventionally
+           requirements.rqml — and its co-located .rqml/ directory in that same
+           directory, at the root of the subtree it governs. The spec governs that
+           directory and every subdirectory beneath it, until a nested spec takes
+           over its own subtree; it never governs a parent directory.
         2. They populate meta and at least one requirement.
         3. They grow the spec — goals, scenarios, domain, behavior — as the system grows.
         4. The schema validator confirms structural validity on save and in CI.
@@ -1475,6 +1479,80 @@
           </criterion>
         </acceptance>
       </req>
+      <req id="REQ-CORE-SPEC-DISCOVERY" type="FR" title="Nearest-wins spec discovery" status="approved" priority="should" appliesTo="core">
+        <statement>
+          A spec governs the directory it is placed in and every subdirectory
+          beneath it, except any subtree taken over by a nested spec, and never a
+          parent directory. @rqml/core SHALL resolve the spec governing any path as
+          the spec in its nearest enclosing directory — the path's own directory,
+          else the closest ancestor that holds one — preferring requirements.rqml,
+          else the sole *.rqml in that directory, without crossing a repository or
+          workspace boundary, and SHALL enumerate every such spec beneath a root.
+        </statement>
+        <rationale>
+          ADR-0012: one independent spec per project unit, nearest-wins, no
+          umbrella. Lifting discovery into @rqml/core gives the CLI, the MCP
+          server, the skill, and the VS Code extension one shared resolver
+          instead of the three divergent rules they implement today.
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-DISCOVERY-NEAREST">
+            <given>A repository with specs at both a package directory and an ancestor directory</given>
+            <when>Discovery resolves the spec for a file under the package</when>
+            <then>The nearer package spec is returned, not the ancestor.</then>
+          </criterion>
+          <criterion id="CRIT-DISCOVERY-SUBTREE">
+            <given>A spec at directory D and a file in a subdirectory of D with no nearer spec</given>
+            <when>Discovery resolves the file's governing spec</when>
+            <then>D's spec governs it, and a file in a parent of D does not resolve to D's spec.</then>
+          </criterion>
+          <criterion id="CRIT-DISCOVERY-AMBIGUOUS">
+            <given>A directory with multiple *.rqml files and no requirements.rqml</given>
+            <when>Discovery resolves that directory</when>
+            <then>It reports the directory as ambiguous rather than guessing a spec.</then>
+          </criterion>
+        </acceptance>
+      </req>
+      <req id="REQ-CORE-LINT" type="FR" title="Semantic lint checks" status="draft" priority="should" appliesTo="core">
+        <statement>
+          @rqml/core SHALL apply semantic lint checks beyond schema validity —
+          statement quality, missing acceptance criteria, orphaned artifacts, and
+          trace-coverage gaps — and report them as structured diagnostics.
+        </statement>
+        <rationale>
+          The lint pass already ships (packages/core/src/lint) but had no
+          requirement of its own — its only home was the process-level
+          REQ-STRICTNESS. This captures the engine capability so it is no longer
+          a ghost feature (root ADR-0004 §2).
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-LINT-DIAG">
+            <given>A requirement with no acceptance criteria</given>
+            <when>The lint pass runs</when>
+            <then>A structured diagnostic identifies the requirement and the missing criteria.</then>
+          </criterion>
+        </acceptance>
+      </req>
+      <req id="REQ-CORE-STRICTNESS" type="FR" title="Strictness-scaled severity in the engine" status="draft" priority="should" appliesTo="core">
+        <statement>
+          @rqml/core SHALL implement the four strictness levels — relaxed,
+          standard, strict, certified — and scale the severity of lint and
+          coverage findings by the configured level, deterministically.
+        </statement>
+        <rationale>
+          The engine realization of the process-level REQ-STRICTNESS /
+          REQ-ENFORCE-STRICTNESS: scaleSeverity (packages/core/src/lint) is the
+          single place levels are applied, shared by every surface. Recorded so
+          the shipped capability has a core-engine requirement (root ADR-0004 §2).
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-STRICTNESS-SCALE">
+            <given>A lint finding that is a warning under standard strictness</given>
+            <when>The same document is checked under certified strictness</when>
+            <then>The finding is escalated to a blocking error, identically on every run.</then>
+          </criterion>
+        </acceptance>
+      </req>
     </reqPackage>
 
     <reqPackage id="PKG-CLI" title="Command-line interface (rqml)" ownerRef="STK-TOOLBUILDERS">
@@ -1526,6 +1604,24 @@
           rqml check and rqml status SHALL complete quickly enough to run on every
           editor save or agent turn, targeting under ~1s on a typical project.
         </statement>
+      </req>
+      <req id="REQ-WORKSPACE-FANOUT" type="FR" title="Workspace-wide check" status="approved" priority="should" appliesTo="cli">
+        <statement>
+          rqml SHALL offer a workspace mode that runs validate, status, and check
+          across every unit spec discovered beneath a repository root and returns
+          a single aggregated exit code — non-zero if any unit fails.
+        </statement>
+        <rationale>
+          ADR-0012: monorepo CI needs one "is the whole repo green?" answer rather
+          than N separate invocations. Built on REQ-CORE-SPEC-DISCOVERY.
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-FANOUT-EXIT">
+            <given>A repository with multiple unit specs, one of which fails its check</given>
+            <when>rqml check is run in workspace mode</when>
+            <then>It checks every unit spec and exits non-zero, naming the failing unit.</then>
+          </criterion>
+        </acceptance>
       </req>
     </reqPackage>
 
@@ -2105,6 +2201,22 @@
     <edge id="E-VALID-QGOAL" type="satisfies" confidence="0.9">
       <from><locator><local id="REQ-VALIDATABLE"/></locator></from>
       <to><locator><local id="QGOAL-VALIDATABLE"/></locator></to>
+    </edge>
+    <edge id="E-DISCOVERY-ENGINE" type="satisfies" confidence="0.9">
+      <from><locator><local id="REQ-CORE-SPEC-DISCOVERY"/></locator></from>
+      <to><locator><local id="GOAL-REUSABLE-ENGINE"/></locator></to>
+    </edge>
+    <edge id="E-FANOUT-ENFORCE" type="satisfies" confidence="0.85">
+      <from><locator><local id="REQ-WORKSPACE-FANOUT"/></locator></from>
+      <to><locator><local id="GOAL-ENFORCEMENT"/></locator></to>
+    </edge>
+    <edge id="E-LINT-CEREMONY" type="satisfies" confidence="0.8">
+      <from><locator><local id="REQ-CORE-LINT"/></locator></from>
+      <to><locator><local id="GOAL-LOW-CEREMONY"/></locator></to>
+    </edge>
+    <edge id="E-CORESTRICT-ENFORCE" type="satisfies" confidence="0.85">
+      <from><locator><local id="REQ-CORE-STRICTNESS"/></locator></from>
+      <to><locator><local id="GOAL-ENFORCEMENT"/></locator></to>
     </edge>
 
     <!-- Requirements depend on the decisions that motivate them -->
@@ -3061,6 +3173,30 @@
     <edge id="E-VER-MCP-INTERACTION-BOUNDARY" type="verifiedBy">
       <from><locator><local id="REQ-MCP-INTERACTION-BOUNDARY"/></locator></from>
       <to><locator><external uri="packages/mcp/test/tools.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-CORE-SPEC-DISCOVERY" type="implements">
+      <from><locator><external uri="packages/core/src/discover/discover.ts" kind="code" title="@rqml/core nearest-wins spec discovery (resolveGoverningSpec + discoverSpecs)"/></locator></from>
+      <to><locator><local id="REQ-CORE-SPEC-DISCOVERY"/></locator></to>
+    </edge>
+    <edge id="E-VER-CORE-SPEC-DISCOVERY" type="verifiedBy">
+      <from><locator><local id="REQ-CORE-SPEC-DISCOVERY"/></locator></from>
+      <to><locator><external uri="packages/core/test/discover.test.ts" kind="test" title="Spec discovery tests (nearest/subtree/ambiguous/boundary/enumeration)"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-WORKSPACE-FANOUT" type="implements">
+      <from><locator><external uri="packages/cli/src/workspace.ts" kind="code" title="rqml workspace fan-out (discover + aggregate exit code)"/></locator></from>
+      <to><locator><local id="REQ-WORKSPACE-FANOUT"/></locator></to>
+    </edge>
+    <edge id="E-VER-WORKSPACE-FANOUT" type="verifiedBy">
+      <from><locator><local id="REQ-WORKSPACE-FANOUT"/></locator></from>
+      <to><locator><external uri="packages/cli/test/workspace.test.ts" kind="test" title="Workspace fan-out tests (aggregated exit, --ignore, status)"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-MCP-SPEC-DISCOVERY" type="implements">
+      <from><locator><external uri="packages/mcp/src/tools.ts" kind="code" title="rqml_discover MCP tool + file/cwd spec resolution"/></locator></from>
+      <to><locator><local id="REQ-CORE-SPEC-DISCOVERY"/></locator></to>
+    </edge>
+    <edge id="E-VER-MCP-SPEC-DISCOVERY" type="verifiedBy">
+      <from><locator><local id="REQ-CORE-SPEC-DISCOVERY"/></locator></from>
+      <to><locator><external uri="packages/mcp/test/tools.test.ts" kind="test" title="MCP rqml_discover + file-resolution tests"/></locator></to>
     </edge>
   </trace>
 

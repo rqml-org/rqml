@@ -45,6 +45,7 @@ describe("MCP tools", () => {
     expect(TOOLS.map((t) => t.name).sort()).toEqual([
       "rqml_approve",
       "rqml_check",
+      "rqml_discover",
       "rqml_gate",
       "rqml_impact",
       "rqml_link",
@@ -109,6 +110,37 @@ describe("MCP tools", () => {
     const byPath = await callTool("rqml_status", { path: spec });
     const inline = await callTool("rqml_status", { xml: SPEC });
     expect(byPath).toEqual(inline);
+  });
+
+  it("resolves a spec input from a file via nearest-wins (REQ-CORE-SPEC-DISCOVERY)", async () => {
+    const byFile = await callTool("rqml_status", { file: join(dir, "src", "a.ts") });
+    const byPath = await callTool("rqml_status", { path: spec });
+    expect(byFile).toEqual(byPath);
+  });
+
+  it("rqml_discover enumerates governing specs and resolves a file (REQ-CORE-SPEC-DISCOVERY)", async () => {
+    mkdirSync(join(dir, ".git"));
+    mkdirSync(join(dir, "packages", "api"), { recursive: true });
+    writeFileSync(join(dir, "packages", "api", "requirements.rqml"), SPEC);
+    const r = (await callTool("rqml_discover", {
+      root: dir,
+      file: join(dir, "packages", "api", "src", "x.ts"),
+    })) as {
+      specs: Array<{ specPath: string }>;
+      ambiguous: unknown[];
+      governing: { kind: string; specPath?: string };
+    };
+    expect(r.specs.map((s) => s.specPath).sort()).toEqual(
+      [
+        join(dir, "requirements.rqml"),
+        join(dir, "packages", "api", "requirements.rqml"),
+      ].sort(),
+    );
+    expect(r.ambiguous).toEqual([]);
+    expect(r.governing).toMatchObject({
+      kind: "resolved",
+      specPath: join(dir, "packages", "api", "requirements.rqml"),
+    });
   });
 
   it("agrees with the rqml CLI on the same project (TC-MCP-PARITY)", async () => {

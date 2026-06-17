@@ -112,3 +112,15 @@ export {
   type ImplementsLink,
   type PrematureImplementation,
 } from "./check/index.js";
+
+export {
+  discoverSpecs,
+  PREFERRED_SPEC_NAME,
+  resolveGoverningSpec,
+  type AmbiguousDir,
+  type DiscoveredSpec,
+  type DiscoverOptions,
+  type DiscoveryReport,
+  type ResolveOptions,
+  type SpecResolution,
+} from "./discover/discover.js";

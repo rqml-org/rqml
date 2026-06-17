@@ -1,5 +1,6 @@
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { resolve } from "node:path";
+import { resolveGoverningSpec } from "@rqml/core";
 
 /**
  * Documented, stable process exit codes (REQ-CLI-EXIT-CODES). Loosely follows
@@ -84,8 +85,11 @@ export function specArgs(args: Args): Args {
 }
 
 /**
- * Resolve the spec file: an explicit positional path, otherwise the lone
- * `*.rqml` document in the base directory (preferring `requirements.rqml`).
+ * Resolve the spec governing the base directory: an explicit positional path,
+ * otherwise the nearest spec walking up from `baseDir` to the repository
+ * boundary (REQ-CORE-SPEC-DISCOVERY, via `@rqml/core`). A directory holding
+ * several `*.rqml` and no `requirements.rqml` is reported as ambiguous rather
+ * than guessed. The `.rqml/` governance folder is never mistaken for the spec.
  */
 export function resolveSpecPath(args: Args): string {
   const explicit = args.positionals[0];
@@ -97,19 +101,24 @@ export function resolveSpecPath(args: Args): string {
     }
     return p;
   }
-  // Only regular files — a directory whose name ends in ".rqml" (e.g. the
-  // project's `.rqml/` governance folder) must not be mistaken for the spec.
-  const candidates = readdirSync(args.baseDir, { withFileTypes: true })
-    .filter((e) => e.isFile() && e.name.endsWith(".rqml"))
-    .map((e) => e.name)
-    .sort();
-  if (candidates.length === 0) {
-    throw new UsageError("no .rqml document found in this directory; pass a path");
+  const found = resolveGoverningSpec(args.baseDir);
+  if (found.kind === "resolved") return found.specPath;
+  if (found.kind === "ambiguous") {
+    throw new UsageError(
+      `multiple .rqml documents in ${found.dir} and no requirements.rqml ` +
+        `(${found.candidates.join(", ")}); rename one to requirements.rqml or pass a path`,
+    );
   }
-  const preferred = candidates.includes("requirements.rqml")
-    ? "requirements.rqml"
-    : (candidates[0] as string);
-  return resolve(args.baseDir, preferred);
+  throw new UsageError(
+    "no .rqml document found in this directory or its parents; pass a path",
+  );
+}
+
+/** True when workspace fan-out is requested (`--workspace` / `--all`). */
+export function isWorkspace(args: Args): boolean {
+  const w = args.flags.get("workspace");
+  const a = args.flags.get("all");
+  return w === true || w === "true" || a === true || a === "true";
 }
 
 export function readSpec(args: Args): { path: string; xml: string } {

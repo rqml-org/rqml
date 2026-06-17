@@ -40,8 +40,12 @@ rqml <command> [spec.rqml] [options]
   skeleton <kind>    Print a schema-valid snippet (req | edge | testCase | stateMachine)
 ```
 
-When no path is given, the lone `*.rqml` document in the working directory is used
-(preferring `requirements.rqml`).
+When no path is given, `rqml` resolves the **governing spec** by walking up from the
+working directory to the nearest `*.rqml` (preferring `requirements.rqml`), stopping
+at the repository root — so commands work from anywhere inside a project unit. A
+directory with several `*.rqml` files and no `requirements.rqml` is reported as
+ambiguous. In a repository with multiple specs, see the
+[Monorepo guide](/docs/monorepo).
 
 ## Options
 
@@ -49,7 +53,9 @@ When no path is given, the lone `*.rqml` document in the working directory is us
 |------|---------|
 | `--json` | Emit machine-readable JSON (for `status`, `check`, `validate`, `link`, `show`, `impact`, `matrix`) — for control loops and editor hooks |
 | `--strictness <level>` | `relaxed` · `standard` (default) · `strict` · `certified` — how aggressively `check` gates |
-| `--base-dir <dir>` | Directory to resolve the spec and `implements` code links against |
+| `--base-dir <dir>` | Where spec discovery starts (and the `--workspace` root); code links resolve against the spec's own directory |
+| `--workspace`, `--all` | Run `validate` / `status` / `check` across every spec in the repository, with one aggregated exit code (non-zero if any unit fails) — see the [Monorepo guide](/docs/monorepo) |
+| `--ignore <names>` | Comma-separated directory names to skip during `--workspace` discovery |
 | `--spec <path>` | Explicit spec file for `link`, `show`, and `impact` (whose positional argument is an artifact id, not a path) |
 | `--type <type>` | Link type: `implements` (default) · `verifiedBy` |
 | `--id <id>` | Explicit edge id for `link`, or the root id for `skeleton` |
