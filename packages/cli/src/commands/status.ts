@@ -1,14 +1,18 @@
+import { readFileSync } from "node:fs";
 import { computeCoverage, lint, parse, resolveTrace } from "@rqml/core";
-import { EXIT, parseArgs, readSpec } from "../runtime.js";
+import { type Args, EXIT, isWorkspace, parseArgs, resolveSpecPath } from "../runtime.js";
+import { type SpecRunResult, runWorkspace } from "../workspace.js";
 
-/** `rqml status` — current spec, coverage, and lint state (informational). */
-export async function runStatus(rest: string[]): Promise<number> {
-  const args = parseArgs(rest);
-  const { path, xml } = readSpec(args);
+/** Summarize one already-resolved spec, returning its result without printing. */
+function statusOne(path: string, _args: Args): SpecRunResult {
+  const xml = readFileSync(path, "utf8");
   const parsed = parse(xml);
   if (!parsed.ok) {
-    process.stderr.write(`✗ ${path}: ${parsed.error.message}\n`);
-    return EXIT.VALIDATION;
+    return {
+      code: EXIT.VALIDATION,
+      json: { path, error: parsed.error.message },
+      human: `✗ ${path}: ${parsed.error.message}\n`,
+    };
   }
   const doc = parsed.document;
   const coverage = computeCoverage(doc);
@@ -35,20 +39,33 @@ export async function runStatus(rest: string[]): Promise<number> {
     lintFindings: lintDiags.length,
   };
 
-  if (args.json) {
-    process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
-  } else {
-    process.stdout.write(
-      `RQML status — ${doc.docId} (${doc.version}, ${doc.status})\n` +
-        `  spec: ${path}\n` +
-        `  requirements: ${reqCount}   trace edges: ${doc.trace.length}\n` +
-        `  uncovered goals: ${coverage.uncoveredGoals.length}\n` +
-        `  unverified reqs: ${coverage.unverifiedRequirements.length}\n` +
-        `  unimplemented reqs: ${coverage.unimplementedRequirements.length}` +
-        ` (approved: ${coverage.unimplementedApprovedRequirements.length})\n` +
-        `  premature implementations: ${coverage.prematureImplementations.length}\n` +
-        `  dangling refs: ${trace.diagnostics.length}   lint findings: ${lintDiags.length}\n`,
-    );
+  const human =
+    `RQML status — ${doc.docId} (${doc.version}, ${doc.status})\n` +
+    `  spec: ${path}\n` +
+    `  requirements: ${reqCount}   trace edges: ${doc.trace.length}\n` +
+    `  uncovered goals: ${coverage.uncoveredGoals.length}\n` +
+    `  unverified reqs: ${coverage.unverifiedRequirements.length}\n` +
+    `  unimplemented reqs: ${coverage.unimplementedRequirements.length}` +
+    ` (approved: ${coverage.unimplementedApprovedRequirements.length})\n` +
+    `  premature implementations: ${coverage.prematureImplementations.length}\n` +
+    `  dangling refs: ${trace.diagnostics.length}   lint findings: ${lintDiags.length}\n`;
+
+  return { code: EXIT.OK, json: summary, human };
+}
+
+/**
+ * `rqml status` — current spec, coverage, and lint state (informational).
+ * `--workspace` / `--all` summarizes every unit spec beneath the base directory;
+ * ambiguous directories are noted but do not fail an informational command.
+ */
+export async function runStatus(rest: string[]): Promise<number> {
+  const args = parseArgs(rest);
+  if (isWorkspace(args)) {
+    return runWorkspace("status", args, statusOne, { ambiguityBlocks: false });
   }
-  return EXIT.OK;
+  const result = statusOne(resolveSpecPath(args), args);
+  process.stdout.write(
+    args.json ? `${JSON.stringify(result.json, null, 2)}\n` : result.human,
+  );
+  return result.code;
 }

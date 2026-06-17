@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { dirname } from "node:path";
 import {
   checkIntegrity,
   computeCoverage,
@@ -5,8 +7,16 @@ import {
   loadBaseline,
   parse,
 } from "@rqml/core";
-import { printDiagnostics } from "../report.js";
-import { EXIT, type Strictness, parseArgs, readSpec } from "../runtime.js";
+import { formatDiagnostic } from "../report.js";
+import {
+  type Args,
+  EXIT,
+  type Strictness,
+  isWorkspace,
+  parseArgs,
+  resolveSpecPath,
+} from "../runtime.js";
+import { type SpecRunResult, runWorkspace } from "../workspace.js";
 
 /** Coverage findings block the gate at strict and certified levels. */
 function coverageBlocks(strictness: Strictness): boolean {
@@ -14,14 +24,13 @@ function coverageBlocks(strictness: Strictness): boolean {
 }
 
 /**
- * `rqml check` — the deterministic enforcement gate. Composes XSD + integrity
- * validation, trace coverage, and implementation drift into a single verdict and
- * a stable exit code (REQ-CLI-CHECK-GATE, REQ-ENFORCE-DETERMINISM). It invokes no
- * language model, so identical inputs yield identical verdicts.
+ * Run the gate against one already-resolved spec, returning its verdict, JSON
+ * report, and human block without writing to stdout (so the workspace runner
+ * can aggregate). `args.baseDir` is the spec's own directory, so code links and
+ * the drift baseline resolve per-unit.
  */
-export async function runCheck(rest: string[]): Promise<number> {
-  const args = parseArgs(rest);
-  const { path, xml } = readSpec(args);
+async function checkOne(path: string, args: Args): Promise<SpecRunResult> {
+  const xml = readFileSync(path, "utf8");
 
   const { validate } = await import("@rqml/core/validate");
   const validation = validate(xml);
@@ -74,16 +83,38 @@ export async function runCheck(rest: string[]): Promise<number> {
     diagnostics,
   };
 
-  if (args.json) {
-    process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
-  } else {
-    if (diagnostics.length > 0) printDiagnostics(diagnostics);
-    process.stdout.write(
-      `${verdict === "pass" ? "✓" : "✗"} check ${verdict} (${args.strictness}) — ${path}\n`,
-    );
-  }
+  const verdictLine = `${verdict === "pass" ? "✓" : "✗"} check ${verdict} (${args.strictness}) — ${path}`;
+  const human = `${[...diagnostics.map(formatDiagnostic), verdictLine].join("\n")}\n`;
 
-  if (validationFailed) return EXIT.VALIDATION;
-  if (driftFailed || coverageFailed) return EXIT.CHECK;
-  return EXIT.OK;
+  const code = validationFailed
+    ? EXIT.VALIDATION
+    : driftFailed || coverageFailed
+      ? EXIT.CHECK
+      : EXIT.OK;
+
+  return { code, json: report, human };
+}
+
+/**
+ * `rqml check` — the deterministic enforcement gate. Composes XSD + integrity
+ * validation, trace coverage, and implementation drift into a single verdict and
+ * a stable exit code (REQ-CLI-CHECK-GATE, REQ-ENFORCE-DETERMINISM). It invokes no
+ * language model, so identical inputs yield identical verdicts. `--workspace` /
+ * `--all` runs the gate across every unit spec beneath the base directory and
+ * returns one aggregated exit code (REQ-WORKSPACE-FANOUT).
+ */
+export async function runCheck(rest: string[]): Promise<number> {
+  const args = parseArgs(rest);
+  if (isWorkspace(args)) return runWorkspace("check", args, checkOne);
+
+  const path = resolveSpecPath(args);
+  // Code links and the drift baseline resolve against the spec's own directory
+  // (the unit root) — matching the MCP surface and per-unit workspace runs — even
+  // when --base-dir only started the upward walk from a subdirectory.
+  const scoped: Args = { ...args, baseDir: dirname(path) };
+  const result = await checkOne(path, scoped);
+  process.stdout.write(
+    args.json ? `${JSON.stringify(result.json, null, 2)}\n` : result.human,
+  );
+  return result.code;
 }

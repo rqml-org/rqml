@@ -184,3 +184,137 @@ editor (16). Stage 17 is gated on ADR-0011 sign-off.
 - **Inputs:** ADR-0011 (Proposed); `REQ-BACKWARD-COMPAT`, `REQ-ENFORCE-CERTIFIED`
 - **Verify:** `CRIT-PROVENANCE-OPTIONAL` (minimal spec without provenance valid under standard; certified flags missing provenance on an approved artifact); documents valid under earlier 2.x still validate
 - [ ] Complete (blocked: ADR-0011 sign-off)
+
+---
+
+# Monorepo support — spec discovery + workspace fan-out — Implementation Plan
+
+Lets one git repo host several RQML specs. Decided in ADR-0012
+(monorepo-spec-discovery-and-workspace-fanout, Accepted). Governance model:
+a spec governs its own directory and every subdirectory beneath it, a nested spec
+overrides its own subtree, and a spec never governs a parent directory
+(nearest-ancestor-wins, no inheritance/merge — SCN-AUTHOR, REQ-CORE-SPEC-DISCOVERY).
+
+**Precondition (spec-first):** `REQ-CORE-SPEC-DISCOVERY` and `REQ-WORKSPACE-FANOUT`
+are `approved`. Add `implements`/`verifiedBy` edges with `rqml link` as each stage
+lands. **Out of scope:** cross-spec `doc`-locator resolution / federation
+(ADR-0012 §5, deferred to a future ADR — any cross-spec flow will be via trace
+edges + URIs, never placement). Cross-repo surfaces (rqml-skill `repo_root`,
+rqml-vscode `specService`, plugin `ENT-MARKER` wording) are downstream consumers,
+tracked in their own repos once the core resolver ships.
+
+**Implementation decisions (resolved here, per ADR-0012):**
+- **D1 — Boundary detection.** `@rqml/core` stays dependency-clean (REQ-CORE-DEPS):
+  the resolver takes an explicit `root`/`stopAt` from the caller, and its
+  filesystem-only default stops at a `.git`/`.hg` marker or the filesystem root —
+  never shelling out to git or adding a git dependency. CLI/MCP/skill pass the
+  repo root they already know.
+- **D2 — CLI backward-compat.** The upward walk is additive: a lone spec in the
+  working directory resolves exactly as today, and an explicit positional path,
+  `--spec`, and `--base-dir` all still override the walk. The ambiguous-directory
+  error (multiple `*.rqml`, no `requirements.rqml`) is preserved.
+- **D3 — MCP shape.** Add a stateless `rqml_discover` tool (input `root`, optional
+  `file`; returns the governing spec and the enumerated unit specs); spec-input
+  tools optionally accept `cwd`/`file` resolved server-side via the core walk.
+  Tools-only data plane (`SERVER_CAPABILITIES`) and per-call statelessness stand.
+- **D4 — Enumeration rules.** `discoverSpecs` skips `node_modules` and dot-directories,
+  applies the per-directory naming rule (prefer `requirements.rqml`, else the sole
+  `*.rqml`, else report the directory ambiguous), and never crosses the boundary.
+
+## Stage 18 — Core spec discovery
+- **Scope:** `REQ-CORE-SPEC-DISCOVERY`
+- **Key output:** `@rqml/core` resolves the governing spec for any path
+  (nearest-ancestor walk) and enumerates every governing spec beneath a root; pure
+  filesystem, exported from the WASM-free `.` entry
+- **Do:** Implement `resolveGoverningSpec(fromPath, { root })` (upward walk, per-dir
+  naming rule, boundary per D1) and `discoverSpecs(root)` (tree walk per D4). No new
+  dependencies.
+- **Touch:** `packages/core/src/discover/{resolve,discover}.ts`, `packages/core/src/index.ts`
+- **Inputs:** ADR-0012 (decision pt 1 + governance rule); `REQ-CORE-SPEC-DISCOVERY`
+- **Verify:** `CRIT-DISCOVERY-NEAREST`, `CRIT-DISCOVERY-SUBTREE`, `CRIT-DISCOVERY-AMBIGUOUS`
+  on a fixture directory tree; repeated runs identical; a `dependency-cruiser` check
+  confirms no new core deps
+- [x] Complete — `src/discover/discover.ts` (`resolveGoverningSpec`, `discoverSpecs`),
+  10 tests in `test/discover.test.ts`, edges `E-IMPL-CORE-SPEC-DISCOVERY` /
+  `E-VER-CORE-SPEC-DISCOVERY`; `REQ-CORE-SPEC-DISCOVERY` approved + implemented + verified
+
+## Stage 19 — CLI nearest-wins resolution + workspace fan-out
+- **Scope:** `REQ-WORKSPACE-FANOUT` (also updates `REQ-CLI-COMMANDS`, `REQ-CLI-EXIT-CODES`, `REQ-CLI-JSON`)
+- **Key output:** `resolveSpecPath` gains the upward walk (backward-compatible per D2);
+  a `--workspace`/`--all` mode runs validate/status/check across every discovered
+  unit spec and returns one aggregated exit code, non-zero if any unit fails
+- **Do:** Route `resolveSpecPath` through `resolveGoverningSpec`; add the workspace
+  mode iterating `discoverSpecs(root)`, each spec checked against its own
+  `baseDir`/baseline, aggregated onto the existing exit-code map; per-unit results in
+  the `--json` output.
+- **Touch:** `packages/cli/src/runtime.ts`, `packages/cli/src/index.ts`, `packages/cli/src/commands/*.ts`
+- **Inputs:** ADR-0012 (decision pt 2); `REQ-WORKSPACE-FANOUT`, `REQ-CLI-EXIT-CODES`
+- **Verify:** `CRIT-FANOUT-EXIT`; backward-compat tests (single-spec-at-cwd unchanged;
+  `--spec`/`--base-dir` overrides; ambiguous-dir error); deterministic
+- [x] Complete — `resolveSpecPath` walks up via `@rqml/core`; `src/workspace.ts`
+  `runWorkspace` + `--workspace`/`--all`/`--ignore`; check/validate/status split into
+  `*One` runners; edges `E-IMPL-WORKSPACE-FANOUT` / `E-VER-WORKSPACE-FANOUT`;
+  `REQ-WORKSPACE-FANOUT` approved + implemented + verified (4 tests in test/workspace.test.ts)
+
+## Stage 20 — MCP discovery tool + path resolution
+- **Scope:** `REQ-WORKSPACE-FANOUT` (MCP surface), `REQ-MCP-PARITY`, `REQ-MCP-READONLY`
+- **Key output:** stateless `rqml_discover` (root, optional file → governing spec +
+  enumerated unit specs); spec-input tools optionally resolve a `cwd`/`file` via the
+  core walk; tools-only, at parity with the CLI workspace listing
+- **Do:** Add the tool backed by the Stage 18 API; extend `resolveSpec` to accept
+  `file`/`cwd`; keep `SERVER_CAPABILITIES` tools-only and per-call stateless.
+- **Touch:** `packages/mcp/src/tools.ts`
+- **Inputs:** ADR-0012 (decision pt 3); `REQ-MCP-PARITY`
+- **Verify:** parity test — `rqml_discover` output equals the CLI workspace listing on
+  the same fixture; a file resolves to its governing spec; no FS writes
+- [x] Complete — `rqml_discover` tool + `file`/`cwd` resolution in `resolveSpec`
+  (13 MCP tools now); edges `E-IMPL-MCP-SPEC-DISCOVERY` / `E-VER-MCP-SPEC-DISCOVERY`
+  on `REQ-CORE-SPEC-DISCOVERY`; 2 new tests in test/tools.test.ts
+
+## Stage 21 — AGENTS.md template rewording
+- **Scope:** `REQ-AGENTS-TEMPLATE` (template content), ADR-0012 decision pt 4
+- **Key output:** the bundled `@rqml/schema` AGENTS.md template states the per-unit /
+  nearest-wins placement model (one spec + co-located `.rqml/`, governing its subtree,
+  nested specs override, never a parent), replacing the umbrella wording
+- **Do:** Rewrite the placement paragraph in the template off the umbrella model to
+  match SCN-AUTHOR / REQ-CORE-SPEC-DISCOVERY. NB: the template is bundled into
+  `@rqml/cli` (tsup `noExternal`), so a republish of `@rqml/cli` is required for
+  `rqml init` to ship the new wording — a schema-only bump is not enough.
+- **Touch:** `packages/schema/templates/AGENTS.md`
+- **Inputs:** ADR-0012 (decision pt 4), ADR-0005
+- **Verify:** template placement wording matches SCN-AUTHOR and REQ-CORE-SPEC-DISCOVERY;
+  `@rqml/cli` republished
+- [x] Complete — placement paragraph in `packages/schema/templates/AGENTS.md` reworded
+  to nearest-wins governance (one co-located `.rqml/` per unit, subtree coverage,
+  nested override, never a parent); baseline `E-IMPL-AGENTS-TEMPLATE` refreshed.
+  **Ops follow-up:** republish `@rqml/cli` (it bundles the template via tsup
+  `noExternal`) so `rqml init` ships the new wording — a schema-only bump is not enough.
+
+---
+
+## Readiness Verdict (monorepo): **READY**
+
+Design is Accepted (ADR-0012) and internally consistent; the two requirements are
+`approved`; the four implementation decisions are resolved above. Stages 18–21 are
+dependency-ordered and each is a self-contained agent task. Federation and the
+cross-repo surface migrations (skill, vscode, plugin specs) are explicitly out of
+scope and tracked separately.
+
+### Post-review hardening (Stages 18-20)
+
+An adversarial multi-dimension review of the implementation confirmed and fixed:
+boundary containment in `resolveGoverningSpec` (a `file` outside `root` no longer
+escapes to the filesystem root); per-unit isolation in `runWorkspace` (one
+unreadable spec becomes a failing unit, not a whole-run abort) plus a
+nonexistent-root guard; CLI `check` now resolves code-links/baseline against the
+spec's own directory (consistent with the MCP surface); dropped the undeclared
+`cwd` alias; a bare `.rqml` file is no longer mistaken for a spec; and
+locale-independent sort for determinism. Regression tests added for each.
+
+**Deferred follow-ups** (known, low-priority):
+- `discoverSpecs` silently skips unreadable directories (e.g. permission denied),
+  which could under-report specs in a workspace gate. Fixing properly means
+  threading read-errors out of discovery; currently swallowed for simplicity.
+- `--workspace` enumerates from the base directory (cwd), not the VCS root, so a
+  run from a subdirectory only covers that subtree. This is intentional scoping;
+  pass `--base-dir <repo-root>` for whole-repo coverage.

@@ -47,8 +47,10 @@ Options:
   --status, --type, --warning  Filter matrix rows; for approve, --status sets the target (default approved)
   --changed <paths>      Scope gate to changed paths (or pass paths as positionals)
   --strictness <level>   relaxed | standard | strict | certified (default: standard)
-  --base-dir <dir>       Directory to resolve the spec and code links against
+  --base-dir <dir>       Where spec discovery starts / the --workspace root (code links resolve against the spec's own directory)
   --spec <path>          Explicit spec file (link, show, impact)
+  --workspace, --all     validate/status/check: run across every spec in the repo (one exit code)
+  --ignore <names>       Comma-separated directory names to skip during --workspace discovery
   --type <type>          Link type: implements | verifiedBy (default: implements)
   --id <id>              Explicit edge id (link) or skeleton root id
   --kind <kind>          Locator kind hint for link (default: code/test by type)

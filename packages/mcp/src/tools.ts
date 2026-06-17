@@ -15,6 +15,7 @@ import {
   computeCoverage,
   declaredIdIndex,
   detectDrift,
+  discoverSpecs,
   extractArtifact,
   impactOf,
   implementsLinks,
@@ -23,6 +24,7 @@ import {
   outlineToMarkdown,
   parse,
   projectOutline,
+  resolveGoverningSpec,
   resolveTrace,
   saveBaseline,
   setStatus,
@@ -49,6 +51,11 @@ const SPEC_INPUTS = {
     description:
       "Filesystem path of the .rqml document; read without modification (REQ-MCP-PATH-INPUT).",
   },
+  file: {
+    type: "string",
+    description:
+      "A file or directory whose governing spec to resolve by nearest-wins discovery (alternative to xml/path; REQ-CORE-SPEC-DISCOVERY).",
+  },
   baseDir: {
     type: "string",
     description:
@@ -58,7 +65,7 @@ const SPEC_INPUTS = {
 
 const specOnly = {
   type: "object" as const,
-  properties: { xml: SPEC_INPUTS.xml, path: SPEC_INPUTS.path },
+  properties: { xml: SPEC_INPUTS.xml, path: SPEC_INPUTS.path, file: SPEC_INPUTS.file },
 };
 
 const specAndId = {
@@ -66,6 +73,7 @@ const specAndId = {
   properties: {
     xml: SPEC_INPUTS.xml,
     path: SPEC_INPUTS.path,
+    file: SPEC_INPUTS.file,
     id: { type: "string", description: "Artifact id to query." },
   },
   required: ["id"],
@@ -102,6 +110,27 @@ export const TOOLS: ToolDef[] = [
     name: "rqml_trace",
     description: "Resolve the trace graph and report dangling local references.",
     inputSchema: specOnly,
+  },
+  {
+    name: "rqml_discover",
+    description:
+      "Discover the RQML specs a repository holds (nearest-wins, REQ-CORE-SPEC-DISCOVERY): enumerate every governing spec beneath root (and the ambiguous directories), plus — when file is given — the single spec governing that path. Read-only.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        root: {
+          type: "string",
+          description:
+            "Directory to enumerate governing specs beneath, and the upper boundary for resolving file.",
+        },
+        file: {
+          type: "string",
+          description:
+            "Optional file or directory whose governing spec to resolve, bounded by root.",
+        },
+      },
+      required: ["root"],
+    },
   },
   {
     name: "rqml_show",
@@ -256,7 +285,11 @@ function str(args: Record<string, unknown>, name: string): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
 
-/** Resolve the spec text and base directory from `xml` or `path` input. */
+/**
+ * Resolve the spec text and base directory from `xml`, `path`, or `file` input.
+ * `file` (a file or directory) resolves the governing spec by nearest-wins
+ * discovery (REQ-CORE-SPEC-DISCOVERY); `path` and `xml` take precedence.
+ */
 function resolveSpec(args: Record<string, unknown>): { xml: string; baseDir: string } {
   const path = str(args, "path");
   const inline = str(args, "xml");
@@ -271,7 +304,25 @@ function resolveSpec(args: Record<string, unknown>): { xml: string; baseDir: str
   if (inline !== undefined) {
     return { xml: inline, baseDir: explicitBase ?? process.cwd() };
   }
-  throw new Error("provide either xml (document text) or path (spec file)");
+  const from = str(args, "file");
+  if (from !== undefined) {
+    const found = resolveGoverningSpec(from);
+    if (found.kind === "resolved") {
+      return {
+        xml: readFileSync(found.specPath, "utf8"),
+        baseDir: explicitBase ?? found.dir,
+      };
+    }
+    if (found.kind === "ambiguous") {
+      throw new Error(
+        `multiple .rqml documents in ${found.dir} and no requirements.rqml (${found.candidates.join(", ")})`,
+      );
+    }
+    throw new Error(`no .rqml document governs ${from}`);
+  }
+  throw new Error(
+    "provide xml (document text), path (spec file), or file (resolve the governing spec)",
+  );
 }
 
 /**
@@ -432,6 +483,22 @@ export async function callTool(
       if (ids) filter.ids = ids;
       const outline = projectOutline(buildOutline(parsed.document), filter);
       return { outline, markdown: outlineToMarkdown(outline) };
+    }
+    case "rqml_discover": {
+      const root = str(args, "root");
+      if (root === undefined) {
+        throw new Error("root is required: the directory to discover specs beneath");
+      }
+      const { specs, ambiguous } = discoverSpecs(root);
+      const file = str(args, "file");
+      return {
+        root: resolve(root),
+        specs,
+        ambiguous,
+        ...(file !== undefined
+          ? { governing: resolveGoverningSpec(file, { root }) }
+          : {}),
+      };
     }
     case "rqml_approve": {
       const path = str(args, "path");
