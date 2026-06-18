@@ -6,6 +6,7 @@ import { runGate } from "./commands/gate.js";
 import { runImpact } from "./commands/impact.js";
 import { runInit } from "./commands/init.js";
 import { runLink } from "./commands/link.js";
+import { runLint } from "./commands/lint.js";
 import { runMatrix } from "./commands/matrix.js";
 import { runOverview } from "./commands/overview.js";
 import { runShow } from "./commands/show.js";
@@ -29,6 +30,7 @@ Commands:
   init [path]        Scaffold a starter spec and AGENTS.md project marker
   validate [path]    Validate XML well-formedness, XSD, and referential integrity
   status [path]      Show spec, coverage, and lint summary
+  lint [path]        Semantic lint findings; severity scales with --strictness (exit 1 on error)
   check [path]       Deterministic enforcement gate (validation + coverage + drift)
   link <id> <uri>    Record an implements/verifiedBy edge and its drift baseline
                      (--update repoints an existing edge; --refresh <edge-id>
@@ -70,6 +72,8 @@ async function main(argv: string[]): Promise<number> {
       return runValidate(rest);
     case "status":
       return runStatus(rest);
+    case "lint":
+      return runLint(rest);
     case "check":
       return runCheck(rest);
     case "init":
