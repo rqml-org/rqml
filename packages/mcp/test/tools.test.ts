@@ -66,6 +66,19 @@ describe("MCP tools", () => {
     }
   });
 
+  it("the published README lists every registered tool (drift guard)", () => {
+    const readme = readFileSync(
+      fileURLToPath(new URL("../README.md", import.meta.url)),
+      "utf8",
+    );
+    for (const tool of TOOLS) {
+      expect(
+        readme.includes(`\`${tool.name}\``),
+        `packages/mcp/README.md is missing the ${tool.name} tool`,
+      ).toBe(true);
+    }
+  });
+
   it("builds a traceability matrix, equal by path and inline (REQ-MCP-PARITY)", async () => {
     const byPath = await callTool("rqml_matrix", { path: spec });
     const inline = await callTool("rqml_matrix", { xml: SPEC });
