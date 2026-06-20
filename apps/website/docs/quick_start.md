@@ -105,7 +105,7 @@ locally, in your agent's hooks, and in CI, the verdicts never disagree.
   codex plugin marketplace add rqml-org/rqml-codex
   ```
 
-  (The hooks need the CLI too: `npx -y @rqml/cli status` to confirm it resolves.)
+  (The hooks need the CLI: `npm install -g @rqml/cli`.)
 
 - **[@rqml/mcp](/docs/tooling/mcp)** — for any MCP-capable agent: thirteen tools
   (`rqml_show`, `rqml_overview`, `rqml_matrix`, `rqml_check`, `rqml_discover`, …) backed by the same

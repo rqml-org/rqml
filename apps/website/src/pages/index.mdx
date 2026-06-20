@@ -134,7 +134,7 @@ import styles from './index.module.css';
               The same loop for OpenAI Codex: session anchoring, in-turn spec validation, and a
               stop-time <code>rqml check</code> gate once you trust the plugin's hooks.
             </div>
-            <CodeBlock language="bash">{`npx -y @rqml/cli status
+            <CodeBlock language="bash">{`npm install -g @rqml/cli
 # then, inside Codex:
 codex plugin marketplace add rqml-org/rqml-codex
 # enable the RQML entry, then trust its hooks`}</CodeBlock>
