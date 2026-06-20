@@ -76,11 +76,39 @@
   background: rgba(133, 104, 171, 0.28);
 }
 
+.tabHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+}
+
 .tabName {
   font-family: var(--ifm-font-family-monospace);
   font-weight: 600;
   font-size: 0.95rem;
   line-height: 1.2;
+}
+
+.requiredBadge {
+  margin-left: auto;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  background: var(--ifm-color-primary);
+  color: #fff;
+  line-height: 1.5;
+}
+
+.legend {
+  max-width: 1100px;
+  margin: 1rem auto 0 auto;
+  text-align: center;
+  font-size: 0.9rem;
+  opacity: 0.85;
 }
 
 .tabDescription {

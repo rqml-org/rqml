@@ -88,31 +88,8 @@ import styles from './index.module.css';
     </div>
   </section>
 
-  {/* WHY XML — meet the objection head-on */}
-  <section className={styles.xmlCallout}>
-    <div className="container">
-    <Heading as="h1" className={styles.centerHeader}>Yes, XML</Heading>
-      <div className={styles.heroSubtitleCenter}>
-        RQML uses XML because requirements are documents, not just data records.
-      </div>
-      <div className={styles.heroSubtitleCenter}>
-        They mix prose, structure, identifiers, references, comments, validation 
-        rules, and future extensions. YAML, TOML, and JSON are excellent for 
-        configuration; RQML needs structured text.
-      </div>
-      <div className={styles.heroSubtitleCenter}>
-        XML is not fashionable, but it is boring in useful ways: mixed content, 
-        schemas, namespaces, and deterministic validation. 
-      </div>
-      <div className={styles.heroCtas}>
-        <a className="button button--secondary button--lg" href="/why-xml">Why XML</a>
-        <a className="button button--secondary button--lg" href="/why-rqml">Why RQML</a>
-      </div>
-    </div>
-  </section>
-
   {/* AGENT PLUGINS — make the loop automatic inside your coding agent */}
-  <section className={`${styles.section} ${styles.breakout}`}>
+  <section id="plugins" className={`${styles.section} ${styles.breakout} ${styles.bandPlugins}`}>
     <div className="container">
       <Heading as="h1" className={styles.centerHeader}>Drop it into your coding agent</Heading>
       <div className={styles.heroSubtitleCenter}>
@@ -240,7 +217,7 @@ rqml check                # validation + coverage + drift; exit 0 or it isn't do
   </section>
 
   {/* DOGFOOD + WHAT IT IS NOT */}
-  <section className={`container ${styles.section}`}>
+  <section className={`container ${styles.section} ${styles.bandDogfood}`}>
     <div className={styles.twoCol}>
       <div>
         <Heading as="h2">It eats its own dog food.</Heading>
@@ -271,6 +248,29 @@ rqml check                # validation + coverage + drift; exit 0 or it isn't do
             <li><strong>Not ceremony.</strong> <code>meta</code> plus one requirement is a valid spec. Everything else is optional and added when it earns its keep.</li>
           </ul>
         </div>
+      </div>
+    </div>
+  </section>
+
+  {/* WHY XML — meet the objection head-on */}
+  <section className={styles.xmlCallout}>
+    <div className="container">
+    <Heading as="h1" className={styles.centerHeader}>Yes, XML</Heading>
+      <div className={styles.heroSubtitleCenter}>
+        RQML uses XML because requirements are documents, not just data records.
+      </div>
+      <div className={styles.heroSubtitleCenter}>
+        They mix prose, structure, identifiers, references, comments, validation
+        rules, and future extensions. YAML, TOML, and JSON are excellent for
+        configuration; RQML needs structured text.
+      </div>
+      <div className={styles.heroSubtitleCenter}>
+        XML is not fashionable, but it is boring in useful ways: mixed content,
+        schemas, namespaces, and deterministic validation.
+      </div>
+      <div className={styles.heroCtas}>
+        <a className="button button--secondary button--lg" href="/why-xml">Why XML</a>
+        <a className="button button--secondary button--lg" href="/why-rqml">Why RQML</a>
       </div>
     </div>
   </section>
@@ -468,9 +468,10 @@ rqml check                # validation + coverage + drift; exit 0 or it isn't do
         </ol>
 
         <div className={styles.punch}>
-          <b>Tip:</b> Don't write RQML from scratch. Your agent drafts it, <code>rqml skeleton</code> keeps
-          the structure valid, and the <a href="https://marketplace.visualstudio.com/items?itemName=rqml.rqml-vscode" target="_blank" rel="noopener noreferrer">VS Code extension</a> adds
-          authoring support, real-time validation, spec browsing, and export.
+          <b>Tip:</b> Don't write RQML by hand. Your agent drafts it, <code>rqml skeleton</code> keeps
+          the structure valid, and the <a href="#plugins">Claude Code and Codex plugins</a> run the
+          loop for you — anchoring each session on the spec, validating every edit, and gating the
+          turn on <code>rqml check</code>.
         </div>
 
         <div className={styles.heroCtas}>
@@ -582,21 +583,5 @@ rqml check                # validation + coverage + drift; exit 0 or it isn't do
     </div>
   </section>
   */}
-
-  {/* FINAL CTA */}
-  <section className={styles.final}>
-    <div className="container">
-      <Heading as="h2" className={styles.finalTitle}>Put the intent in the repo.</Heading>
-      <div className={styles.heroSubtitleCenter}>
-        One file, one gate, any agent. Apache-2.0, offline, no telemetry.
-      </div>
-
-      <div className={styles.heroCtas}>
-        <a className="button button--primary button--lg" href="/docs/quick-start">Get started</a>
-        <a className="button button--secondary button--lg" href="/docs/tooling">Explore the tooling</a>
-        <a className="button button--secondary button--lg" href="https://github.com/rqml-org/rqml" target="_blank" rel="noopener noreferrer">Star on GitHub</a>
-      </div>
-    </div>
-  </section>
 
 </div>

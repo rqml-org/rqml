@@ -287,7 +287,8 @@
   opacity: 0.95;
 }
 
-/* "Yes, XML" callout — full-bleed band, crisply separated from neighbors. */
+/* "Yes, XML" callout — full-bleed band; intentionally flat (no gradient) so the
+   gradient bands around it carry the visual rhythm. */
 .xmlCallout {
   width: 100vw;
   margin-left: calc(50% - 50vw);
@@ -295,16 +296,63 @@
   padding: 3.25rem 0;
   border-top: 1px solid var(--ifm-toc-border-color);
   border-bottom: 1px solid var(--ifm-toc-border-color);
+}
+
+/* "Drop it into your coding agent" — a two-agent band: purple easing in from the
+   top-left, cyan from the bottom-right. .breakout already supplies the full bleed. */
+.bandPlugins {
+  border-top: 1px solid var(--ifm-toc-border-color);
+  border-bottom: 1px solid var(--ifm-toc-border-color);
   background: radial-gradient(
-      900px 420px at 50% 0%,
-      rgba(133, 104, 171, 0.18),
-      transparent 65%
+      820px 400px at 8% 0%,
+      rgba(133, 104, 171, 0.16),
+      transparent 62%
     ),
     radial-gradient(
-      700px 320px at 85% 100%,
-      rgba(2, 169, 234, 0.1),
+      820px 400px at 92% 100%,
+      rgba(2, 169, 234, 0.12),
+      transparent 62%
+    );
+}
+
+/* "It eats its own dog food" — a full-bleed band whose CONTENT keeps the
+   "Start right now" width. A ::before paints the gradient edge-to-edge behind
+   the content (left: calc(50% - 50vw); width: 100vw escapes the column). The
+   gradient is deliberately its own thing: a diagonal green->cyan sweep — the
+   spec feeding itself — with a faint warm ember low-right, not the radial
+   corner-blobs used by the hero and plugins bands. */
+.bandDogfood {
+  position: relative;
+}
+
+.bandDogfood::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(50% - 50vw);
+  width: 100vw;
+  z-index: 0;
+  pointer-events: none;
+  border-top: 1px solid var(--ifm-toc-border-color);
+  border-bottom: 1px solid var(--ifm-toc-border-color);
+  background: linear-gradient(
+      115deg,
+      rgba(96, 165, 97, 0.14) 0%,
+      rgba(2, 169, 234, 0.08) 40%,
+      rgba(2, 169, 234, 0) 66%
+    ),
+    radial-gradient(
+      680px 320px at 88% 118%,
+      rgba(252, 122, 30, 0.08),
       transparent 60%
     );
+}
+
+/* Keep the section's content above the full-bleed ::before. */
+.bandDogfood > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* Hero code block — same width as the terminal window below it. */

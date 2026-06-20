@@ -6,6 +6,7 @@ type Tag = {
   id: string;
   label: string;
   description: string;
+  required?: boolean;
   snippet: string;
 };
 
@@ -14,6 +15,7 @@ const TAGS: Tag[] = [
     id: 'meta',
     label: 'meta',
     description: 'Document identity and metadata',
+    required: true,
     snippet: `<meta>
   <title>DriveEasy Car Rental Platform - Software Requirements Specification</title>
   <system>DriveEasy</system>
@@ -141,6 +143,7 @@ const TAGS: Tag[] = [
     id: 'requirements',
     label: 'requirements',
     description: 'The "what": normative requirement statements',
+    required: true,
     snippet: `<requirements>
   <reqPackage id="PKG-RES" title="Reservation Management" ownerRef="STK-PRODUCT">
     <req id="REQ-RES-003" type="FR" title="Concurrency-Safe Availability Check"
@@ -289,6 +292,7 @@ export default function RqmlTagExplorer(): JSX.Element {
   const active = TAGS.find((t) => t.id === activeId) ?? TAGS[0];
 
   return (
+    <>
     <div className={styles.explorer}>
       <ul
         className={styles.tabList}
@@ -307,7 +311,12 @@ export default function RqmlTagExplorer(): JSX.Element {
                 className={`${styles.tab} ${isActive ? styles.tabActive : ''}`}
                 onClick={() => setActiveId(tag.id)}
               >
-                <span className={styles.tabName}>&lt;{tag.label}&gt;</span>
+                <span className={styles.tabHeader}>
+                  <span className={styles.tabName}>&lt;{tag.label}&gt;</span>
+                  {tag.required && (
+                    <span className={styles.requiredBadge}>required</span>
+                  )}
+                </span>
                 <span className={styles.tabDescription}>{tag.description}</span>
               </button>
             </li>
@@ -329,5 +338,10 @@ export default function RqmlTagExplorer(): JSX.Element {
         </CodeBlock>
       </div>
     </div>
+    <p className={styles.legend}>
+      Only <code>&lt;meta&gt;</code> and <code>&lt;requirements&gt;</code> are
+      required — the other nine sections are optional, added when they earn their keep.
+    </p>
+    </>
   );
 }
