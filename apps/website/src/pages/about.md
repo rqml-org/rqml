@@ -28,9 +28,11 @@ Contributions, feedback, and issue reports are welcome.
 
 ## Repositories
 
-The RQML ecosystem currently has three repositories.
+The RQML ecosystem currently has five repositories.
 
 - The RQML standard: [github.com/rqml-org/rqml](https://github.com/rqml-org/rqml)
+- The RQML Claude Code plugin: [github.com/rqml-org/rqml-claude](https://github.com/rqml-org/rqml-claude)
+- The RQML Codex plugin: [github.com/rqml-org/rqml-codex](https://github.com/rqml-org/rqml-codex)
 - The RQML VS Code extension: [github.com/rqml-org/rqml-vscode](https://github.com/rqml-org/rqml-vscode)
 - The RQML Agent Skill: [github.com/rqml-org/rqml-skill](https://github.com/rqml-org/rqml-skill)
 

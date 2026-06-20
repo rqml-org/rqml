@@ -97,6 +97,16 @@ locally, in your agent's hooks, and in CI, the verdicts never disagree.
 
   (The hooks need the CLI: `npm install -g @rqml/cli`.)
 
+- **[Codex plugin](https://github.com/rqml-org/rqml-codex)** — the same loop for
+  OpenAI Codex: session anchoring, in-turn `.rqml` validation, and a stop-time
+  `rqml check` gate (active once you trust the plugin's hooks).
+
+  ```text
+  codex plugin marketplace add rqml-org/rqml-codex
+  ```
+
+  (The hooks need the CLI too: `npx -y @rqml/cli status` to confirm it resolves.)
+
 - **[@rqml/mcp](/docs/tooling/mcp)** — for any MCP-capable agent: thirteen tools
   (`rqml_show`, `rqml_overview`, `rqml_matrix`, `rqml_check`, `rqml_discover`, …) backed by the same
   engine as the CLI. Point tools at the spec by `path` — no pasting documents

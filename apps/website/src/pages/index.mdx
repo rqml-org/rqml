@@ -111,6 +111,71 @@ import styles from './index.module.css';
     </div>
   </section>
 
+  {/* AGENT PLUGINS — make the loop automatic inside your coding agent */}
+  <section className={`${styles.section} ${styles.breakout}`}>
+    <div className="container">
+      <Heading as="h1" className={styles.centerHeader}>Drop it into your coding agent</Heading>
+      <div className={styles.heroSubtitleCenter}>
+        The CLI loop above is good. The <b>Claude Code</b> and <b>Codex</b> plugins make it
+        automatic: every session opens anchored on your spec, every <code>.rqml</code> edit is
+        validated in the same turn, and the turn is gated on <code>rqml check</code> — the same
+        deterministic verdict your CI runs. The plugins ship no engine of their own; they shell
+        out to <code>@rqml/cli</code>, so the agent is held to the same gate as your build.
+      </div>
+
+      <div className={styles.grid2}>
+        <div className={`card ${styles.featureCard}`}>
+          <div className="card__body">
+            <div className={styles.tagRow}>
+              <span className={styles.tag}>Recommended for Claude Code</span>
+              <span className={styles.tag}>Early access · v0.1.0</span>
+            </div>
+            <Heading as="h3" className={styles.cardTitle}>Claude Code plugin</Heading>
+            <div className={styles.cardText}>
+              Anchor, validate, and gate Claude in every session. Six <code>/rqml:*</code> commands
+              for the Spec → Design → Plan → Code → Verify loop, plus the bundled MCP tools and an
+              RQML authoring skill.
+            </div>
+            <CodeBlock language="bash">{`npm install -g @rqml/cli
+# then, inside Claude Code:
+/plugin marketplace add rqml-org/rqml-claude
+/plugin install rqml@rqml`}</CodeBlock>
+            <div className={styles.heroCtas}>
+              <a className="button button--primary button--lg" href="https://github.com/rqml-org/rqml-claude" target="_blank" rel="noopener noreferrer">Get the Claude Code plugin</a>
+            </div>
+          </div>
+        </div>
+
+        <div className={`card ${styles.featureCard}`}>
+          <div className="card__body">
+            <div className={styles.tagRow}>
+              <span className={styles.tag}>Recommended for Codex</span>
+              <span className={styles.tag}>Early access · v0.1.0</span>
+            </div>
+            <Heading as="h3" className={styles.cardTitle}>Codex plugin</Heading>
+            <div className={styles.cardText}>
+              The same loop for OpenAI Codex: session anchoring, in-turn spec validation, and a
+              stop-time <code>rqml check</code> gate once you trust the plugin's hooks.
+            </div>
+            <CodeBlock language="bash">{`npx -y @rqml/cli status
+# then, inside Codex:
+codex plugin marketplace add rqml-org/rqml-codex
+# enable the RQML entry, then trust its hooks`}</CodeBlock>
+            <div className={styles.heroCtas}>
+              <a className="button button--primary button--lg" href="https://github.com/rqml-org/rqml-codex" target="_blank" rel="noopener noreferrer">Get the Codex plugin</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className={styles.heroSubtitleCenter}>
+        On a different host? The <a href="https://github.com/rqml-org/rqml-skill" target="_blank" rel="noopener noreferrer">RQML Agent Skill</a> brings
+        the same workflow to any skill-compatible agent, and the <a href="https://marketplace.visualstudio.com/items?itemName=rqml.rqml-vscode" target="_blank" rel="noopener noreferrer">VS Code extension</a> adds
+        in-editor authoring and export. Plugins enforce; these assist.
+      </div>
+    </div>
+  </section>
+
   {/* TOOLING */}
   <section id="tooling" className={`container ${styles.section}`}>
     <div className="container">
@@ -149,7 +214,7 @@ import styles from './index.module.css';
           <div className="card__body">
             <Heading as="h3" className={styles.cardTitle}>@rqml/mcp — for agents</Heading>
             <div className={styles.cardText}>
-              Eight Model Context Protocol tools backed by the same engine. Reads specs by
+              Thirteen Model Context Protocol tools backed by the same engine. Reads specs by
               file path (no pasting 30k tokens into a tool call); writes only on explicit
               intent.
             </div>
@@ -223,7 +288,7 @@ rqml check                # validation + coverage + drift; exit 0 or it isn't do
     </div>
     <div className={styles.heroCtas}>
       <a className="button button--primary button--lg" href="/docs/introduction">Read the docs</a>
-      <a className="button button--secondary button--lg" href="https://marketplace.visualstudio.com/items?itemName=rqml.rqml-vscode" target="_blank" rel="noopener noreferrer">Get the VS Code extension</a>
+      <a className="button button--secondary button--lg" href="/docs/quick-start">Get started</a>
     </div>
   </section>
 
