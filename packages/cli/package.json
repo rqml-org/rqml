@@ -1,6 +1,6 @@
 {
   "name": "@rqml/cli",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "description": "The RQML command-line interface (the `rqml` command): validate, status, and the deterministic check gate for .rqml requirements documents. The universal substrate every RQML integration can invoke.",
   "type": "module",
   "license": "Apache-2.0",
