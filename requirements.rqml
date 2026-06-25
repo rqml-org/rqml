@@ -1570,6 +1570,40 @@
           state), and check (the enforcement gate).
         </statement>
       </req>
+      <req id="REQ-CLI-INIT-MERGE" type="FR" title="init merges into an existing AGENTS.md" status="approved" priority="should" appliesTo="cli">
+        <statement>
+          rqml init SHALL write the RQML guidance into AGENTS.md as a managed,
+          marker-delimited block: creating the file when it is absent, and
+          otherwise merging the block into the existing file without altering any
+          content outside the markers. Re-running init SHALL refresh the block in
+          place idempotently and SHALL preserve any strictness level the project
+          already declares.
+        </statement>
+        <rationale>
+          ADR-0016. AGENTS.md is the agent's native instruction file (notably for
+          Codex), so a project adopting RQML usually already has one. The earlier
+          create-or-skip behavior silently left such projects without the process
+          contract. A managed block adopts cleanly alongside existing guidance and
+          stays refreshable as the template (REQ-AGENTS-TEMPLATE) evolves.
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-INIT-MERGE">
+            <given>A project whose AGENTS.md already holds hand-written guidance</given>
+            <when>rqml init is run</when>
+            <then>The existing guidance is preserved and an RQML block is appended between BEGIN/END markers.</then>
+          </criterion>
+          <criterion id="CRIT-INIT-IDEMPOTENT">
+            <given>An AGENTS.md that already contains a current RQML block</given>
+            <when>rqml init is run again</when>
+            <then>The file is left unchanged and the block is not duplicated.</then>
+          </criterion>
+          <criterion id="CRIT-INIT-STRICTNESS">
+            <given>An AGENTS.md whose RQML block declares a non-default strictness</given>
+            <when>rqml init refreshes the block</when>
+            <then>The declared strictness is retained rather than reset to standard.</then>
+          </criterion>
+        </acceptance>
+      </req>
       <req id="REQ-CLI-CHECK-GATE" type="FR" title="Check gate" status="approved" priority="must" appliesTo="cli">
         <statement>
           rqml check SHALL act as a deterministic gate, exiting zero only when the
@@ -2616,6 +2650,10 @@
       <from><locator><external uri="packages/cli/src/index.ts" kind="code" title="init/validate/status/check dispatch"/></locator></from>
       <to><locator><local id="REQ-CLI-COMMANDS"/></locator></to>
     </edge>
+    <edge id="E-INITMERGE-REFINES" type="refines" confidence="0.9">
+      <from><locator><local id="REQ-CLI-INIT-MERGE"/></locator></from>
+      <to><locator><local id="REQ-CLI-COMMANDS"/></locator></to>
+    </edge>
     <edge id="E-IMPL-CLI-CHECK-GATE" type="implements">
       <from><locator><external uri="packages/cli/src/commands/check.ts#runCheck" kind="code" title="rqml check gate"/></locator></from>
       <to><locator><local id="REQ-CLI-CHECK-GATE"/></locator></to>
@@ -3233,6 +3271,14 @@
     <edge id="E-VER-CLI-LINT" type="verifiedBy">
       <from><locator><local id="REQ-CLI-LINT"/></locator></from>
       <to><locator><external uri="packages/cli/test/lint.test.ts" kind="test" title="rqml lint command tests"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-CLI-INIT-MERGE" type="implements">
+      <from><locator><external uri="packages/cli/src/commands/init.ts" kind="code"/></locator></from>
+      <to><locator><local id="REQ-CLI-INIT-MERGE"/></locator></to>
+    </edge>
+    <edge id="E-VER-CLI-INIT-MERGE" type="verifiedBy">
+      <from><locator><local id="REQ-CLI-INIT-MERGE"/></locator></from>
+      <to><locator><external uri="packages/cli/test/init.test.ts" kind="test"/></locator></to>
     </edge>
   </trace>
 
