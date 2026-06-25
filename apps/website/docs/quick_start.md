@@ -26,6 +26,12 @@ This creates two files in your project root:
   (`relaxed` · `standard` · `strict` · `certified`). Adjust the strictness to
   taste; everything else works out of the box.
 
+Already have an `AGENTS.md`? `init` won't overwrite it. It merges the RQML
+guidance in as a managed block fenced by `<!-- BEGIN RQML -->` /
+`<!-- END RQML -->` markers, leaving everything you wrote outside the markers
+untouched. Re-running `init` refreshes that block in place — so a template
+update is one command away — and never touches a strictness level you've set.
+
 Prefer writing the file by hand? A useful document fits in 15 lines — see the
 [reference](/docs/reference) for the document model.
 
@@ -122,9 +128,11 @@ locally, in your agent's hooks, and in CI, the verdicts never disagree.
 
 ## About AGENTS.md
 
-`rqml init` writes the current template for you; you can also download it
-directly: <a href="/AGENTS.md" target="_blank">AGENTS.md template</a>. It
-covers:
+`rqml init` writes the current template for you — creating `AGENTS.md` if it's
+missing, or merging the guidance into an existing file as a managed,
+marker-delimited block (re-run it any time to refresh that block in place). You
+can also download the template directly:
+<a href="/AGENTS.md" target="_blank">AGENTS.md template</a>. It covers:
 
 - **Strictness levels** — how aggressively the gate blocks, from `relaxed`
   (advisory) to `certified` (audit-grade traces)
