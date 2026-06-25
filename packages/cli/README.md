@@ -14,7 +14,7 @@ npm i -g @rqml/cli   # then: rqml <command>
 ```
 rqml <command> [spec.rqml] [options]
 
-  init [path]      Scaffold a starter spec and AGENTS.md project marker
+  init [path]      Scaffold a starter spec and merge the RQML block into AGENTS.md
   validate [path]  XML well-formedness, XSD, and referential integrity
   status [path]    Spec, coverage, and lint summary
   lint [path]      Semantic lint findings; severity scales with --strictness (exit 1 on error)

@@ -27,7 +27,7 @@ Usage:
   rqml <command> [spec.rqml] [options]
 
 Commands:
-  init [path]        Scaffold a starter spec and AGENTS.md project marker
+  init [path]        Scaffold a starter spec and merge the RQML block into AGENTS.md
   validate [path]    Validate XML well-formedness, XSD, and referential integrity
   status [path]      Show spec, coverage, and lint summary
   lint [path]        Semantic lint findings; severity scales with --strictness (exit 1 on error)
