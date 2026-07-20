@@ -13,10 +13,10 @@
   of an RQML document), and requirements are normative statements about what a
   conforming RQML document and toolchain MUST do.
 -->
-<rqml xmlns="https://rqml.org/schema/2.1.0"
+<rqml xmlns="https://rqml.org/schema/2.2.0"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="https://rqml.org/schema/2.1.0 https://rqml.org/schema/rqml-2.1.0.xsd"
-      version="2.1.0" docId="RQML-SELF-001" status="review">
+      xsi:schemaLocation="https://rqml.org/schema/2.2.0 https://rqml.org/schema/rqml-2.2.0.xsd"
+      version="2.2.0" docId="RQML-SELF-001" status="review">
 
   <!-- ============================================================= -->
   <!-- META                                                          -->
@@ -2362,242 +2362,84 @@
   <!-- ============================================================= -->
   <trace>
     <!-- Requirements satisfy goals -->
-    <edge id="E-DOC-PRIMARY" type="satisfies" confidence="0.9">
-      <from><locator><local id="REQ-REQUIRED-SECTIONS"/></locator></from>
-      <to><locator><local id="GOAL-PRIMARY-ARTIFACT"/></locator></to>
-    </edge>
-    <edge id="E-XML-LLM" type="satisfies" confidence="0.9">
-      <from><locator><local id="REQ-XML"/></locator></from>
-      <to><locator><local id="GOAL-LLM-CONTEXT"/></locator></to>
-    </edge>
-    <edge id="E-TRACE-GOAL" type="satisfies" confidence="0.95">
-      <from><locator><local id="REQ-TRACE-EDGE"/></locator></from>
-      <to><locator><local id="GOAL-TRACEABILITY"/></locator></to>
-    </edge>
-    <edge id="E-STRICT-LOW" type="satisfies" confidence="0.8">
-      <from><locator><local id="REQ-STRICTNESS"/></locator></from>
-      <to><locator><local id="GOAL-LOW-CEREMONY"/></locator></to>
-    </edge>
-    <edge id="E-LLMREAD-QGOAL" type="satisfies" confidence="0.9">
-      <from><locator><local id="REQ-LLM-READ"/></locator></from>
-      <to><locator><local id="QGOAL-LLM-READ"/></locator></to>
-    </edge>
-    <edge id="E-VALID-QGOAL" type="satisfies" confidence="0.9">
-      <from><locator><local id="REQ-VALIDATABLE"/></locator></from>
-      <to><locator><local id="QGOAL-VALIDATABLE"/></locator></to>
-    </edge>
-    <edge id="E-DISCOVERY-ENGINE" type="satisfies" confidence="0.9">
-      <from><locator><local id="REQ-CORE-SPEC-DISCOVERY"/></locator></from>
-      <to><locator><local id="GOAL-REUSABLE-ENGINE"/></locator></to>
-    </edge>
-    <edge id="E-FANOUT-ENFORCE" type="satisfies" confidence="0.85">
-      <from><locator><local id="REQ-WORKSPACE-FANOUT"/></locator></from>
-      <to><locator><local id="GOAL-ENFORCEMENT"/></locator></to>
-    </edge>
-    <edge id="E-LINT-CEREMONY" type="satisfies" confidence="0.8">
-      <from><locator><local id="REQ-CORE-LINT"/></locator></from>
-      <to><locator><local id="GOAL-LOW-CEREMONY"/></locator></to>
-    </edge>
-    <edge id="E-CLI-LINT-CEREMONY" type="satisfies" confidence="0.8">
-      <from><locator><local id="REQ-CLI-LINT"/></locator></from>
-      <to><locator><local id="GOAL-LOW-CEREMONY"/></locator></to>
-    </edge>
-    <edge id="E-CORESTRICT-ENFORCE" type="satisfies" confidence="0.85">
-      <from><locator><local id="REQ-CORE-STRICTNESS"/></locator></from>
-      <to><locator><local id="GOAL-ENFORCEMENT"/></locator></to>
-    </edge>
+    <edge id="E-DOC-PRIMARY" type="satisfies" from="REQ-REQUIRED-SECTIONS" to="GOAL-PRIMARY-ARTIFACT" confidence="0.9"/>
+    <edge id="E-XML-LLM" type="satisfies" from="REQ-XML" to="GOAL-LLM-CONTEXT" confidence="0.9"/>
+    <edge id="E-TRACE-GOAL" type="satisfies" from="REQ-TRACE-EDGE" to="GOAL-TRACEABILITY" confidence="0.95"/>
+    <edge id="E-STRICT-LOW" type="satisfies" from="REQ-STRICTNESS" to="GOAL-LOW-CEREMONY" confidence="0.8"/>
+    <edge id="E-LLMREAD-QGOAL" type="satisfies" from="REQ-LLM-READ" to="QGOAL-LLM-READ" confidence="0.9"/>
+    <edge id="E-VALID-QGOAL" type="satisfies" from="REQ-VALIDATABLE" to="QGOAL-VALIDATABLE" confidence="0.9"/>
+    <edge id="E-DISCOVERY-ENGINE" type="satisfies" from="REQ-CORE-SPEC-DISCOVERY" to="GOAL-REUSABLE-ENGINE" confidence="0.9"/>
+    <edge id="E-FANOUT-ENFORCE" type="satisfies" from="REQ-WORKSPACE-FANOUT" to="GOAL-ENFORCEMENT" confidence="0.85"/>
+    <edge id="E-LINT-CEREMONY" type="satisfies" from="REQ-CORE-LINT" to="GOAL-LOW-CEREMONY" confidence="0.8"/>
+    <edge id="E-CLI-LINT-CEREMONY" type="satisfies" from="REQ-CLI-LINT" to="GOAL-LOW-CEREMONY" confidence="0.8"/>
+    <edge id="E-CORESTRICT-ENFORCE" type="satisfies" from="REQ-CORE-STRICTNESS" to="GOAL-ENFORCEMENT" confidence="0.85"/>
 
     <!-- Requirements depend on the decisions that motivate them -->
-    <edge id="E-XML-DEC" type="dependsOn" confidence="1.0">
-      <from><locator><local id="REQ-XML"/></locator></from>
-      <to><locator><local id="DEC-XML"/></locator></to>
-    </edge>
-    <edge id="E-MIXED-DEC" type="dependsOn" confidence="1.0">
-      <from><locator><local id="REQ-MIXED-CONTENT"/></locator></from>
-      <to><locator><local id="DEC-MIXED-CONTENT"/></locator></to>
-    </edge>
-    <edge id="E-TRACE-DEC" type="dependsOn" confidence="1.0">
-      <from><locator><local id="REQ-TRACE-LOCATORS"/></locator></from>
-      <to><locator><local id="DEC-TRACE-ENDPOINTS"/></locator></to>
-    </edge>
-    <edge id="E-SM-DEC" type="dependsOn" confidence="1.0">
-      <from><locator><local id="REQ-SM"/></locator></from>
-      <to><locator><local id="DEC-BEHAVIOR-FLAT"/></locator></to>
-    </edge>
-    <edge id="E-XML-CON" type="dependsOn" confidence="1.0">
-      <from><locator><local id="REQ-XML"/></locator></from>
-      <to><locator><local id="CON-XML"/></locator></to>
-    </edge>
+    <edge id="E-XML-DEC" type="dependsOn" from="REQ-XML" to="DEC-XML" confidence="1"/>
+    <edge id="E-MIXED-DEC" type="dependsOn" from="REQ-MIXED-CONTENT" to="DEC-MIXED-CONTENT" confidence="1"/>
+    <edge id="E-TRACE-DEC" type="dependsOn" from="REQ-TRACE-LOCATORS" to="DEC-TRACE-ENDPOINTS" confidence="1"/>
+    <edge id="E-SM-DEC" type="dependsOn" from="REQ-SM" to="DEC-BEHAVIOR-FLAT" confidence="1"/>
+    <edge id="E-XML-CON" type="dependsOn" from="REQ-XML" to="CON-XML" confidence="1"/>
 
     <!-- Requirements mitigate risks / obstacles -->
-    <edge id="E-SPECFIRST-DRIFT" type="mitigates" confidence="0.8">
-      <from><locator><local id="REQ-SPEC-FIRST"/></locator></from>
-      <to><locator><local id="RISK-DRIFT"/></locator></to>
-    </edge>
-    <edge id="E-HUMAN-VERBOSITY" type="mitigates" confidence="0.7">
-      <from><locator><local id="REQ-HUMAN"/></locator></from>
-      <to><locator><local id="RISK-VERBOSITY"/></locator></to>
-    </edge>
-    <edge id="E-NORM-AMBIGUITY" type="mitigates" confidence="0.8">
-      <from><locator><local id="REQ-NORMATIVE-KEYWORDS"/></locator></from>
-      <to><locator><local id="RISK-AMBIGUITY"/></locator></to>
-    </edge>
+    <edge id="E-SPECFIRST-DRIFT" type="mitigates" from="REQ-SPEC-FIRST" to="RISK-DRIFT" confidence="0.8"/>
+    <edge id="E-HUMAN-VERBOSITY" type="mitigates" from="REQ-HUMAN" to="RISK-VERBOSITY" confidence="0.7"/>
+    <edge id="E-NORM-AMBIGUITY" type="mitigates" from="REQ-NORMATIVE-KEYWORDS" to="RISK-AMBIGUITY" confidence="0.8"/>
 
     <!-- Behavior refines the document entity -->
-    <edge id="E-SM-ENTITY" type="refines" confidence="0.9">
-      <from><locator><local id="SM-DOC-LIFECYCLE"/></locator></from>
-      <to><locator><local id="ENT-DOC"/></locator></to>
-    </edge>
+    <edge id="E-SM-ENTITY" type="refines" from="SM-DOC-LIFECYCLE" to="ENT-DOC" confidence="0.9"/>
 
     <!-- Requirements verified by tests -->
-    <edge id="E-REQUIRED-TEST" type="verifiedBy">
-      <from><locator><local id="REQ-REQUIRED-SECTIONS"/></locator></from>
-      <to><locator><local id="TC-MINIMAL-DOC"/></locator></to>
-    </edge>
-    <edge id="E-IDUNIQUE-TEST" type="verifiedBy">
-      <from><locator><local id="REQ-ID-UNIQUE"/></locator></from>
-      <to><locator><local id="TC-UNIQUE-ID"/></locator></to>
-    </edge>
-    <edge id="E-INTEGRITY-TEST" type="verifiedBy">
-      <from><locator><local id="REQ-TRACE-INTEGRITY"/></locator></from>
-      <to><locator><local id="TC-TRACE-RESOLVE"/></locator></to>
-    </edge>
-    <edge id="E-SMINIT-TEST" type="verifiedBy">
-      <from><locator><local id="REQ-SM-INITIAL"/></locator></from>
-      <to><locator><local id="TC-SM-INITIAL"/></locator></to>
-    </edge>
-    <edge id="E-VERSION-TEST" type="verifiedBy">
-      <from><locator><local id="REQ-VERSION"/></locator></from>
-      <to><locator><local id="TC-XSD-VALID"/></locator></to>
-    </edge>
+    <edge id="E-REQUIRED-TEST" type="verifiedBy" from="REQ-REQUIRED-SECTIONS" to="TC-MINIMAL-DOC"/>
+    <edge id="E-IDUNIQUE-TEST" type="verifiedBy" from="REQ-ID-UNIQUE" to="TC-UNIQUE-ID"/>
+    <edge id="E-INTEGRITY-TEST" type="verifiedBy" from="REQ-TRACE-INTEGRITY" to="TC-TRACE-RESOLVE"/>
+    <edge id="E-SMINIT-TEST" type="verifiedBy" from="REQ-SM-INITIAL" to="TC-SM-INITIAL"/>
+    <edge id="E-VERSION-TEST" type="verifiedBy" from="REQ-VERSION" to="TC-XSD-VALID"/>
 
     <!-- Conformance to external standards -->
-    <edge id="E-NORM-RFC2119" type="conformsTo">
-      <from><locator><local id="REQ-NORMATIVE-KEYWORDS"/></locator></from>
-      <to><locator><external uri="urn:ietf:rfc:2119" kind="standard" title="RFC 2119"/></locator></to>
-    </edge>
-    <edge id="E-RE-IEEE29148" type="conformsTo">
-      <from><locator><local id="GOAL-RE-OPERATIONALIZE"/></locator></from>
-      <to><locator><external uri="urn:iso:std:iso-iec-ieee:29148" kind="standard" title="ISO/IEC/IEEE 29148:2018"/></locator></to>
-    </edge>
+    <edge id="E-NORM-RFC2119" type="conformsTo" from="REQ-NORMATIVE-KEYWORDS" to="urn:ietf:rfc:2119" toKind="standard" toTitle="RFC 2119"/>
+    <edge id="E-RE-IEEE29148" type="conformsTo" from="GOAL-RE-OPERATIONALIZE" to="urn:iso:std:iso-iec-ieee:29148" toKind="standard" toTitle="ISO/IEC/IEEE 29148:2018"/>
 
     <!-- Lifecycle: 2.1.0 trace model supersedes the 2.0.1 model -->
-    <edge id="E-TRACE-SUPERSEDES" type="supersedes">
-      <from><locator><local id="REQ-TRACE-EDGE"/></locator></from>
-      <to><locator><external uri="https://rqml.org/schema/rqml-2.0.1.xsd#traceEdge" kind="schema" title="RQML 2.0.1 traceEdge"/></locator></to>
+    <edge id="E-TRACE-SUPERSEDES" type="supersedes" from="REQ-TRACE-EDGE" to="https://rqml.org/schema/rqml-2.0.1.xsd#traceEdge" toKind="schema" toTitle="RQML 2.0.1 traceEdge">
       <notes>2.1.0 replaced flat traceEdge attributes with structured from/to locators.</notes>
     </edge>
     <!-- Toolchain requirements satisfy toolchain goals -->
-    <edge id="E-PRIM-ENFORCE" type="satisfies" confidence="0.9">
-      <from><locator><local id="REQ-ENFORCE-PRIMITIVES"/></locator></from>
-      <to><locator><local id="GOAL-ENFORCEMENT"/></locator></to>
-    </edge>
-    <edge id="E-API-ENGINE" type="satisfies" confidence="0.9">
-      <from><locator><local id="REQ-CORE-API"/></locator></from>
-      <to><locator><local id="GOAL-REUSABLE-ENGINE"/></locator></to>
-    </edge>
-    <edge id="E-OFFLINE-GOAL" type="satisfies" confidence="0.85">
-      <from><locator><local id="REQ-CLI-OFFLINE"/></locator></from>
-      <to><locator><local id="GOAL-OFFLINE-FAST"/></locator></to>
-    </edge>
-    <edge id="E-DETERMINISM-QGOAL" type="satisfies" confidence="0.9">
-      <from><locator><local id="REQ-ENFORCE-DETERMINISM"/></locator></from>
-      <to><locator><local id="QGOAL-DETERMINISTIC"/></locator></to>
-    </edge>
-    <edge id="E-SPEED-QGOAL" type="satisfies" confidence="0.8">
-      <from><locator><local id="REQ-CLI-SPEED"/></locator></from>
-      <to><locator><local id="QGOAL-CHECK-SPEED"/></locator></to>
-    </edge>
+    <edge id="E-PRIM-ENFORCE" type="satisfies" from="REQ-ENFORCE-PRIMITIVES" to="GOAL-ENFORCEMENT" confidence="0.9"/>
+    <edge id="E-API-ENGINE" type="satisfies" from="REQ-CORE-API" to="GOAL-REUSABLE-ENGINE" confidence="0.9"/>
+    <edge id="E-OFFLINE-GOAL" type="satisfies" from="REQ-CLI-OFFLINE" to="GOAL-OFFLINE-FAST" confidence="0.85"/>
+    <edge id="E-DETERMINISM-QGOAL" type="satisfies" from="REQ-ENFORCE-DETERMINISM" to="QGOAL-DETERMINISTIC" confidence="0.9"/>
+    <edge id="E-SPEED-QGOAL" type="satisfies" from="REQ-CLI-SPEED" to="QGOAL-CHECK-SPEED" confidence="0.8"/>
 
     <!-- Toolchain requirements depend on the decisions that motivate them -->
-    <edge id="E-WORKSPACE-DEC" type="dependsOn" confidence="1.0">
-      <from><locator><local id="REQ-WORKSPACE"/></locator></from>
-      <to><locator><local id="DEC-MONOREPO"/></locator></to>
-    </edge>
-    <edge id="E-NOLLM-DEC" type="dependsOn" confidence="1.0">
-      <from><locator><local id="REQ-CORE-NO-LLM"/></locator></from>
-      <to><locator><local id="DEC-DETERMINISTIC-CHECK"/></locator></to>
-    </edge>
-    <edge id="E-DRIFT-DEC" type="dependsOn" confidence="1.0">
-      <from><locator><local id="REQ-CORE-DRIFT"/></locator></from>
-      <to><locator><local id="DEC-EXPLICIT-TRACE"/></locator></to>
-    </edge>
-    <edge id="E-CANON-DEC" type="dependsOn" confidence="1.0">
-      <from><locator><local id="REQ-SCHEMA-CANONICAL"/></locator></from>
-      <to><locator><local id="DEC-SCHEMA-PACKAGE"/></locator></to>
-    </edge>
-    <edge id="E-VERDEC-DEC" type="dependsOn" confidence="1.0">
-      <from><locator><local id="REQ-VERSION-DECOUPLE"/></locator></from>
-      <to><locator><local id="DEC-VERSION-DECOUPLE"/></locator></to>
-    </edge>
-    <edge id="E-MCP-CORE-API" type="dependsOn" confidence="0.9">
-      <from><locator><local id="REQ-MCP-PARITY"/></locator></from>
-      <to><locator><local id="REQ-CORE-API"/></locator></to>
-    </edge>
-    <edge id="E-GATE-DRIFT" type="dependsOn" confidence="0.9">
-      <from><locator><local id="REQ-CLI-CHECK-GATE"/></locator></from>
-      <to><locator><local id="REQ-CORE-DRIFT"/></locator></to>
-    </edge>
+    <edge id="E-WORKSPACE-DEC" type="dependsOn" from="REQ-WORKSPACE" to="DEC-MONOREPO" confidence="1"/>
+    <edge id="E-NOLLM-DEC" type="dependsOn" from="REQ-CORE-NO-LLM" to="DEC-DETERMINISTIC-CHECK" confidence="1"/>
+    <edge id="E-DRIFT-DEC" type="dependsOn" from="REQ-CORE-DRIFT" to="DEC-EXPLICIT-TRACE" confidence="1"/>
+    <edge id="E-CANON-DEC" type="dependsOn" from="REQ-SCHEMA-CANONICAL" to="DEC-SCHEMA-PACKAGE" confidence="1"/>
+    <edge id="E-VERDEC-DEC" type="dependsOn" from="REQ-VERSION-DECOUPLE" to="DEC-VERSION-DECOUPLE" confidence="1"/>
+    <edge id="E-MCP-CORE-API" type="dependsOn" from="REQ-MCP-PARITY" to="REQ-CORE-API" confidence="0.9"/>
+    <edge id="E-GATE-DRIFT" type="dependsOn" from="REQ-CLI-CHECK-GATE" to="REQ-CORE-DRIFT" confidence="0.9"/>
 
     <!-- Toolchain requirements mitigate toolchain risks -->
-    <edge id="E-NOLLM-RISK" type="mitigates" confidence="0.9">
-      <from><locator><local id="REQ-CORE-NO-LLM"/></locator></from>
-      <to><locator><local id="RISK-LLM-GATE"/></locator></to>
-    </edge>
-    <edge id="E-CANON-RISK" type="mitigates" confidence="0.9">
-      <from><locator><local id="REQ-SCHEMA-CANONICAL"/></locator></from>
-      <to><locator><local id="RISK-SCHEMA-COPY"/></locator></to>
-    </edge>
-    <edge id="E-COREDEPS-RISK" type="mitigates" confidence="0.9">
-      <from><locator><local id="REQ-CORE-DEPS"/></locator></from>
-      <to><locator><local id="RISK-CORE-BLOAT"/></locator></to>
-    </edge>
-    <edge id="E-PRIM-DRIFT" type="mitigates" confidence="0.8">
-      <from><locator><local id="REQ-ENFORCE-PRIMITIVES"/></locator></from>
-      <to><locator><local id="RISK-DRIFT"/></locator></to>
-    </edge>
+    <edge id="E-NOLLM-RISK" type="mitigates" from="REQ-CORE-NO-LLM" to="RISK-LLM-GATE" confidence="0.9"/>
+    <edge id="E-CANON-RISK" type="mitigates" from="REQ-SCHEMA-CANONICAL" to="RISK-SCHEMA-COPY" confidence="0.9"/>
+    <edge id="E-COREDEPS-RISK" type="mitigates" from="REQ-CORE-DEPS" to="RISK-CORE-BLOAT" confidence="0.9"/>
+    <edge id="E-PRIM-DRIFT" type="mitigates" from="REQ-ENFORCE-PRIMITIVES" to="RISK-DRIFT" confidence="0.8"/>
 
     <!-- Toolchain requirements verified by toolchain tests -->
-    <edge id="E-GATE-TEST" type="verifiedBy">
-      <from><locator><local id="REQ-CLI-CHECK-GATE"/></locator></from>
-      <to><locator><local id="TC-CHECK-GATE"/></locator></to>
-    </edge>
-    <edge id="E-DETERMINISM-TEST" type="verifiedBy">
-      <from><locator><local id="REQ-ENFORCE-DETERMINISM"/></locator></from>
-      <to><locator><local id="TC-CHECK-DETERMINISM"/></locator></to>
-    </edge>
-    <edge id="E-DRIFT-TEST" type="verifiedBy">
-      <from><locator><local id="REQ-CORE-DRIFT"/></locator></from>
-      <to><locator><local id="TC-DRIFT-DETECT"/></locator></to>
-    </edge>
-    <edge id="E-OFFLINE-TEST" type="verifiedBy">
-      <from><locator><local id="REQ-CLI-OFFLINE"/></locator></from>
-      <to><locator><local id="TC-CORE-OFFLINE"/></locator></to>
-    </edge>
-    <edge id="E-COREDEPS-TEST" type="verifiedBy">
-      <from><locator><local id="REQ-CORE-DEPS"/></locator></from>
-      <to><locator><local id="TC-CORE-NO-DEPS"/></locator></to>
-    </edge>
-    <edge id="E-SCHEMAURL-TEST" type="verifiedBy">
-      <from><locator><local id="REQ-SCHEMA-URLS"/></locator></from>
-      <to><locator><local id="TC-SCHEMA-URL"/></locator></to>
-    </edge>
-    <edge id="E-PARITY-TEST" type="verifiedBy">
-      <from><locator><local id="REQ-MCP-PARITY"/></locator></from>
-      <to><locator><local id="TC-MCP-PARITY"/></locator></to>
-    </edge>
+    <edge id="E-GATE-TEST" type="verifiedBy" from="REQ-CLI-CHECK-GATE" to="TC-CHECK-GATE"/>
+    <edge id="E-DETERMINISM-TEST" type="verifiedBy" from="REQ-ENFORCE-DETERMINISM" to="TC-CHECK-DETERMINISM"/>
+    <edge id="E-DRIFT-TEST" type="verifiedBy" from="REQ-CORE-DRIFT" to="TC-DRIFT-DETECT"/>
+    <edge id="E-OFFLINE-TEST" type="verifiedBy" from="REQ-CLI-OFFLINE" to="TC-CORE-OFFLINE"/>
+    <edge id="E-COREDEPS-TEST" type="verifiedBy" from="REQ-CORE-DEPS" to="TC-CORE-NO-DEPS"/>
+    <edge id="E-SCHEMAURL-TEST" type="verifiedBy" from="REQ-SCHEMA-URLS" to="TC-SCHEMA-URL"/>
+    <edge id="E-PARITY-TEST" type="verifiedBy" from="REQ-MCP-PARITY" to="TC-MCP-PARITY"/>
 
     <!-- Behavior refines the implementation-link entity -->
-    <edge id="E-SMIMPL-ENTITY" type="refines" confidence="0.9">
-      <from><locator><local id="SM-IMPL-STATUS"/></locator></from>
-      <to><locator><local id="ENT-IMPL-LINK"/></locator></to>
-    </edge>
+    <edge id="E-SMIMPL-ENTITY" type="refines" from="SM-IMPL-STATUS" to="ENT-IMPL-LINK" confidence="0.9"/>
 
     <!-- Certified enforcement conforms to a regulated-domain standard -->
-    <edge id="E-CERT-IEC62304" type="conformsTo">
-      <from><locator><local id="REQ-ENFORCE-CERTIFIED"/></locator></from>
-      <to><locator><external uri="urn:iec:std:62304" kind="standard" title="IEC 62304"/></locator></to>
-    </edge>
+    <edge id="E-CERT-IEC62304" type="conformsTo" from="REQ-ENFORCE-CERTIFIED" to="urn:iec:std:62304" toKind="standard" toTitle="IEC 62304"/>
 
     <!-- ========================================================= -->
     <!-- IMPLEMENTS — code artifacts realizing requirements        -->
@@ -2607,833 +2449,239 @@
     <!-- ========================================================= -->
 
     <!-- Format requirements realized by the canonical XSD -->
-    <edge id="E-IMPL-DOC-ROOT" type="implements">
-      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd" kind="schema" title="RQML 2.1.0 XSD"/></locator></from>
-      <to><locator><local id="REQ-DOC-ROOT"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-VERSION" type="implements">
-      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd" kind="schema" title="RQML 2.1.0 XSD"/></locator></from>
-      <to><locator><local id="REQ-VERSION"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-REQUIRED-SECTIONS" type="implements">
-      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd" kind="schema" title="RQML 2.1.0 XSD"/></locator></from>
-      <to><locator><local id="REQ-REQUIRED-SECTIONS"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-SECTION-ORDER" type="implements">
-      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd" kind="schema" title="RQML 2.1.0 XSD"/></locator></from>
-      <to><locator><local id="REQ-SECTION-ORDER"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-ID-PATTERN" type="implements">
-      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#IdType" kind="schema" title="IdType pattern"/></locator></from>
-      <to><locator><local id="REQ-ID-PATTERN"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-STATUS-ENUM" type="implements">
-      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#StatusType" kind="schema" title="StatusType enumeration"/></locator></from>
-      <to><locator><local id="REQ-STATUS-ENUM"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-PRIORITY-ENUM" type="implements">
-      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#PriorityType" kind="schema" title="PriorityType enumeration"/></locator></from>
-      <to><locator><local id="REQ-PRIORITY-ENUM"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-REQTYPE-ENUM" type="implements">
-      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#ReqType" kind="schema" title="ReqType enumeration"/></locator></from>
-      <to><locator><local id="REQ-REQTYPE-ENUM"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-TRACETYPE-ENUM" type="implements">
-      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#TraceType" kind="schema" title="TraceType enumeration"/></locator></from>
-      <to><locator><local id="REQ-TRACETYPE-ENUM"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-TESTTYPE-ENUM" type="implements">
-      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#TestType" kind="schema" title="TestType enumeration"/></locator></from>
-      <to><locator><local id="REQ-TESTTYPE-ENUM"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-CONFIDENCE-RANGE" type="implements">
-      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#ConfidenceType" kind="schema" title="ConfidenceType range"/></locator></from>
-      <to><locator><local id="REQ-CONFIDENCE-RANGE"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-TRACE-EDGE" type="implements">
-      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#TraceEdgeType" kind="schema" title="TraceEdgeType"/></locator></from>
-      <to><locator><local id="REQ-TRACE-EDGE"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-TRACE-LOCATORS" type="implements">
-      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#TraceLocatorType" kind="schema" title="Locator choice: local/doc/external"/></locator></from>
-      <to><locator><local id="REQ-TRACE-LOCATORS"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-TRACE-PINNING" type="implements">
-      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#TraceDocRefType" kind="schema" title="Doc locator version/git pinning"/></locator></from>
-      <to><locator><local id="REQ-TRACE-PINNING"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-SM" type="implements">
-      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#StateMachineType" kind="schema" title="Behavior section"/></locator></from>
-      <to><locator><local id="REQ-SM"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-XML" type="implements">
-      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd" kind="schema" title="RQML 2.1.0 XSD"/></locator></from>
-      <to><locator><local id="REQ-XML"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-MIXED-CONTENT" type="implements">
-      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#TextBlockType" kind="schema" title="TextBlockType mixed content"/></locator></from>
-      <to><locator><local id="REQ-MIXED-CONTENT"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-NAMESPACE" type="implements">
-      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd" kind="schema" title="RQML target namespace"/></locator></from>
-      <to><locator><local id="REQ-NAMESPACE"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-COMMENTS" type="implements">
-      <from><locator><external uri="packages/schema/versions/2.1.0/rqml-2.1.0.xsd" kind="schema" title="RQML 2.1.0 XSD"/></locator></from>
-      <to><locator><local id="REQ-COMMENTS"/></locator></to>
-    </edge>
+    <edge id="E-IMPL-DOC-ROOT" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd" fromKind="schema" fromTitle="RQML 2.1.0 XSD" to="REQ-DOC-ROOT"/>
+    <edge id="E-IMPL-VERSION" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd" fromKind="schema" fromTitle="RQML 2.1.0 XSD" to="REQ-VERSION"/>
+    <edge id="E-IMPL-REQUIRED-SECTIONS" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd" fromKind="schema" fromTitle="RQML 2.1.0 XSD" to="REQ-REQUIRED-SECTIONS"/>
+    <edge id="E-IMPL-SECTION-ORDER" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd" fromKind="schema" fromTitle="RQML 2.1.0 XSD" to="REQ-SECTION-ORDER"/>
+    <edge id="E-IMPL-ID-PATTERN" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#IdType" fromKind="schema" fromTitle="IdType pattern" to="REQ-ID-PATTERN"/>
+    <edge id="E-IMPL-STATUS-ENUM" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#StatusType" fromKind="schema" fromTitle="StatusType enumeration" to="REQ-STATUS-ENUM"/>
+    <edge id="E-IMPL-PRIORITY-ENUM" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#PriorityType" fromKind="schema" fromTitle="PriorityType enumeration" to="REQ-PRIORITY-ENUM"/>
+    <edge id="E-IMPL-REQTYPE-ENUM" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#ReqType" fromKind="schema" fromTitle="ReqType enumeration" to="REQ-REQTYPE-ENUM"/>
+    <edge id="E-IMPL-TRACETYPE-ENUM" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#TraceType" fromKind="schema" fromTitle="TraceType enumeration" to="REQ-TRACETYPE-ENUM"/>
+    <edge id="E-IMPL-TESTTYPE-ENUM" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#TestType" fromKind="schema" fromTitle="TestType enumeration" to="REQ-TESTTYPE-ENUM"/>
+    <edge id="E-IMPL-CONFIDENCE-RANGE" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#ConfidenceType" fromKind="schema" fromTitle="ConfidenceType range" to="REQ-CONFIDENCE-RANGE"/>
+    <edge id="E-IMPL-TRACE-EDGE" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#TraceEdgeType" fromKind="schema" fromTitle="TraceEdgeType" to="REQ-TRACE-EDGE"/>
+    <edge id="E-IMPL-TRACE-LOCATORS" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#TraceLocatorType" fromKind="schema" fromTitle="Locator choice: local/doc/external" to="REQ-TRACE-LOCATORS"/>
+    <edge id="E-IMPL-TRACE-PINNING" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#TraceDocRefType" fromKind="schema" fromTitle="Doc locator version/git pinning" to="REQ-TRACE-PINNING"/>
+    <edge id="E-IMPL-SM" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#StateMachineType" fromKind="schema" fromTitle="Behavior section" to="REQ-SM"/>
+    <edge id="E-IMPL-XML" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd" fromKind="schema" fromTitle="RQML 2.1.0 XSD" to="REQ-XML"/>
+    <edge id="E-IMPL-MIXED-CONTENT" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#TextBlockType" fromKind="schema" fromTitle="TextBlockType mixed content" to="REQ-MIXED-CONTENT"/>
+    <edge id="E-IMPL-NAMESPACE" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd" fromKind="schema" fromTitle="RQML target namespace" to="REQ-NAMESPACE"/>
+    <edge id="E-IMPL-COMMENTS" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd" fromKind="schema" fromTitle="RQML 2.1.0 XSD" to="REQ-COMMENTS"/>
 
     <!-- Identity and referential integrity are enforced in code
          (checkIntegrity), not by XSD keyrefs -->
-    <edge id="E-IMPL-ID-UNIQUE" type="implements">
-      <from><locator><external uri="packages/core/src/analyze/integrity.ts#checkIntegrity" kind="code" title="checkIntegrity duplicate-id rule"/></locator></from>
-      <to><locator><local id="REQ-ID-UNIQUE"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-TRACE-INTEGRITY" type="implements">
-      <from><locator><external uri="packages/core/src/analyze/integrity.ts#checkIntegrity" kind="code" title="checkIntegrity unresolved-local-ref rule"/></locator></from>
-      <to><locator><local id="REQ-TRACE-INTEGRITY"/></locator></to>
-    </edge>
+    <edge id="E-IMPL-ID-UNIQUE" type="implements" from="packages/core/src/analyze/integrity.ts#checkIntegrity" fromKind="code" fromTitle="checkIntegrity duplicate-id rule" to="REQ-ID-UNIQUE"/>
+    <edge id="E-IMPL-TRACE-INTEGRITY" type="implements" from="packages/core/src/analyze/integrity.ts#checkIntegrity" fromKind="code" fromTitle="checkIntegrity unresolved-local-ref rule" to="REQ-TRACE-INTEGRITY"/>
 
     <!-- Monorepo requirements -->
-    <edge id="E-IMPL-TS-ENGINE" type="implements">
-      <from><locator><external uri="tsconfig.base.json" kind="config" title="Shared TypeScript configuration"/></locator></from>
-      <to><locator><local id="REQ-TS-ENGINE"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-WORKSPACE" type="implements">
-      <from><locator><external uri="pnpm-workspace.yaml" kind="config" title="pnpm workspace manifest"/></locator></from>
-      <to><locator><local id="REQ-WORKSPACE"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-PACKAGE-LAYOUT" type="implements">
-      <from><locator><external uri="pnpm-workspace.yaml" kind="config" title="packages/* workspace layout"/></locator></from>
-      <to><locator><local id="REQ-PACKAGE-LAYOUT"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-CORE-DEPS" type="implements">
-      <from><locator><external uri="packages/core/package.json" kind="config" title="@rqml/core dependency manifest"/></locator></from>
-      <to><locator><local id="REQ-CORE-DEPS"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-SCHEMA-CANONICAL" type="implements">
-      <from><locator><external uri="packages/schema/src/index.ts#resolveSchema" kind="code" title="@rqml/schema resolveSchema()"/></locator></from>
-      <to><locator><local id="REQ-SCHEMA-CANONICAL"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-SCHEMA-URLS" type="implements">
-      <from><locator><external uri="apps/website/package.json#copy-assets" kind="config" title="Build-time copy of canonical XSDs and AGENTS.md to the stable URLs"/></locator></from>
-      <to><locator><local id="REQ-SCHEMA-URLS"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-VERSION-DECOUPLE" type="implements">
-      <from><locator><external uri="packages/schema/src/index.ts#SCHEMA_VERSIONS" kind="code" title="Supported spec versions list"/></locator></from>
-      <to><locator><local id="REQ-VERSION-DECOUPLE"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-BACKWARD-COMPAT" type="implements">
-      <from><locator><external uri="packages/core/src/validate/version.ts" kind="code" title="2.0.1-to-2.1.0 normalization"/></locator></from>
-      <to><locator><local id="REQ-BACKWARD-COMPAT"/></locator></to>
-    </edge>
+    <edge id="E-IMPL-TS-ENGINE" type="implements" from="./tsconfig.base.json" fromKind="config" fromTitle="Shared TypeScript configuration" to="REQ-TS-ENGINE"/>
+    <edge id="E-IMPL-WORKSPACE" type="implements" from="./pnpm-workspace.yaml" fromKind="config" fromTitle="pnpm workspace manifest" to="REQ-WORKSPACE"/>
+    <edge id="E-IMPL-PACKAGE-LAYOUT" type="implements" from="./pnpm-workspace.yaml" fromKind="config" fromTitle="packages/* workspace layout" to="REQ-PACKAGE-LAYOUT"/>
+    <edge id="E-IMPL-CORE-DEPS" type="implements" from="packages/core/package.json" fromKind="config" fromTitle="@rqml/core dependency manifest" to="REQ-CORE-DEPS"/>
+    <edge id="E-IMPL-SCHEMA-CANONICAL" type="implements" from="packages/schema/src/index.ts#resolveSchema" fromKind="code" fromTitle="@rqml/schema resolveSchema()" to="REQ-SCHEMA-CANONICAL"/>
+    <edge id="E-IMPL-SCHEMA-URLS" type="implements" from="apps/website/package.json#copy-assets" fromKind="config" fromTitle="Build-time copy of canonical XSDs and AGENTS.md to the stable URLs" to="REQ-SCHEMA-URLS"/>
+    <edge id="E-IMPL-VERSION-DECOUPLE" type="implements" from="packages/schema/src/index.ts#SCHEMA_VERSIONS" fromKind="code" fromTitle="Supported spec versions list" to="REQ-VERSION-DECOUPLE"/>
+    <edge id="E-IMPL-BACKWARD-COMPAT" type="implements" from="packages/core/src/validate/version.ts" fromKind="code" fromTitle="2.0.1-to-2.1.0 normalization" to="REQ-BACKWARD-COMPAT"/>
 
     <!-- Core engine requirements -->
-    <edge id="E-IMPL-CORE-PARSE" type="implements">
-      <from><locator><external uri="packages/core/src/parse/parse.ts#parse" kind="code" title="@rqml/core parse()"/></locator></from>
-      <to><locator><local id="REQ-CORE-PARSE"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-CORE-VALIDATE" type="implements">
-      <from><locator><external uri="packages/core/src/validate/index.ts#validate" kind="code" title="@rqml/core validate()"/></locator></from>
-      <to><locator><local id="REQ-CORE-VALIDATE"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-CORE-VALIDATE-INTEGRITY" type="implements">
-      <from><locator><external uri="packages/core/src/analyze/integrity.ts#checkIntegrity" kind="code" title="@rqml/core checkIntegrity()"/></locator></from>
-      <to><locator><local id="REQ-CORE-VALIDATE"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-CORE-SCHEMA-DETECT" type="implements">
-      <from><locator><external uri="packages/core/src/validate/version.ts#extractDocumentVersion" kind="code" title="Namespace version detection"/></locator></from>
-      <to><locator><local id="REQ-CORE-SCHEMA-DETECT"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-CORE-TRACE-GRAPH" type="implements">
-      <from><locator><external uri="packages/core/src/trace/index.ts#resolveTrace" kind="code" title="@rqml/core resolveTrace()"/></locator></from>
-      <to><locator><local id="REQ-CORE-TRACE-GRAPH"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-CORE-COVERAGE" type="implements">
-      <from><locator><external uri="packages/core/src/check/coverage.ts#computeCoverage" kind="code" title="@rqml/core computeCoverage()"/></locator></from>
-      <to><locator><local id="REQ-CORE-COVERAGE"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-CORE-DRIFT" type="implements">
-      <from><locator><external uri="packages/core/src/check/drift.ts#detectDrift" kind="code" title="@rqml/core detectDrift()"/></locator></from>
-      <to><locator><local id="REQ-CORE-DRIFT"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-CORE-API" type="implements">
-      <from><locator><external uri="packages/core/src/index.ts" kind="code" title="@rqml/core public API surface"/></locator></from>
-      <to><locator><local id="REQ-CORE-API"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-CORE-NO-LLM" type="implements">
-      <from><locator><external uri="packages/core/package.json" kind="config" title="No model SDK in the dependency tree"/></locator></from>
-      <to><locator><local id="REQ-CORE-NO-LLM"/></locator></to>
-    </edge>
+    <edge id="E-IMPL-CORE-PARSE" type="implements" from="packages/core/src/parse/parse.ts#parse" fromKind="code" fromTitle="@rqml/core parse()" to="REQ-CORE-PARSE"/>
+    <edge id="E-IMPL-CORE-VALIDATE" type="implements" from="packages/core/src/validate/index.ts#validate" fromKind="code" fromTitle="@rqml/core validate()" to="REQ-CORE-VALIDATE"/>
+    <edge id="E-IMPL-CORE-VALIDATE-INTEGRITY" type="implements" from="packages/core/src/analyze/integrity.ts#checkIntegrity" fromKind="code" fromTitle="@rqml/core checkIntegrity()" to="REQ-CORE-VALIDATE"/>
+    <edge id="E-IMPL-CORE-SCHEMA-DETECT" type="implements" from="packages/core/src/validate/version.ts#extractDocumentVersion" fromKind="code" fromTitle="Namespace version detection" to="REQ-CORE-SCHEMA-DETECT"/>
+    <edge id="E-IMPL-CORE-TRACE-GRAPH" type="implements" from="packages/core/src/trace/index.ts#resolveTrace" fromKind="code" fromTitle="@rqml/core resolveTrace()" to="REQ-CORE-TRACE-GRAPH"/>
+    <edge id="E-IMPL-CORE-COVERAGE" type="implements" from="packages/core/src/check/coverage.ts#computeCoverage" fromKind="code" fromTitle="@rqml/core computeCoverage()" to="REQ-CORE-COVERAGE"/>
+    <edge id="E-IMPL-CORE-DRIFT" type="implements" from="packages/core/src/check/drift.ts#detectDrift" fromKind="code" fromTitle="@rqml/core detectDrift()" to="REQ-CORE-DRIFT"/>
+    <edge id="E-IMPL-CORE-API" type="implements" from="packages/core/src/index.ts" fromKind="code" fromTitle="@rqml/core public API surface" to="REQ-CORE-API"/>
+    <edge id="E-IMPL-CORE-NO-LLM" type="implements" from="packages/core/package.json" fromKind="config" fromTitle="No model SDK in the dependency tree" to="REQ-CORE-NO-LLM"/>
 
     <!-- CLI requirements -->
-    <edge id="E-IMPL-CLI-BINARY" type="implements">
-      <from><locator><external uri="packages/cli/package.json#bin" kind="config" title="rqml bin entry"/></locator></from>
-      <to><locator><local id="REQ-CLI-BINARY"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-CLI-COMMANDS" type="implements">
-      <from><locator><external uri="packages/cli/src/index.ts" kind="code" title="init/validate/status/check dispatch"/></locator></from>
-      <to><locator><local id="REQ-CLI-COMMANDS"/></locator></to>
-    </edge>
-    <edge id="E-INITMERGE-REFINES" type="refines" confidence="0.9">
-      <from><locator><local id="REQ-CLI-INIT-MERGE"/></locator></from>
-      <to><locator><local id="REQ-CLI-COMMANDS"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-CLI-CHECK-GATE" type="implements">
-      <from><locator><external uri="packages/cli/src/commands/check.ts#runCheck" kind="code" title="rqml check gate"/></locator></from>
-      <to><locator><local id="REQ-CLI-CHECK-GATE"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-CLI-JSON-STATUS" type="implements">
-      <from><locator><external uri="packages/cli/src/commands/status.ts" kind="code" title="rqml status --json"/></locator></from>
-      <to><locator><local id="REQ-CLI-JSON"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-CLI-JSON-CHECK" type="implements">
-      <from><locator><external uri="packages/cli/src/commands/check.ts" kind="code" title="rqml check --json"/></locator></from>
-      <to><locator><local id="REQ-CLI-JSON"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-CLI-EXIT-CODES" type="implements">
-      <from><locator><external uri="packages/cli/src/runtime.ts#EXIT" kind="code" title="Documented exit codes"/></locator></from>
-      <to><locator><local id="REQ-CLI-EXIT-CODES"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-CLI-OFFLINE" type="implements">
-      <from><locator><external uri="packages/schema/src/index.ts" kind="code" title="Build-time inlined schema"/></locator></from>
-      <to><locator><local id="REQ-CLI-OFFLINE"/></locator></to>
-    </edge>
+    <edge id="E-IMPL-CLI-BINARY" type="implements" from="packages/cli/package.json#bin" fromKind="config" fromTitle="rqml bin entry" to="REQ-CLI-BINARY"/>
+    <edge id="E-IMPL-CLI-COMMANDS" type="implements" from="packages/cli/src/index.ts" fromKind="code" fromTitle="init/validate/status/check dispatch" to="REQ-CLI-COMMANDS"/>
+    <edge id="E-INITMERGE-REFINES" type="refines" from="REQ-CLI-INIT-MERGE" to="REQ-CLI-COMMANDS" confidence="0.9"/>
+    <edge id="E-IMPL-CLI-CHECK-GATE" type="implements" from="packages/cli/src/commands/check.ts#runCheck" fromKind="code" fromTitle="rqml check gate" to="REQ-CLI-CHECK-GATE"/>
+    <edge id="E-IMPL-CLI-JSON-STATUS" type="implements" from="packages/cli/src/commands/status.ts" fromKind="code" fromTitle="rqml status --json" to="REQ-CLI-JSON"/>
+    <edge id="E-IMPL-CLI-JSON-CHECK" type="implements" from="packages/cli/src/commands/check.ts" fromKind="code" fromTitle="rqml check --json" to="REQ-CLI-JSON"/>
+    <edge id="E-IMPL-CLI-EXIT-CODES" type="implements" from="packages/cli/src/runtime.ts#EXIT" fromKind="code" fromTitle="Documented exit codes" to="REQ-CLI-EXIT-CODES"/>
+    <edge id="E-IMPL-CLI-OFFLINE" type="implements" from="packages/schema/src/index.ts" fromKind="code" fromTitle="Build-time inlined schema" to="REQ-CLI-OFFLINE"/>
 
     <!-- MCP requirements -->
-    <edge id="E-IMPL-MCP-SERVER" type="implements">
-      <from><locator><external uri="packages/mcp/src/index.ts" kind="code" title="@rqml/mcp stdio server"/></locator></from>
-      <to><locator><local id="REQ-MCP-SERVER"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-MCP-PARITY" type="implements">
-      <from><locator><external uri="packages/mcp/src/tools.ts#callTool" kind="code" title="Tools backed by @rqml/core"/></locator></from>
-      <to><locator><local id="REQ-MCP-PARITY"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-MCP-READONLY" type="implements">
-      <from><locator><external uri="packages/mcp/src/tools.ts" kind="code" title="Read-only tool handlers"/></locator></from>
-      <to><locator><local id="REQ-MCP-READONLY"/></locator></to>
-    </edge>
+    <edge id="E-IMPL-MCP-SERVER" type="implements" from="packages/mcp/src/index.ts" fromKind="code" fromTitle="@rqml/mcp stdio server" to="REQ-MCP-SERVER"/>
+    <edge id="E-IMPL-MCP-PARITY" type="implements" from="packages/mcp/src/tools.ts#callTool" fromKind="code" fromTitle="Tools backed by @rqml/core" to="REQ-MCP-PARITY"/>
+    <edge id="E-IMPL-MCP-READONLY" type="implements" from="packages/mcp/src/tools.ts" fromKind="code" fromTitle="Read-only tool handlers" to="REQ-MCP-READONLY"/>
 
     <!-- Enforcement and process requirements -->
-    <edge id="E-IMPL-ENF-PRIMITIVES" type="implements">
-      <from><locator><external uri="packages/cli/src/commands/check.ts" kind="code" title="Gate + status + drift primitives"/></locator></from>
-      <to><locator><local id="REQ-ENFORCE-PRIMITIVES"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-ENF-DETERMINISM" type="implements">
-      <from><locator><external uri="packages/core/src/check/index.ts" kind="code" title="Pure deterministic check module"/></locator></from>
-      <to><locator><local id="REQ-ENFORCE-DETERMINISM"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-ENF-CODE-TRACE" type="implements">
-      <from><locator><external uri="packages/core/src/check/drift.ts#implementsLinks" kind="code" title="implements-edge extraction"/></locator></from>
-      <to><locator><local id="REQ-ENFORCE-CODE-TRACE"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-ENF-STRICTNESS" type="implements">
-      <from><locator><external uri="packages/cli/src/runtime.ts#Strictness" kind="code" title="relaxed/standard/strict/certified levels"/></locator></from>
-      <to><locator><local id="REQ-ENFORCE-STRICTNESS"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-STRICTNESS" type="implements">
-      <from><locator><external uri="packages/core/src/lint/index.ts#scaleSeverity" kind="code" title="Strictness-scaled lint severity"/></locator></from>
-      <to><locator><local id="REQ-STRICTNESS"/></locator></to>
-    </edge>
+    <edge id="E-IMPL-ENF-PRIMITIVES" type="implements" from="packages/cli/src/commands/check.ts" fromKind="code" fromTitle="Gate + status + drift primitives" to="REQ-ENFORCE-PRIMITIVES"/>
+    <edge id="E-IMPL-ENF-DETERMINISM" type="implements" from="packages/core/src/check/index.ts" fromKind="code" fromTitle="Pure deterministic check module" to="REQ-ENFORCE-DETERMINISM"/>
+    <edge id="E-IMPL-ENF-CODE-TRACE" type="implements" from="packages/core/src/check/drift.ts#implementsLinks" fromKind="code" fromTitle="implements-edge extraction" to="REQ-ENFORCE-CODE-TRACE"/>
+    <edge id="E-IMPL-ENF-STRICTNESS" type="implements" from="packages/cli/src/runtime.ts#Strictness" fromKind="code" fromTitle="relaxed/standard/strict/certified levels" to="REQ-ENFORCE-STRICTNESS"/>
+    <edge id="E-IMPL-STRICTNESS" type="implements" from="packages/core/src/lint/index.ts#scaleSeverity" fromKind="code" fromTitle="Strictness-scaled lint severity" to="REQ-STRICTNESS"/>
 
     <!-- ========================================================= -->
     <!-- VERIFIEDBY — executable tests realizing verification       -->
     <!-- ========================================================= -->
-    <edge id="E-VER-CORE-PARSE" type="verifiedBy">
-      <from><locator><local id="REQ-CORE-PARSE"/></locator></from>
-      <to><locator><external uri="packages/core/test/parse.test.ts" kind="test" title="Parse round-trip tests"/></locator></to>
-    </edge>
-    <edge id="E-VER-CORE-VALIDATE" type="verifiedBy">
-      <from><locator><local id="REQ-CORE-VALIDATE"/></locator></from>
-      <to><locator><external uri="packages/core/test/validate.test.ts" kind="test" title="XSD validation tests"/></locator></to>
-    </edge>
-    <edge id="E-VER-CORE-SCHEMA-DETECT" type="verifiedBy">
-      <from><locator><local id="REQ-CORE-SCHEMA-DETECT"/></locator></from>
-      <to><locator><external uri="packages/core/test/version.test.ts" kind="test" title="Version detection tests"/></locator></to>
-    </edge>
-    <edge id="E-VER-CORE-TRACE-GRAPH" type="verifiedBy">
-      <from><locator><local id="REQ-CORE-TRACE-GRAPH"/></locator></from>
-      <to><locator><external uri="packages/core/test/trace.test.ts" kind="test" title="Trace resolution tests"/></locator></to>
-    </edge>
-    <edge id="E-VER-CORE-COVERAGE" type="verifiedBy">
-      <from><locator><local id="REQ-CORE-COVERAGE"/></locator></from>
-      <to><locator><external uri="packages/core/test/coverage.test.ts" kind="test" title="Coverage computation tests"/></locator></to>
-    </edge>
-    <edge id="E-VER-CORE-DRIFT" type="verifiedBy">
-      <from><locator><local id="REQ-CORE-DRIFT"/></locator></from>
-      <to><locator><external uri="packages/core/test/drift.test.ts" kind="test" title="Drift detection tests (realizes TC-DRIFT-DETECT)"/></locator></to>
-    </edge>
-    <edge id="E-VER-ID-UNIQUE" type="verifiedBy">
-      <from><locator><local id="REQ-ID-UNIQUE"/></locator></from>
-      <to><locator><external uri="packages/core/test/integrity.test.ts" kind="test" title="Duplicate-id tests (realizes TC-UNIQUE-ID)"/></locator></to>
-    </edge>
-    <edge id="E-VER-TRACE-INTEGRITY" type="verifiedBy">
-      <from><locator><local id="REQ-TRACE-INTEGRITY"/></locator></from>
-      <to><locator><external uri="packages/core/test/integrity.test.ts" kind="test" title="Dangling-ref tests (realizes TC-TRACE-RESOLVE)"/></locator></to>
-    </edge>
-    <edge id="E-VER-BACKWARD-COMPAT" type="verifiedBy">
-      <from><locator><local id="REQ-BACKWARD-COMPAT"/></locator></from>
-      <to><locator><external uri="packages/core/test/version.test.ts" kind="test" title="2.0.1 document normalization tests"/></locator></to>
-    </edge>
-    <edge id="E-VER-CLI-EXIT-CODES" type="verifiedBy">
-      <from><locator><local id="REQ-CLI-EXIT-CODES"/></locator></from>
-      <to><locator><external uri="packages/cli/test/runtime.test.ts" kind="test" title="Exit-code contract tests"/></locator></to>
-    </edge>
-    <edge id="E-VER-CLI-JSON" type="verifiedBy">
-      <from><locator><local id="REQ-CLI-JSON"/></locator></from>
-      <to><locator><external uri="packages/cli/test/runtime.test.ts" kind="test" title="--json flag tests"/></locator></to>
-    </edge>
-    <edge id="E-VER-SCHEMA-CANONICAL" type="verifiedBy">
-      <from><locator><local id="REQ-SCHEMA-CANONICAL"/></locator></from>
-      <to><locator><external uri="packages/schema/test/schema.test.ts" kind="test" title="Inlined-equals-canonical tests"/></locator></to>
-    </edge>
-    <edge id="E-VER-STRICTNESS" type="verifiedBy">
-      <from><locator><local id="REQ-STRICTNESS"/></locator></from>
-      <to><locator><external uri="packages/core/test/lint.test.ts" kind="test" title="Strictness severity-scaling tests"/></locator></to>
-    </edge>
-    <edge id="E-VER-ENF-STRICTNESS" type="verifiedBy">
-      <from><locator><local id="REQ-ENFORCE-STRICTNESS"/></locator></from>
-      <to><locator><external uri="packages/cli/test/runtime.test.ts" kind="test" title="Strictness flag parsing tests"/></locator></to>
-    </edge>
+    <edge id="E-VER-CORE-PARSE" type="verifiedBy" from="REQ-CORE-PARSE" to="packages/core/test/parse.test.ts" toKind="test" toTitle="Parse round-trip tests"/>
+    <edge id="E-VER-CORE-VALIDATE" type="verifiedBy" from="REQ-CORE-VALIDATE" to="packages/core/test/validate.test.ts" toKind="test" toTitle="XSD validation tests"/>
+    <edge id="E-VER-CORE-SCHEMA-DETECT" type="verifiedBy" from="REQ-CORE-SCHEMA-DETECT" to="packages/core/test/version.test.ts" toKind="test" toTitle="Version detection tests"/>
+    <edge id="E-VER-CORE-TRACE-GRAPH" type="verifiedBy" from="REQ-CORE-TRACE-GRAPH" to="packages/core/test/trace.test.ts" toKind="test" toTitle="Trace resolution tests"/>
+    <edge id="E-VER-CORE-COVERAGE" type="verifiedBy" from="REQ-CORE-COVERAGE" to="packages/core/test/coverage.test.ts" toKind="test" toTitle="Coverage computation tests"/>
+    <edge id="E-VER-CORE-DRIFT" type="verifiedBy" from="REQ-CORE-DRIFT" to="packages/core/test/drift.test.ts" toKind="test" toTitle="Drift detection tests (realizes TC-DRIFT-DETECT)"/>
+    <edge id="E-VER-ID-UNIQUE" type="verifiedBy" from="REQ-ID-UNIQUE" to="packages/core/test/integrity.test.ts" toKind="test" toTitle="Duplicate-id tests (realizes TC-UNIQUE-ID)"/>
+    <edge id="E-VER-TRACE-INTEGRITY" type="verifiedBy" from="REQ-TRACE-INTEGRITY" to="packages/core/test/integrity.test.ts" toKind="test" toTitle="Dangling-ref tests (realizes TC-TRACE-RESOLVE)"/>
+    <edge id="E-VER-BACKWARD-COMPAT" type="verifiedBy" from="REQ-BACKWARD-COMPAT" to="packages/core/test/version.test.ts" toKind="test" toTitle="2.0.1 document normalization tests"/>
+    <edge id="E-VER-CLI-EXIT-CODES" type="verifiedBy" from="REQ-CLI-EXIT-CODES" to="packages/cli/test/runtime.test.ts" toKind="test" toTitle="Exit-code contract tests"/>
+    <edge id="E-VER-CLI-JSON" type="verifiedBy" from="REQ-CLI-JSON" to="packages/cli/test/runtime.test.ts" toKind="test" toTitle="--json flag tests"/>
+    <edge id="E-VER-SCHEMA-CANONICAL" type="verifiedBy" from="REQ-SCHEMA-CANONICAL" to="packages/schema/test/schema.test.ts" toKind="test" toTitle="Inlined-equals-canonical tests"/>
+    <edge id="E-VER-STRICTNESS" type="verifiedBy" from="REQ-STRICTNESS" to="packages/core/test/lint.test.ts" toKind="test" toTitle="Strictness severity-scaling tests"/>
+    <edge id="E-VER-ENF-STRICTNESS" type="verifiedBy" from="REQ-ENFORCE-STRICTNESS" to="packages/cli/test/runtime.test.ts" toKind="test" toTitle="Strictness flag parsing tests"/>
 
     <!-- ========================================================= -->
     <!-- AGENT-LOOP REQUIREMENTS (proposed 2026-06-09)              -->
     <!-- ========================================================= -->
 
     <!-- Loop requirements satisfy goals -->
-    <edge id="E-SMINTEG-QGOAL" type="satisfies" confidence="0.8">
-      <from><locator><local id="REQ-CORE-SM-INTEGRITY"/></locator></from>
-      <to><locator><local id="QGOAL-VALIDATABLE"/></locator></to>
-    </edge>
-    <edge id="E-BASELINE-ENFORCE" type="satisfies" confidence="0.9">
-      <from><locator><local id="REQ-CORE-DRIFT-BASELINE"/></locator></from>
-      <to><locator><local id="GOAL-ENFORCEMENT"/></locator></to>
-    </edge>
-    <edge id="E-STATUSAWARE-ENFORCE" type="satisfies" confidence="0.7">
-      <from><locator><local id="REQ-CORE-STATUS-AWARE"/></locator></from>
-      <to><locator><local id="GOAL-ENFORCEMENT"/></locator></to>
-    </edge>
-    <edge id="E-LINK-TRACE-GOAL" type="satisfies" confidence="0.9">
-      <from><locator><local id="REQ-LOOP-LINK"/></locator></from>
-      <to><locator><local id="GOAL-TRACEABILITY"/></locator></to>
-    </edge>
-    <edge id="E-RELINK-TRACE-GOAL" type="satisfies" confidence="0.8">
-      <from><locator><local id="REQ-LOOP-RELINK"/></locator></from>
-      <to><locator><local id="GOAL-TRACEABILITY"/></locator></to>
-    </edge>
-    <edge id="E-SHOW-CONTEXT" type="satisfies" confidence="0.9">
-      <from><locator><local id="REQ-LOOP-SHOW"/></locator></from>
-      <to><locator><local id="GOAL-LLM-CONTEXT"/></locator></to>
-    </edge>
-    <edge id="E-IMPACT-TRACE-GOAL" type="satisfies" confidence="0.9">
-      <from><locator><local id="REQ-LOOP-IMPACT"/></locator></from>
-      <to><locator><local id="GOAL-TRACEABILITY"/></locator></to>
-    </edge>
-    <edge id="E-SKELETON-CEREMONY" type="satisfies" confidence="0.7">
-      <from><locator><local id="REQ-LOOP-SKELETON"/></locator></from>
-      <to><locator><local id="GOAL-LOW-CEREMONY"/></locator></to>
-    </edge>
-    <edge id="E-PATHINPUT-CONTEXT" type="satisfies" confidence="0.7">
-      <from><locator><local id="REQ-MCP-PATH-INPUT"/></locator></from>
-      <to><locator><local id="GOAL-LLM-CONTEXT"/></locator></to>
-    </edge>
-    <edge id="E-TEMPLATE-ENFORCE" type="satisfies" confidence="0.7">
-      <from><locator><local id="REQ-AGENTS-TEMPLATE"/></locator></from>
-      <to><locator><local id="GOAL-ENFORCEMENT"/></locator></to>
-    </edge>
+    <edge id="E-SMINTEG-QGOAL" type="satisfies" from="REQ-CORE-SM-INTEGRITY" to="QGOAL-VALIDATABLE" confidence="0.8"/>
+    <edge id="E-BASELINE-ENFORCE" type="satisfies" from="REQ-CORE-DRIFT-BASELINE" to="GOAL-ENFORCEMENT" confidence="0.9"/>
+    <edge id="E-STATUSAWARE-ENFORCE" type="satisfies" from="REQ-CORE-STATUS-AWARE" to="GOAL-ENFORCEMENT" confidence="0.7"/>
+    <edge id="E-LINK-TRACE-GOAL" type="satisfies" from="REQ-LOOP-LINK" to="GOAL-TRACEABILITY" confidence="0.9"/>
+    <edge id="E-RELINK-TRACE-GOAL" type="satisfies" from="REQ-LOOP-RELINK" to="GOAL-TRACEABILITY" confidence="0.8"/>
+    <edge id="E-SHOW-CONTEXT" type="satisfies" from="REQ-LOOP-SHOW" to="GOAL-LLM-CONTEXT" confidence="0.9"/>
+    <edge id="E-IMPACT-TRACE-GOAL" type="satisfies" from="REQ-LOOP-IMPACT" to="GOAL-TRACEABILITY" confidence="0.9"/>
+    <edge id="E-SKELETON-CEREMONY" type="satisfies" from="REQ-LOOP-SKELETON" to="GOAL-LOW-CEREMONY" confidence="0.7"/>
+    <edge id="E-PATHINPUT-CONTEXT" type="satisfies" from="REQ-MCP-PATH-INPUT" to="GOAL-LLM-CONTEXT" confidence="0.7"/>
+    <edge id="E-TEMPLATE-ENFORCE" type="satisfies" from="REQ-AGENTS-TEMPLATE" to="GOAL-ENFORCEMENT" confidence="0.7"/>
 
     <!-- Loop requirements refine or depend on existing requirements -->
-    <edge id="E-SMINTEG-REFINES" type="refines" confidence="0.9">
-      <from><locator><local id="REQ-CORE-SM-INTEGRITY"/></locator></from>
-      <to><locator><local id="REQ-CORE-VALIDATE"/></locator></to>
-    </edge>
-    <edge id="E-BASELINE-REFINES" type="refines" confidence="0.9">
-      <from><locator><local id="REQ-CORE-DRIFT-BASELINE"/></locator></from>
-      <to><locator><local id="REQ-CORE-DRIFT"/></locator></to>
-    </edge>
-    <edge id="E-STATUSAWARE-DEP" type="dependsOn" confidence="0.9">
-      <from><locator><local id="REQ-CORE-STATUS-AWARE"/></locator></from>
-      <to><locator><local id="REQ-STATUS-ENUM"/></locator></to>
-    </edge>
-    <edge id="E-LINK-BASELINE-DEP" type="dependsOn" confidence="0.9">
-      <from><locator><local id="REQ-LOOP-LINK"/></locator></from>
-      <to><locator><local id="REQ-CORE-DRIFT-BASELINE"/></locator></to>
-    </edge>
-    <edge id="E-RELINK-REFINES" type="refines" confidence="0.9">
-      <from><locator><local id="REQ-LOOP-RELINK"/></locator></from>
-      <to><locator><local id="REQ-LOOP-LINK"/></locator></to>
-    </edge>
-    <edge id="E-RELINK-BASELINE-DEP" type="dependsOn" confidence="0.9">
-      <from><locator><local id="REQ-LOOP-RELINK"/></locator></from>
-      <to><locator><local id="REQ-CORE-DRIFT-BASELINE"/></locator></to>
-    </edge>
-    <edge id="E-IMPACT-REFINES" type="refines" confidence="0.9">
-      <from><locator><local id="REQ-LOOP-IMPACT"/></locator></from>
-      <to><locator><local id="REQ-CORE-TRACE-GRAPH"/></locator></to>
-    </edge>
-    <edge id="E-SKELETON-REFINES" type="refines" confidence="0.9">
-      <from><locator><local id="REQ-LOOP-SKELETON"/></locator></from>
-      <to><locator><local id="REQ-MCP-TOOLS"/></locator></to>
-    </edge>
+    <edge id="E-SMINTEG-REFINES" type="refines" from="REQ-CORE-SM-INTEGRITY" to="REQ-CORE-VALIDATE" confidence="0.9"/>
+    <edge id="E-BASELINE-REFINES" type="refines" from="REQ-CORE-DRIFT-BASELINE" to="REQ-CORE-DRIFT" confidence="0.9"/>
+    <edge id="E-STATUSAWARE-DEP" type="dependsOn" from="REQ-CORE-STATUS-AWARE" to="REQ-STATUS-ENUM" confidence="0.9"/>
+    <edge id="E-LINK-BASELINE-DEP" type="dependsOn" from="REQ-LOOP-LINK" to="REQ-CORE-DRIFT-BASELINE" confidence="0.9"/>
+    <edge id="E-RELINK-REFINES" type="refines" from="REQ-LOOP-RELINK" to="REQ-LOOP-LINK" confidence="0.9"/>
+    <edge id="E-RELINK-BASELINE-DEP" type="dependsOn" from="REQ-LOOP-RELINK" to="REQ-CORE-DRIFT-BASELINE" confidence="0.9"/>
+    <edge id="E-IMPACT-REFINES" type="refines" from="REQ-LOOP-IMPACT" to="REQ-CORE-TRACE-GRAPH" confidence="0.9"/>
+    <edge id="E-SKELETON-REFINES" type="refines" from="REQ-LOOP-SKELETON" to="REQ-MCP-TOOLS" confidence="0.9"/>
 
     <!-- Loop requirements mitigate risks and obstacles -->
-    <edge id="E-LINK-DRIFT-RISK" type="mitigates" confidence="0.8">
-      <from><locator><local id="REQ-LOOP-LINK"/></locator></from>
-      <to><locator><local id="RISK-DRIFT"/></locator></to>
-    </edge>
-    <edge id="E-LINK-VOLUNTARY" type="mitigates" confidence="0.8">
-      <from><locator><local id="REQ-LOOP-LINK"/></locator></from>
-      <to><locator><local id="OBS-VOLUNTARY"/></locator></to>
-    </edge>
-    <edge id="E-RELINK-DRIFT-RISK" type="mitigates" confidence="0.8">
-      <from><locator><local id="REQ-LOOP-RELINK"/></locator></from>
-      <to><locator><local id="RISK-DRIFT"/></locator></to>
-    </edge>
-    <edge id="E-TEMPLATE-VOLUNTARY" type="mitigates" confidence="0.7">
-      <from><locator><local id="REQ-AGENTS-TEMPLATE"/></locator></from>
-      <to><locator><local id="OBS-VOLUNTARY"/></locator></to>
-    </edge>
+    <edge id="E-LINK-DRIFT-RISK" type="mitigates" from="REQ-LOOP-LINK" to="RISK-DRIFT" confidence="0.8"/>
+    <edge id="E-LINK-VOLUNTARY" type="mitigates" from="REQ-LOOP-LINK" to="OBS-VOLUNTARY" confidence="0.8"/>
+    <edge id="E-RELINK-DRIFT-RISK" type="mitigates" from="REQ-LOOP-RELINK" to="RISK-DRIFT" confidence="0.8"/>
+    <edge id="E-TEMPLATE-VOLUNTARY" type="mitigates" from="REQ-AGENTS-TEMPLATE" to="OBS-VOLUNTARY" confidence="0.7"/>
 
     <!-- Loop requirements verified by planned tests -->
-    <edge id="E-SMINTEG-TEST" type="verifiedBy">
-      <from><locator><local id="REQ-CORE-SM-INTEGRITY"/></locator></from>
-      <to><locator><local id="TC-SM-INTEGRITY"/></locator></to>
-    </edge>
-    <edge id="E-BASELINE-TEST" type="verifiedBy">
-      <from><locator><local id="REQ-CORE-DRIFT-BASELINE"/></locator></from>
-      <to><locator><local id="TC-DRIFT-CHANGED"/></locator></to>
-    </edge>
-    <edge id="E-LINK-TEST" type="verifiedBy">
-      <from><locator><local id="REQ-LOOP-LINK"/></locator></from>
-      <to><locator><local id="TC-LINK-ROUNDTRIP"/></locator></to>
-    </edge>
-    <edge id="E-RELINK-UPDATE-TEST" type="verifiedBy">
-      <from><locator><local id="REQ-LOOP-RELINK"/></locator></from>
-      <to><locator><local id="TC-RELINK-UPDATE"/></locator></to>
-    </edge>
-    <edge id="E-RELINK-REFRESH-TEST" type="verifiedBy">
-      <from><locator><local id="REQ-LOOP-RELINK"/></locator></from>
-      <to><locator><local id="TC-RELINK-REFRESH"/></locator></to>
-    </edge>
-    <edge id="E-SHOW-TEST" type="verifiedBy">
-      <from><locator><local id="REQ-LOOP-SHOW"/></locator></from>
-      <to><locator><local id="TC-SHOW-SLICE"/></locator></to>
-    </edge>
-    <edge id="E-IMPACT-TEST" type="verifiedBy">
-      <from><locator><local id="REQ-LOOP-IMPACT"/></locator></from>
-      <to><locator><local id="TC-IMPACT-TRANSITIVE"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-CORE-SM-INTEGRITY" type="implements">
-      <from><locator><external uri="packages/core/src/analyze/integrity.ts#checkIntegrity" kind="code"/></locator></from>
-      <to><locator><local id="REQ-CORE-SM-INTEGRITY"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-SM-INITIAL" type="implements">
-      <from><locator><external uri="packages/core/src/analyze/integrity.ts#checkIntegrity" kind="code"/></locator></from>
-      <to><locator><local id="REQ-SM-INITIAL"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-SM-FINAL" type="implements">
-      <from><locator><external uri="packages/core/src/analyze/integrity.ts#checkIntegrity" kind="code"/></locator></from>
-      <to><locator><local id="REQ-SM-FINAL"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-TRANSITION-REFS" type="implements">
-      <from><locator><external uri="packages/core/src/analyze/integrity.ts#checkIntegrity" kind="code"/></locator></from>
-      <to><locator><local id="REQ-TRANSITION-REFS"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-CORE-DRIFT-BASELINE" type="implements">
-      <from><locator><external uri="packages/core/src/check/drift.ts#computeBaseline" kind="code"/></locator></from>
-      <to><locator><local id="REQ-CORE-DRIFT-BASELINE"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-CORE-STATUS-AWARE" type="implements">
-      <from><locator><external uri="packages/core/src/check/coverage.ts#computeCoverage" kind="code"/></locator></from>
-      <to><locator><local id="REQ-CORE-STATUS-AWARE"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-LOOP-LINK-CORE" type="implements">
-      <from><locator><external uri="packages/core/src/edit/link.ts#appendTraceEdge" kind="code"/></locator></from>
-      <to><locator><local id="REQ-LOOP-LINK"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-LOOP-LINK-CLI" type="implements">
-      <from><locator><external uri="packages/cli/src/commands/link.ts#runLink" kind="code"/></locator></from>
-      <to><locator><local id="REQ-LOOP-LINK"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-LOOP-SHOW-CORE" type="implements">
-      <from><locator><external uri="packages/core/src/export/extract.ts#extractArtifact" kind="code"/></locator></from>
-      <to><locator><local id="REQ-LOOP-SHOW"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-LOOP-SHOW-CLI" type="implements">
-      <from><locator><external uri="packages/cli/src/commands/show.ts#runShow" kind="code"/></locator></from>
-      <to><locator><local id="REQ-LOOP-SHOW"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-LOOP-IMPACT-CORE" type="implements">
-      <from><locator><external uri="packages/core/src/trace/impact.ts#impactOf" kind="code"/></locator></from>
-      <to><locator><local id="REQ-LOOP-IMPACT"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-LOOP-IMPACT-CLI" type="implements">
-      <from><locator><external uri="packages/cli/src/commands/impact.ts#runImpact" kind="code"/></locator></from>
-      <to><locator><local id="REQ-LOOP-IMPACT"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-LOOP-SKELETON-CORE" type="implements">
-      <from><locator><external uri="packages/core/src/export/skeleton.ts#skeleton" kind="code"/></locator></from>
-      <to><locator><local id="REQ-LOOP-SKELETON"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-LOOP-SKELETON-CLI" type="implements">
-      <from><locator><external uri="packages/cli/src/commands/skeleton.ts#runSkeleton" kind="code"/></locator></from>
-      <to><locator><local id="REQ-LOOP-SKELETON"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-MCP-PATH-INPUT" type="implements">
-      <from><locator><external uri="packages/mcp/src/tools.ts#resolveSpec" kind="code"/></locator></from>
-      <to><locator><local id="REQ-MCP-PATH-INPUT"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-MCP-TOOLS" type="implements">
-      <from><locator><external uri="packages/mcp/src/tools.ts#TOOLS" kind="code"/></locator></from>
-      <to><locator><local id="REQ-MCP-TOOLS"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-AGENTS-TEMPLATE" type="implements">
-      <from><locator><external uri="packages/schema/templates/AGENTS.md" kind="doc"/></locator></from>
-      <to><locator><local id="REQ-AGENTS-TEMPLATE"/></locator></to>
-    </edge>
-    <edge id="E-VER-CORE-SM-INTEGRITY" type="verifiedBy">
-      <from><locator><local id="REQ-CORE-SM-INTEGRITY"/></locator></from>
-      <to><locator><external uri="packages/core/test/integrity.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-VER-SM-INITIAL-CODE" type="verifiedBy">
-      <from><locator><local id="REQ-SM-INITIAL"/></locator></from>
-      <to><locator><external uri="packages/core/test/integrity.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-VER-SM-FINAL-CODE" type="verifiedBy">
-      <from><locator><local id="REQ-SM-FINAL"/></locator></from>
-      <to><locator><external uri="packages/core/test/integrity.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-VER-TRANSITION-REFS-CODE" type="verifiedBy">
-      <from><locator><local id="REQ-TRANSITION-REFS"/></locator></from>
-      <to><locator><external uri="packages/core/test/integrity.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-VER-CORE-DRIFT-BASELINE" type="verifiedBy">
-      <from><locator><local id="REQ-CORE-DRIFT-BASELINE"/></locator></from>
-      <to><locator><external uri="packages/core/test/drift.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-VER-DRIFT-BASELINE-E2E" type="verifiedBy">
-      <from><locator><local id="REQ-CORE-DRIFT-BASELINE"/></locator></from>
-      <to><locator><external uri="packages/cli/test/commands.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-VER-CORE-STATUS-AWARE" type="verifiedBy">
-      <from><locator><local id="REQ-CORE-STATUS-AWARE"/></locator></from>
-      <to><locator><external uri="packages/core/test/coverage.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-VER-LOOP-LINK-CORE" type="verifiedBy">
-      <from><locator><local id="REQ-LOOP-LINK"/></locator></from>
-      <to><locator><external uri="packages/core/test/link.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-VER-LOOP-LINK-CLI" type="verifiedBy">
-      <from><locator><local id="REQ-LOOP-LINK"/></locator></from>
-      <to><locator><external uri="packages/cli/test/commands.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-VER-LOOP-SHOW" type="verifiedBy">
-      <from><locator><local id="REQ-LOOP-SHOW"/></locator></from>
-      <to><locator><external uri="packages/core/test/extract.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-VER-LOOP-IMPACT" type="verifiedBy">
-      <from><locator><local id="REQ-LOOP-IMPACT"/></locator></from>
-      <to><locator><external uri="packages/core/test/impact.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-VER-LOOP-SKELETON" type="verifiedBy">
-      <from><locator><local id="REQ-LOOP-SKELETON"/></locator></from>
-      <to><locator><external uri="packages/core/test/skeleton.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-VER-MCP-PATH-INPUT" type="verifiedBy">
-      <from><locator><local id="REQ-MCP-PATH-INPUT"/></locator></from>
-      <to><locator><external uri="packages/mcp/test/tools.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-VER-MCP-TOOLS-CODE" type="verifiedBy">
-      <from><locator><local id="REQ-MCP-TOOLS"/></locator></from>
-      <to><locator><external uri="packages/mcp/test/tools.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-VER-MCP-PARITY-CODE" type="verifiedBy">
-      <from><locator><local id="REQ-MCP-PARITY"/></locator></from>
-      <to><locator><external uri="packages/mcp/test/tools.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-LOOP-RELINK-CORE" type="implements">
-      <from><locator><external uri="packages/core/src/edit/link.ts#updateTraceEdge" kind="code"/></locator></from>
-      <to><locator><local id="REQ-LOOP-RELINK"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-LOOP-RELINK-CLI" type="implements">
-      <from><locator><external uri="packages/cli/src/commands/link.ts#runLink" kind="code"/></locator></from>
-      <to><locator><local id="REQ-LOOP-RELINK"/></locator></to>
-    </edge>
-    <edge id="E-VER-LOOP-RELINK-CORE" type="verifiedBy">
-      <from><locator><local id="REQ-LOOP-RELINK"/></locator></from>
-      <to><locator><external uri="packages/core/test/link.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-VER-LOOP-RELINK-CLI" type="verifiedBy">
-      <from><locator><local id="REQ-LOOP-RELINK"/></locator></from>
-      <to><locator><external uri="packages/cli/test/commands.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-LOOP-RELINK-MCP" type="implements">
-      <from><locator><external uri="packages/mcp/src/tools.ts#callTool" kind="code"/></locator></from>
-      <to><locator><local id="REQ-LOOP-RELINK"/></locator></to>
-    </edge>
-    <edge id="E-VER-LOOP-RELINK-MCP" type="verifiedBy">
-      <from><locator><local id="REQ-LOOP-RELINK"/></locator></from>
-      <to><locator><external uri="packages/mcp/test/tools.test.ts" kind="test"/></locator></to>
-    </edge>
+    <edge id="E-SMINTEG-TEST" type="verifiedBy" from="REQ-CORE-SM-INTEGRITY" to="TC-SM-INTEGRITY"/>
+    <edge id="E-BASELINE-TEST" type="verifiedBy" from="REQ-CORE-DRIFT-BASELINE" to="TC-DRIFT-CHANGED"/>
+    <edge id="E-LINK-TEST" type="verifiedBy" from="REQ-LOOP-LINK" to="TC-LINK-ROUNDTRIP"/>
+    <edge id="E-RELINK-UPDATE-TEST" type="verifiedBy" from="REQ-LOOP-RELINK" to="TC-RELINK-UPDATE"/>
+    <edge id="E-RELINK-REFRESH-TEST" type="verifiedBy" from="REQ-LOOP-RELINK" to="TC-RELINK-REFRESH"/>
+    <edge id="E-SHOW-TEST" type="verifiedBy" from="REQ-LOOP-SHOW" to="TC-SHOW-SLICE"/>
+    <edge id="E-IMPACT-TEST" type="verifiedBy" from="REQ-LOOP-IMPACT" to="TC-IMPACT-TRANSITIVE"/>
+    <edge id="E-IMPL-CORE-SM-INTEGRITY" type="implements" from="packages/core/src/analyze/integrity.ts#checkIntegrity" fromKind="code" to="REQ-CORE-SM-INTEGRITY"/>
+    <edge id="E-IMPL-SM-INITIAL" type="implements" from="packages/core/src/analyze/integrity.ts#checkIntegrity" fromKind="code" to="REQ-SM-INITIAL"/>
+    <edge id="E-IMPL-SM-FINAL" type="implements" from="packages/core/src/analyze/integrity.ts#checkIntegrity" fromKind="code" to="REQ-SM-FINAL"/>
+    <edge id="E-IMPL-TRANSITION-REFS" type="implements" from="packages/core/src/analyze/integrity.ts#checkIntegrity" fromKind="code" to="REQ-TRANSITION-REFS"/>
+    <edge id="E-IMPL-CORE-DRIFT-BASELINE" type="implements" from="packages/core/src/check/drift.ts#computeBaseline" fromKind="code" to="REQ-CORE-DRIFT-BASELINE"/>
+    <edge id="E-IMPL-CORE-STATUS-AWARE" type="implements" from="packages/core/src/check/coverage.ts#computeCoverage" fromKind="code" to="REQ-CORE-STATUS-AWARE"/>
+    <edge id="E-IMPL-LOOP-LINK-CORE" type="implements" from="packages/core/src/edit/link.ts#appendTraceEdge" fromKind="code" to="REQ-LOOP-LINK"/>
+    <edge id="E-IMPL-LOOP-LINK-CLI" type="implements" from="packages/cli/src/commands/link.ts#runLink" fromKind="code" to="REQ-LOOP-LINK"/>
+    <edge id="E-IMPL-LOOP-SHOW-CORE" type="implements" from="packages/core/src/export/extract.ts#extractArtifact" fromKind="code" to="REQ-LOOP-SHOW"/>
+    <edge id="E-IMPL-LOOP-SHOW-CLI" type="implements" from="packages/cli/src/commands/show.ts#runShow" fromKind="code" to="REQ-LOOP-SHOW"/>
+    <edge id="E-IMPL-LOOP-IMPACT-CORE" type="implements" from="packages/core/src/trace/impact.ts#impactOf" fromKind="code" to="REQ-LOOP-IMPACT"/>
+    <edge id="E-IMPL-LOOP-IMPACT-CLI" type="implements" from="packages/cli/src/commands/impact.ts#runImpact" fromKind="code" to="REQ-LOOP-IMPACT"/>
+    <edge id="E-IMPL-LOOP-SKELETON-CORE" type="implements" from="packages/core/src/export/skeleton.ts#skeleton" fromKind="code" to="REQ-LOOP-SKELETON"/>
+    <edge id="E-IMPL-LOOP-SKELETON-CLI" type="implements" from="packages/cli/src/commands/skeleton.ts#runSkeleton" fromKind="code" to="REQ-LOOP-SKELETON"/>
+    <edge id="E-IMPL-MCP-PATH-INPUT" type="implements" from="packages/mcp/src/tools.ts#resolveSpec" fromKind="code" to="REQ-MCP-PATH-INPUT"/>
+    <edge id="E-IMPL-MCP-TOOLS" type="implements" from="packages/mcp/src/tools.ts#TOOLS" fromKind="code" to="REQ-MCP-TOOLS"/>
+    <edge id="E-IMPL-AGENTS-TEMPLATE" type="implements" from="packages/schema/templates/AGENTS.md" fromKind="doc" to="REQ-AGENTS-TEMPLATE"/>
+    <edge id="E-VER-CORE-SM-INTEGRITY" type="verifiedBy" from="REQ-CORE-SM-INTEGRITY" to="packages/core/test/integrity.test.ts" toKind="test"/>
+    <edge id="E-VER-SM-INITIAL-CODE" type="verifiedBy" from="REQ-SM-INITIAL" to="packages/core/test/integrity.test.ts" toKind="test"/>
+    <edge id="E-VER-SM-FINAL-CODE" type="verifiedBy" from="REQ-SM-FINAL" to="packages/core/test/integrity.test.ts" toKind="test"/>
+    <edge id="E-VER-TRANSITION-REFS-CODE" type="verifiedBy" from="REQ-TRANSITION-REFS" to="packages/core/test/integrity.test.ts" toKind="test"/>
+    <edge id="E-VER-CORE-DRIFT-BASELINE" type="verifiedBy" from="REQ-CORE-DRIFT-BASELINE" to="packages/core/test/drift.test.ts" toKind="test"/>
+    <edge id="E-VER-DRIFT-BASELINE-E2E" type="verifiedBy" from="REQ-CORE-DRIFT-BASELINE" to="packages/cli/test/commands.test.ts" toKind="test"/>
+    <edge id="E-VER-CORE-STATUS-AWARE" type="verifiedBy" from="REQ-CORE-STATUS-AWARE" to="packages/core/test/coverage.test.ts" toKind="test"/>
+    <edge id="E-VER-LOOP-LINK-CORE" type="verifiedBy" from="REQ-LOOP-LINK" to="packages/core/test/link.test.ts" toKind="test"/>
+    <edge id="E-VER-LOOP-LINK-CLI" type="verifiedBy" from="REQ-LOOP-LINK" to="packages/cli/test/commands.test.ts" toKind="test"/>
+    <edge id="E-VER-LOOP-SHOW" type="verifiedBy" from="REQ-LOOP-SHOW" to="packages/core/test/extract.test.ts" toKind="test"/>
+    <edge id="E-VER-LOOP-IMPACT" type="verifiedBy" from="REQ-LOOP-IMPACT" to="packages/core/test/impact.test.ts" toKind="test"/>
+    <edge id="E-VER-LOOP-SKELETON" type="verifiedBy" from="REQ-LOOP-SKELETON" to="packages/core/test/skeleton.test.ts" toKind="test"/>
+    <edge id="E-VER-MCP-PATH-INPUT" type="verifiedBy" from="REQ-MCP-PATH-INPUT" to="packages/mcp/test/tools.test.ts" toKind="test"/>
+    <edge id="E-VER-MCP-TOOLS-CODE" type="verifiedBy" from="REQ-MCP-TOOLS" to="packages/mcp/test/tools.test.ts" toKind="test"/>
+    <edge id="E-VER-MCP-PARITY-CODE" type="verifiedBy" from="REQ-MCP-PARITY" to="packages/mcp/test/tools.test.ts" toKind="test"/>
+    <edge id="E-IMPL-LOOP-RELINK-CORE" type="implements" from="packages/core/src/edit/link.ts#updateTraceEdge" fromKind="code" to="REQ-LOOP-RELINK"/>
+    <edge id="E-IMPL-LOOP-RELINK-CLI" type="implements" from="packages/cli/src/commands/link.ts#runLink" fromKind="code" to="REQ-LOOP-RELINK"/>
+    <edge id="E-VER-LOOP-RELINK-CORE" type="verifiedBy" from="REQ-LOOP-RELINK" to="packages/core/test/link.test.ts" toKind="test"/>
+    <edge id="E-VER-LOOP-RELINK-CLI" type="verifiedBy" from="REQ-LOOP-RELINK" to="packages/cli/test/commands.test.ts" toKind="test"/>
+    <edge id="E-IMPL-LOOP-RELINK-MCP" type="implements" from="packages/mcp/src/tools.ts#callTool" fromKind="code" to="REQ-LOOP-RELINK"/>
+    <edge id="E-VER-LOOP-RELINK-MCP" type="verifiedBy" from="REQ-LOOP-RELINK" to="packages/mcp/test/tools.test.ts" toKind="test"/>
 
     <!-- The five-stage development process (DEC-FIVE-STAGE) -->
-    <edge id="E-DESIGNPROC-RE" type="satisfies" confidence="0.85">
-      <from><locator><local id="REQ-DESIGN-PROCESS"/></locator></from>
-      <to><locator><local id="GOAL-RE-OPERATIONALIZE"/></locator></to>
-    </edge>
-    <edge id="E-ADRCONV-TRACE" type="satisfies" confidence="0.8">
-      <from><locator><local id="REQ-ADR-CONVENTION"/></locator></from>
-      <to><locator><local id="GOAL-TRACEABILITY"/></locator></to>
-    </edge>
-    <edge id="E-ADRCONV-RE" type="satisfies" confidence="0.7">
-      <from><locator><local id="REQ-ADR-CONVENTION"/></locator></from>
-      <to><locator><local id="GOAL-RE-OPERATIONALIZE"/></locator></to>
-    </edge>
-    <edge id="E-PLANCONV-RE" type="satisfies" confidence="0.75">
-      <from><locator><local id="REQ-PLAN-CONVENTION"/></locator></from>
-      <to><locator><local id="GOAL-RE-OPERATIONALIZE"/></locator></to>
-    </edge>
-    <edge id="E-DESIGNPROC-DEC" type="dependsOn" confidence="1.0">
-      <from><locator><local id="REQ-DESIGN-PROCESS"/></locator></from>
-      <to><locator><local id="DEC-FIVE-STAGE"/></locator></to>
-    </edge>
-    <edge id="E-ADRCONV-DEC" type="dependsOn" confidence="1.0">
-      <from><locator><local id="REQ-ADR-CONVENTION"/></locator></from>
-      <to><locator><local id="DEC-FIVE-STAGE"/></locator></to>
-    </edge>
-    <edge id="E-PLANCONV-DEC" type="dependsOn" confidence="1.0">
-      <from><locator><local id="REQ-PLAN-CONVENTION"/></locator></from>
-      <to><locator><local id="DEC-FIVE-STAGE"/></locator></to>
-    </edge>
-    <edge id="E-AGENTS-FIVE-STAGE" type="dependsOn" confidence="0.8">
-      <from><locator><local id="REQ-AGENTS-TEMPLATE"/></locator></from>
-      <to><locator><local id="DEC-FIVE-STAGE"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-DESIGN-PROCESS" type="implements">
-      <from><locator><external uri="apps/website/docs/development-process/index.md" kind="doc" title="Development Process page"/></locator></from>
-      <to><locator><local id="REQ-DESIGN-PROCESS"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-ADR-CONVENTION" type="implements">
-      <from><locator><external uri="apps/website/docs/development-process/design.md" kind="doc" title="ADR convention page"/></locator></from>
-      <to><locator><local id="REQ-ADR-CONVENTION"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-PLAN-CONVENTION" type="implements">
-      <from><locator><external uri="apps/website/docs/development-process/plan.md" kind="doc" title="Implementation plan page"/></locator></from>
-      <to><locator><local id="REQ-PLAN-CONVENTION"/></locator></to>
-    </edge>
+    <edge id="E-DESIGNPROC-RE" type="satisfies" from="REQ-DESIGN-PROCESS" to="GOAL-RE-OPERATIONALIZE" confidence="0.85"/>
+    <edge id="E-ADRCONV-TRACE" type="satisfies" from="REQ-ADR-CONVENTION" to="GOAL-TRACEABILITY" confidence="0.8"/>
+    <edge id="E-ADRCONV-RE" type="satisfies" from="REQ-ADR-CONVENTION" to="GOAL-RE-OPERATIONALIZE" confidence="0.7"/>
+    <edge id="E-PLANCONV-RE" type="satisfies" from="REQ-PLAN-CONVENTION" to="GOAL-RE-OPERATIONALIZE" confidence="0.75"/>
+    <edge id="E-DESIGNPROC-DEC" type="dependsOn" from="REQ-DESIGN-PROCESS" to="DEC-FIVE-STAGE" confidence="1"/>
+    <edge id="E-ADRCONV-DEC" type="dependsOn" from="REQ-ADR-CONVENTION" to="DEC-FIVE-STAGE" confidence="1"/>
+    <edge id="E-PLANCONV-DEC" type="dependsOn" from="REQ-PLAN-CONVENTION" to="DEC-FIVE-STAGE" confidence="1"/>
+    <edge id="E-AGENTS-FIVE-STAGE" type="dependsOn" from="REQ-AGENTS-TEMPLATE" to="DEC-FIVE-STAGE" confidence="0.8"/>
+    <edge id="E-IMPL-DESIGN-PROCESS" type="implements" from="apps/website/docs/development-process/index.md" fromKind="doc" fromTitle="Development Process page" to="REQ-DESIGN-PROCESS"/>
+    <edge id="E-IMPL-ADR-CONVENTION" type="implements" from="apps/website/docs/development-process/design.md" fromKind="doc" fromTitle="ADR convention page" to="REQ-ADR-CONVENTION"/>
+    <edge id="E-IMPL-PLAN-CONVENTION" type="implements" from="apps/website/docs/development-process/plan.md" fromKind="doc" fromTitle="Implementation plan page" to="REQ-PLAN-CONVENTION"/>
 
     <!-- Interactive RQML capabilities (1-6): requirements satisfy goals -->
-    <edge id="E-CORE-PROJ-HUMAN" type="satisfies" confidence="0.9">
-      <from><locator><local id="REQ-CORE-PROJECTION"/></locator></from>
-      <to><locator><local id="QGOAL-HUMAN"/></locator></to>
-    </edge>
-    <edge id="E-CORE-MATRIX-TRACE" type="satisfies" confidence="0.9">
-      <from><locator><local id="REQ-CORE-MATRIX"/></locator></from>
-      <to><locator><local id="GOAL-TRACEABILITY"/></locator></to>
-    </edge>
-    <edge id="E-CORE-SETSTATUS-PRIMARY" type="satisfies" confidence="0.85">
-      <from><locator><local id="REQ-CORE-SETSTATUS"/></locator></from>
-      <to><locator><local id="GOAL-PRIMARY-ARTIFACT"/></locator></to>
-    </edge>
-    <edge id="E-CORE-VERDICT-ENF" type="satisfies" confidence="0.9">
-      <from><locator><local id="REQ-CORE-APPROVAL-VERDICT"/></locator></from>
-      <to><locator><local id="GOAL-ENFORCEMENT"/></locator></to>
-    </edge>
-    <edge id="E-LOOP-OVERVIEW-HUMAN" type="satisfies" confidence="0.9">
-      <from><locator><local id="REQ-LOOP-OVERVIEW"/></locator></from>
-      <to><locator><local id="QGOAL-HUMAN"/></locator></to>
-    </edge>
-    <edge id="E-LOOP-MATRIX-TRACE" type="satisfies" confidence="0.9">
-      <from><locator><local id="REQ-LOOP-MATRIX"/></locator></from>
-      <to><locator><local id="GOAL-TRACEABILITY"/></locator></to>
-    </edge>
-    <edge id="E-LOOP-APPROVE-PRIMARY" type="satisfies" confidence="0.9">
-      <from><locator><local id="REQ-LOOP-APPROVE"/></locator></from>
-      <to><locator><local id="GOAL-PRIMARY-ARTIFACT"/></locator></to>
-    </edge>
-    <edge id="E-MCP-BOUNDARY-ENGINE" type="satisfies" confidence="0.85">
-      <from><locator><local id="REQ-MCP-INTERACTION-BOUNDARY"/></locator></from>
-      <to><locator><local id="GOAL-REUSABLE-ENGINE"/></locator></to>
-    </edge>
-    <edge id="E-ENF-GATE-ENF" type="satisfies" confidence="0.9">
-      <from><locator><local id="REQ-ENFORCE-APPROVAL-GATE"/></locator></from>
-      <to><locator><local id="GOAL-ENFORCEMENT"/></locator></to>
-    </edge>
-    <edge id="E-PROV-TRACE" type="satisfies" confidence="0.8">
-      <from><locator><local id="REQ-APPROVAL-PROVENANCE"/></locator></from>
-      <to><locator><local id="GOAL-TRACEABILITY"/></locator></to>
-    </edge>
+    <edge id="E-CORE-PROJ-HUMAN" type="satisfies" from="REQ-CORE-PROJECTION" to="QGOAL-HUMAN" confidence="0.9"/>
+    <edge id="E-CORE-MATRIX-TRACE" type="satisfies" from="REQ-CORE-MATRIX" to="GOAL-TRACEABILITY" confidence="0.9"/>
+    <edge id="E-CORE-SETSTATUS-PRIMARY" type="satisfies" from="REQ-CORE-SETSTATUS" to="GOAL-PRIMARY-ARTIFACT" confidence="0.85"/>
+    <edge id="E-CORE-VERDICT-ENF" type="satisfies" from="REQ-CORE-APPROVAL-VERDICT" to="GOAL-ENFORCEMENT" confidence="0.9"/>
+    <edge id="E-LOOP-OVERVIEW-HUMAN" type="satisfies" from="REQ-LOOP-OVERVIEW" to="QGOAL-HUMAN" confidence="0.9"/>
+    <edge id="E-LOOP-MATRIX-TRACE" type="satisfies" from="REQ-LOOP-MATRIX" to="GOAL-TRACEABILITY" confidence="0.9"/>
+    <edge id="E-LOOP-APPROVE-PRIMARY" type="satisfies" from="REQ-LOOP-APPROVE" to="GOAL-PRIMARY-ARTIFACT" confidence="0.9"/>
+    <edge id="E-MCP-BOUNDARY-ENGINE" type="satisfies" from="REQ-MCP-INTERACTION-BOUNDARY" to="GOAL-REUSABLE-ENGINE" confidence="0.85"/>
+    <edge id="E-ENF-GATE-ENF" type="satisfies" from="REQ-ENFORCE-APPROVAL-GATE" to="GOAL-ENFORCEMENT" confidence="0.9"/>
+    <edge id="E-PROV-TRACE" type="satisfies" from="REQ-APPROVAL-PROVENANCE" to="GOAL-TRACEABILITY" confidence="0.8"/>
 
     <!-- Interactive RQML capabilities (1-6): surface operations depend on engine primitives -->
-    <edge id="E-LOOP-OVERVIEW-DEP" type="dependsOn" confidence="1.0">
-      <from><locator><local id="REQ-LOOP-OVERVIEW"/></locator></from>
-      <to><locator><local id="REQ-CORE-PROJECTION"/></locator></to>
-    </edge>
-    <edge id="E-LOOP-MATRIX-DEP" type="dependsOn" confidence="1.0">
-      <from><locator><local id="REQ-LOOP-MATRIX"/></locator></from>
-      <to><locator><local id="REQ-CORE-MATRIX"/></locator></to>
-    </edge>
-    <edge id="E-LOOP-APPROVE-DEP" type="dependsOn" confidence="1.0">
-      <from><locator><local id="REQ-LOOP-APPROVE"/></locator></from>
-      <to><locator><local id="REQ-CORE-SETSTATUS"/></locator></to>
-    </edge>
-    <edge id="E-ENF-GATE-DEP" type="dependsOn" confidence="1.0">
-      <from><locator><local id="REQ-ENFORCE-APPROVAL-GATE"/></locator></from>
-      <to><locator><local id="REQ-CORE-APPROVAL-VERDICT"/></locator></to>
-    </edge>
-    <edge id="E-VERDICT-STATUSAWARE-DEP" type="dependsOn" confidence="1.0">
-      <from><locator><local id="REQ-CORE-APPROVAL-VERDICT"/></locator></from>
-      <to><locator><local id="REQ-CORE-STATUS-AWARE"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-CORE-MATRIX" type="implements">
-      <from><locator><external uri="packages/core/src/analyze/matrix.ts" kind="code"/></locator></from>
-      <to><locator><local id="REQ-CORE-MATRIX"/></locator></to>
-    </edge>
-    <edge id="E-VER-CORE-MATRIX" type="verifiedBy">
-      <from><locator><local id="REQ-CORE-MATRIX"/></locator></from>
-      <to><locator><external uri="packages/core/test/matrix.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-LOOP-MATRIX" type="implements">
-      <from><locator><external uri="packages/cli/src/commands/matrix.ts" kind="code"/></locator></from>
-      <to><locator><local id="REQ-LOOP-MATRIX"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-LOOP-MATRIX-2" type="implements">
-      <from><locator><external uri="packages/mcp/src/tools.ts" kind="code"/></locator></from>
-      <to><locator><local id="REQ-LOOP-MATRIX"/></locator></to>
-    </edge>
-    <edge id="E-VER-LOOP-MATRIX" type="verifiedBy">
-      <from><locator><local id="REQ-LOOP-MATRIX"/></locator></from>
-      <to><locator><external uri="packages/cli/test/commands.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-VER-LOOP-MATRIX-2" type="verifiedBy">
-      <from><locator><local id="REQ-LOOP-MATRIX"/></locator></from>
-      <to><locator><external uri="packages/mcp/test/tools.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-CORE-PROJECTION" type="implements">
-      <from><locator><external uri="packages/core/src/export/project.ts" kind="code"/></locator></from>
-      <to><locator><local id="REQ-CORE-PROJECTION"/></locator></to>
-    </edge>
-    <edge id="E-VER-CORE-PROJECTION" type="verifiedBy">
-      <from><locator><local id="REQ-CORE-PROJECTION"/></locator></from>
-      <to><locator><external uri="packages/core/test/project.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-CORE-SETSTATUS" type="implements">
-      <from><locator><external uri="packages/core/src/edit/status.ts" kind="code"/></locator></from>
-      <to><locator><local id="REQ-CORE-SETSTATUS"/></locator></to>
-    </edge>
-    <edge id="E-VER-CORE-SETSTATUS" type="verifiedBy">
-      <from><locator><local id="REQ-CORE-SETSTATUS"/></locator></from>
-      <to><locator><external uri="packages/core/test/status.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-CORE-APPROVAL-VERDICT" type="implements">
-      <from><locator><external uri="packages/core/src/analyze/gate.ts" kind="code"/></locator></from>
-      <to><locator><local id="REQ-CORE-APPROVAL-VERDICT"/></locator></to>
-    </edge>
-    <edge id="E-VER-CORE-APPROVAL-VERDICT" type="verifiedBy">
-      <from><locator><local id="REQ-CORE-APPROVAL-VERDICT"/></locator></from>
-      <to><locator><external uri="packages/core/test/gate.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-LOOP-OVERVIEW" type="implements">
-      <from><locator><external uri="packages/cli/src/commands/overview.ts" kind="code"/></locator></from>
-      <to><locator><local id="REQ-LOOP-OVERVIEW"/></locator></to>
-    </edge>
-    <edge id="E-VER-LOOP-OVERVIEW" type="verifiedBy">
-      <from><locator><local id="REQ-LOOP-OVERVIEW"/></locator></from>
-      <to><locator><external uri="packages/cli/test/commands.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-LOOP-APPROVE" type="implements">
-      <from><locator><external uri="packages/cli/src/commands/approve.ts" kind="code"/></locator></from>
-      <to><locator><local id="REQ-LOOP-APPROVE"/></locator></to>
-    </edge>
-    <edge id="E-VER-LOOP-APPROVE" type="verifiedBy">
-      <from><locator><local id="REQ-LOOP-APPROVE"/></locator></from>
-      <to><locator><external uri="packages/cli/test/commands.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-ENFORCE-APPROVAL-GATE" type="implements">
-      <from><locator><external uri="packages/cli/src/commands/gate.ts" kind="code"/></locator></from>
-      <to><locator><local id="REQ-ENFORCE-APPROVAL-GATE"/></locator></to>
-    </edge>
-    <edge id="E-VER-ENFORCE-APPROVAL-GATE" type="verifiedBy">
-      <from><locator><local id="REQ-ENFORCE-APPROVAL-GATE"/></locator></from>
-      <to><locator><external uri="packages/cli/test/commands.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-MCP-INTERACTION-BOUNDARY" type="implements">
-      <from><locator><external uri="packages/mcp/src/capabilities.ts" kind="code"/></locator></from>
-      <to><locator><local id="REQ-MCP-INTERACTION-BOUNDARY"/></locator></to>
-    </edge>
-    <edge id="E-VER-MCP-INTERACTION-BOUNDARY" type="verifiedBy">
-      <from><locator><local id="REQ-MCP-INTERACTION-BOUNDARY"/></locator></from>
-      <to><locator><external uri="packages/mcp/test/tools.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-CORE-SPEC-DISCOVERY" type="implements">
-      <from><locator><external uri="packages/core/src/discover/discover.ts" kind="code" title="@rqml/core nearest-wins spec discovery (resolveGoverningSpec + discoverSpecs)"/></locator></from>
-      <to><locator><local id="REQ-CORE-SPEC-DISCOVERY"/></locator></to>
-    </edge>
-    <edge id="E-VER-CORE-SPEC-DISCOVERY" type="verifiedBy">
-      <from><locator><local id="REQ-CORE-SPEC-DISCOVERY"/></locator></from>
-      <to><locator><external uri="packages/core/test/discover.test.ts" kind="test" title="Spec discovery tests (nearest/subtree/ambiguous/boundary/enumeration)"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-WORKSPACE-FANOUT" type="implements">
-      <from><locator><external uri="packages/cli/src/workspace.ts" kind="code" title="rqml workspace fan-out (discover + aggregate exit code)"/></locator></from>
-      <to><locator><local id="REQ-WORKSPACE-FANOUT"/></locator></to>
-    </edge>
-    <edge id="E-VER-WORKSPACE-FANOUT" type="verifiedBy">
-      <from><locator><local id="REQ-WORKSPACE-FANOUT"/></locator></from>
-      <to><locator><external uri="packages/cli/test/workspace.test.ts" kind="test" title="Workspace fan-out tests (aggregated exit, --ignore, status)"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-MCP-SPEC-DISCOVERY" type="implements">
-      <from><locator><external uri="packages/mcp/src/tools.ts" kind="code" title="rqml_discover MCP tool + file/cwd spec resolution"/></locator></from>
-      <to><locator><local id="REQ-CORE-SPEC-DISCOVERY"/></locator></to>
-    </edge>
-    <edge id="E-VER-MCP-SPEC-DISCOVERY" type="verifiedBy">
-      <from><locator><local id="REQ-CORE-SPEC-DISCOVERY"/></locator></from>
-      <to><locator><external uri="packages/mcp/test/tools.test.ts" kind="test" title="MCP rqml_discover + file-resolution tests"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-CLI-LINT" type="implements">
-      <from><locator><external uri="packages/cli/src/commands/lint.ts" kind="code" title="rqml lint command"/></locator></from>
-      <to><locator><local id="REQ-CLI-LINT"/></locator></to>
-    </edge>
-    <edge id="E-VER-CLI-LINT" type="verifiedBy">
-      <from><locator><local id="REQ-CLI-LINT"/></locator></from>
-      <to><locator><external uri="packages/cli/test/lint.test.ts" kind="test" title="rqml lint command tests"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-CLI-INIT-MERGE" type="implements">
-      <from><locator><external uri="packages/cli/src/commands/init.ts" kind="code"/></locator></from>
-      <to><locator><local id="REQ-CLI-INIT-MERGE"/></locator></to>
-    </edge>
-    <edge id="E-VER-CLI-INIT-MERGE" type="verifiedBy">
-      <from><locator><local id="REQ-CLI-INIT-MERGE"/></locator></from>
-      <to><locator><external uri="packages/cli/test/init.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-TRACE-COMPACT" type="implements">
-      <from><locator><external uri="packages/schema/versions/2.2.0/rqml-2.2.0.xsd" kind="schema"/></locator></from>
-      <to><locator><local id="REQ-TRACE-COMPACT"/></locator></to>
-    </edge>
-    <edge id="E-VER-TRACE-COMPACT" type="verifiedBy">
-      <from><locator><local id="REQ-TRACE-COMPACT"/></locator></from>
-      <to><locator><external uri="packages/core/test/compact-trace.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-CORE-COMPACT-PARITY" type="implements">
-      <from><locator><external uri="packages/core/src/trace/endpoint.ts" kind="code"/></locator></from>
-      <to><locator><local id="REQ-CORE-COMPACT-PARITY"/></locator></to>
-    </edge>
-    <edge id="E-VER-CORE-COMPACT-PARITY" type="verifiedBy">
-      <from><locator><local id="REQ-CORE-COMPACT-PARITY"/></locator></from>
-      <to><locator><external uri="packages/core/test/compact-trace.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-LOOP-MIGRATE" type="implements">
-      <from><locator><external uri="packages/core/src/edit/migrate.ts" kind="code"/></locator></from>
-      <to><locator><local id="REQ-LOOP-MIGRATE"/></locator></to>
-    </edge>
-    <edge id="E-VER-LOOP-MIGRATE" type="verifiedBy">
-      <from><locator><local id="REQ-LOOP-MIGRATE"/></locator></from>
-      <to><locator><external uri="packages/core/test/migrate.test.ts" kind="test"/></locator></to>
-    </edge>
-    <edge id="E-IMPL-LOOP-MIGRATE-CLI" type="implements">
-      <from><locator><external uri="packages/cli/src/commands/migrate.ts" kind="code"/></locator></from>
-      <to><locator><local id="REQ-LOOP-MIGRATE"/></locator></to>
-    </edge>
+    <edge id="E-LOOP-OVERVIEW-DEP" type="dependsOn" from="REQ-LOOP-OVERVIEW" to="REQ-CORE-PROJECTION" confidence="1"/>
+    <edge id="E-LOOP-MATRIX-DEP" type="dependsOn" from="REQ-LOOP-MATRIX" to="REQ-CORE-MATRIX" confidence="1"/>
+    <edge id="E-LOOP-APPROVE-DEP" type="dependsOn" from="REQ-LOOP-APPROVE" to="REQ-CORE-SETSTATUS" confidence="1"/>
+    <edge id="E-ENF-GATE-DEP" type="dependsOn" from="REQ-ENFORCE-APPROVAL-GATE" to="REQ-CORE-APPROVAL-VERDICT" confidence="1"/>
+    <edge id="E-VERDICT-STATUSAWARE-DEP" type="dependsOn" from="REQ-CORE-APPROVAL-VERDICT" to="REQ-CORE-STATUS-AWARE" confidence="1"/>
+    <edge id="E-IMPL-CORE-MATRIX" type="implements" from="packages/core/src/analyze/matrix.ts" fromKind="code" to="REQ-CORE-MATRIX"/>
+    <edge id="E-VER-CORE-MATRIX" type="verifiedBy" from="REQ-CORE-MATRIX" to="packages/core/test/matrix.test.ts" toKind="test"/>
+    <edge id="E-IMPL-LOOP-MATRIX" type="implements" from="packages/cli/src/commands/matrix.ts" fromKind="code" to="REQ-LOOP-MATRIX"/>
+    <edge id="E-IMPL-LOOP-MATRIX-2" type="implements" from="packages/mcp/src/tools.ts" fromKind="code" to="REQ-LOOP-MATRIX"/>
+    <edge id="E-VER-LOOP-MATRIX" type="verifiedBy" from="REQ-LOOP-MATRIX" to="packages/cli/test/commands.test.ts" toKind="test"/>
+    <edge id="E-VER-LOOP-MATRIX-2" type="verifiedBy" from="REQ-LOOP-MATRIX" to="packages/mcp/test/tools.test.ts" toKind="test"/>
+    <edge id="E-IMPL-CORE-PROJECTION" type="implements" from="packages/core/src/export/project.ts" fromKind="code" to="REQ-CORE-PROJECTION"/>
+    <edge id="E-VER-CORE-PROJECTION" type="verifiedBy" from="REQ-CORE-PROJECTION" to="packages/core/test/project.test.ts" toKind="test"/>
+    <edge id="E-IMPL-CORE-SETSTATUS" type="implements" from="packages/core/src/edit/status.ts" fromKind="code" to="REQ-CORE-SETSTATUS"/>
+    <edge id="E-VER-CORE-SETSTATUS" type="verifiedBy" from="REQ-CORE-SETSTATUS" to="packages/core/test/status.test.ts" toKind="test"/>
+    <edge id="E-IMPL-CORE-APPROVAL-VERDICT" type="implements" from="packages/core/src/analyze/gate.ts" fromKind="code" to="REQ-CORE-APPROVAL-VERDICT"/>
+    <edge id="E-VER-CORE-APPROVAL-VERDICT" type="verifiedBy" from="REQ-CORE-APPROVAL-VERDICT" to="packages/core/test/gate.test.ts" toKind="test"/>
+    <edge id="E-IMPL-LOOP-OVERVIEW" type="implements" from="packages/cli/src/commands/overview.ts" fromKind="code" to="REQ-LOOP-OVERVIEW"/>
+    <edge id="E-VER-LOOP-OVERVIEW" type="verifiedBy" from="REQ-LOOP-OVERVIEW" to="packages/cli/test/commands.test.ts" toKind="test"/>
+    <edge id="E-IMPL-LOOP-APPROVE" type="implements" from="packages/cli/src/commands/approve.ts" fromKind="code" to="REQ-LOOP-APPROVE"/>
+    <edge id="E-VER-LOOP-APPROVE" type="verifiedBy" from="REQ-LOOP-APPROVE" to="packages/cli/test/commands.test.ts" toKind="test"/>
+    <edge id="E-IMPL-ENFORCE-APPROVAL-GATE" type="implements" from="packages/cli/src/commands/gate.ts" fromKind="code" to="REQ-ENFORCE-APPROVAL-GATE"/>
+    <edge id="E-VER-ENFORCE-APPROVAL-GATE" type="verifiedBy" from="REQ-ENFORCE-APPROVAL-GATE" to="packages/cli/test/commands.test.ts" toKind="test"/>
+    <edge id="E-IMPL-MCP-INTERACTION-BOUNDARY" type="implements" from="packages/mcp/src/capabilities.ts" fromKind="code" to="REQ-MCP-INTERACTION-BOUNDARY"/>
+    <edge id="E-VER-MCP-INTERACTION-BOUNDARY" type="verifiedBy" from="REQ-MCP-INTERACTION-BOUNDARY" to="packages/mcp/test/tools.test.ts" toKind="test"/>
+    <edge id="E-IMPL-CORE-SPEC-DISCOVERY" type="implements" from="packages/core/src/discover/discover.ts" fromKind="code" fromTitle="@rqml/core nearest-wins spec discovery (resolveGoverningSpec + discoverSpecs)" to="REQ-CORE-SPEC-DISCOVERY"/>
+    <edge id="E-VER-CORE-SPEC-DISCOVERY" type="verifiedBy" from="REQ-CORE-SPEC-DISCOVERY" to="packages/core/test/discover.test.ts" toKind="test" toTitle="Spec discovery tests (nearest/subtree/ambiguous/boundary/enumeration)"/>
+    <edge id="E-IMPL-WORKSPACE-FANOUT" type="implements" from="packages/cli/src/workspace.ts" fromKind="code" fromTitle="rqml workspace fan-out (discover + aggregate exit code)" to="REQ-WORKSPACE-FANOUT"/>
+    <edge id="E-VER-WORKSPACE-FANOUT" type="verifiedBy" from="REQ-WORKSPACE-FANOUT" to="packages/cli/test/workspace.test.ts" toKind="test" toTitle="Workspace fan-out tests (aggregated exit, --ignore, status)"/>
+    <edge id="E-IMPL-MCP-SPEC-DISCOVERY" type="implements" from="packages/mcp/src/tools.ts" fromKind="code" fromTitle="rqml_discover MCP tool + file/cwd spec resolution" to="REQ-CORE-SPEC-DISCOVERY"/>
+    <edge id="E-VER-MCP-SPEC-DISCOVERY" type="verifiedBy" from="REQ-CORE-SPEC-DISCOVERY" to="packages/mcp/test/tools.test.ts" toKind="test" toTitle="MCP rqml_discover + file-resolution tests"/>
+    <edge id="E-IMPL-CLI-LINT" type="implements" from="packages/cli/src/commands/lint.ts" fromKind="code" fromTitle="rqml lint command" to="REQ-CLI-LINT"/>
+    <edge id="E-VER-CLI-LINT" type="verifiedBy" from="REQ-CLI-LINT" to="packages/cli/test/lint.test.ts" toKind="test" toTitle="rqml lint command tests"/>
+    <edge id="E-IMPL-CLI-INIT-MERGE" type="implements" from="packages/cli/src/commands/init.ts" fromKind="code" to="REQ-CLI-INIT-MERGE"/>
+    <edge id="E-VER-CLI-INIT-MERGE" type="verifiedBy" from="REQ-CLI-INIT-MERGE" to="packages/cli/test/init.test.ts" toKind="test"/>
+    <edge id="E-IMPL-TRACE-COMPACT" type="implements" from="packages/schema/versions/2.2.0/rqml-2.2.0.xsd" fromKind="schema" to="REQ-TRACE-COMPACT"/>
+    <edge id="E-VER-TRACE-COMPACT" type="verifiedBy" from="REQ-TRACE-COMPACT" to="packages/core/test/compact-trace.test.ts" toKind="test"/>
+    <edge id="E-IMPL-CORE-COMPACT-PARITY" type="implements" from="packages/core/src/trace/endpoint.ts" fromKind="code" to="REQ-CORE-COMPACT-PARITY"/>
+    <edge id="E-VER-CORE-COMPACT-PARITY" type="verifiedBy" from="REQ-CORE-COMPACT-PARITY" to="packages/core/test/compact-trace.test.ts" toKind="test"/>
+    <edge id="E-IMPL-LOOP-MIGRATE" type="implements" from="packages/core/src/edit/migrate.ts" fromKind="code" to="REQ-LOOP-MIGRATE"/>
+    <edge id="E-VER-LOOP-MIGRATE" type="verifiedBy" from="REQ-LOOP-MIGRATE" to="packages/core/test/migrate.test.ts" toKind="test"/>
+    <edge id="E-IMPL-LOOP-MIGRATE-CLI" type="implements" from="packages/cli/src/commands/migrate.ts" fromKind="code" to="REQ-LOOP-MIGRATE"/>
   </trace>
 
   <!-- ============================================================= -->
