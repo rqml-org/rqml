@@ -1,13 +1,15 @@
 ---
 title: RQML
-description: An XML requirements format plus a deterministic toolchain — validate the spec, trace it to code and tests, and fail CI when implementation drifts.
+description: Coding agents drift from the spec. RQML fails the build — an open requirements format plus a deterministic toolchain that traces the spec to code and tests. No LLM in the verdict path.
 slug: /
 ---
 
 import Heading from '@theme/Heading';
 import CodeBlock from '@theme/CodeBlock';
-import RqmlTagExplorer from '@site/src/components/RqmlTagExplorer';
 import styles from './index.module.css';
+
+{/* import RqmlTagExplorer from '@site/src/components/RqmlTagExplorer';
+    — commented out with the tag-explorer section below; restore both together. */}
 
 <div className={styles.page}>
 
@@ -15,13 +17,15 @@ import styles from './index.module.css';
   <header className={`hero ${styles.hero}`}>
     <div className="container">
 
-      <img id="heroLogo" width="25%" src="/img/RQML_logo_transparent.png" alt="RQML logo" className={styles.heroLogo} />
-      <Heading as="h1" className={styles.centerHeader}>Make the spec the artifact. Then gate CI on it.</Heading>
+      <img id="heroLogo" width="20%" src="/img/RQML_logo_transparent.png" alt="RQML logo" className={styles.heroLogo} />
+      <div className={styles.heroKicker}>Requirements Markup Language — an open format for requirements, plus a deterministic toolchain</div>
+      <Heading as="h1" className={styles.centerHeader}>Agents drift from the spec. RQML fails the build.</Heading>
 
       <div className={styles.heroSubtitleCenter}>
-        <b>Requirements Markup Language</b> is an XML format for software
-        requirements (which your agent will <b>write for you</b>) with a deterministic toolchain: validate the spec, trace it to the code
-        and tests that realize it, and fail the build when they drift apart. 
+        Your agent drafts the spec. <code>rqml link</code> pins each requirement to the code
+        and tests that realize it. When they drift apart, <code>rqml check</code> fails the
+        build — and, with the plugins, the agent's turn. <b>No language model in the
+        verdict path.</b>
       </div>
       <div className={styles.heroSubtitleCenter}>
         <b>Built for
@@ -29,13 +33,31 @@ import styles from './index.module.css';
         what the system is supposed to do.
       </div>
 
+      {/* Pre-restructure hero (2026-07), superseded by the copy above. Kept for reference:
+      <Heading as="h1" className={styles.centerHeader}>Make the spec the artifact. Then gate CI on it.</Heading>
+
+      <div className={styles.heroSubtitleCenter}>
+        <b>Requirements Markup Language</b> is an XML format for software
+        requirements (which your agent will <b>write for you</b>) with a deterministic toolchain: validate the spec, trace it to the code
+        and tests that realize it, and fail the build when they drift apart.
+      </div>
+      */}
+
       <div className={styles.heroCtas}>
         <a className="button button--primary button--lg" href="/docs/quick-start">Get started</a>
         <a className="button button--secondary button--lg" href="https://github.com/rqml-org/rqml" target="_blank" rel="noopener noreferrer">View on GitHub</a>
       </div>
 
+      <div className={`${styles.tagRow} ${styles.heroBadges}`}>
+        <span className={styles.tag}>Apache-2.0</span>
+        <span className={styles.tag}>open schema</span>
+        <span className={styles.tag}>fully offline</span>
+        <span className={styles.tag}>no server, no API keys</span>
+        <span className={styles.tag}>works with any coding agent</span>
+      </div>
+
       <div className={`${styles.scaffoldNote}`}>
-        <center>One command scaffolds a spec and an <code>AGENTS.md</code> — works with any coding agent:</center>
+        <center>One command scaffolds a spec and an <code>AGENTS.md</code>:</center>
       </div>
       <div className={styles.heroCode}>
         <CodeBlock language="bash">{`npx @rqml/cli init`}</CodeBlock>
@@ -53,7 +75,12 @@ import styles from './index.module.css';
   {/* THE PITCH, IN ONE TERMINAL SESSION */}
   <section className={`${styles.section} ${styles.breakout}`}>
     <div className="container">
-      <Heading as="h1" className={styles.centerHeader}>The whole idea, in one terminal session</Heading>
+      {/* was: "The whole idea, in one terminal session" */}
+      <Heading as="h2" className={styles.centerHeader}>Six weeks later, the agent quietly rewrote auth. <code>rqml check</code> noticed.</Heading>
+
+      <div className={styles.heroSubtitleCenter}>
+        Spec-driven tools like Spec Kit and Kiro get you a spec. RQML makes it binding:
+      </div>
 
       {/* TODO: side-by-side validation demo — spec on the left, live rqml check verdicts on the right */}
 
@@ -65,32 +92,64 @@ import styles from './index.module.css';
           <span className={styles.terminalTitle}>fish — ~/myproject</span>
         </div>
         <pre className={styles.terminalBody}>
-          <span className={styles.termLine}><span className={styles.tDim}># the agent implements REQ-AUTH-001, then records the link — no hand-edited XML</span></span>
+          <span className={styles.termLine}><span className={styles.tPath}>~/myproject</span> <span className={styles.tPrompt}>❯</span> <span className={styles.tCmd}>rqml show REQ-AUTH-001</span></span>
+          <span className={styles.termLine}><span className={styles.tHl}>## REQ-AUTH-001 — Verify session tokens</span></span>
+          <span className={styles.termLine}><span className={styles.tDim}>kind: req (FR) · status: approved · priority: must</span></span>
+          <span className={styles.termLine}>{' '}</span>
+          <span className={styles.termLine}><span className={styles.tOut}>The API MUST reject any request whose session token fails signature</span></span>
+          <span className={styles.termLine}><span className={styles.tOut}>verification, with status 401.</span></span>
+          <span className={styles.termLine}>{' '}</span>
+          <span className={styles.termLine}><span className={styles.tDim}># the agent implements it, then records the link</span></span>
           <span className={styles.termLine}><span className={styles.tPath}>~/myproject</span> <span className={styles.tPrompt}>❯</span> <span className={styles.tCmd}>rqml link REQ-AUTH-001 src/auth.ts#verifyToken</span></span>
           <span className={styles.termLine}><span className={styles.tOk}>✓ REQ-AUTH-001 ← src/auth.ts#verifyToken</span><span className={styles.tOut}> (E-IMPL-AUTH-001, implements, baseline recorded)</span></span>
           <span className={styles.termLine}>{' '}</span>
           <span className={styles.termLine}><span className={styles.tPath}>~/myproject</span> <span className={styles.tPrompt}>❯</span> <span className={styles.tCmd}>rqml check</span></span>
           <span className={styles.termLine}><span className={styles.tOk}>✓ check pass (standard)</span><span className={styles.tOut}> — requirements.rqml</span></span>
           <span className={styles.termLine}>{' '}</span>
-          <span className={styles.termLine}><span className={styles.tDim}># six weeks later, someone refactors auth without touching the spec…</span></span>
+          <span className={styles.termLine}><span className={styles.tDim}># six weeks later, an agent refactors auth without touching the spec…</span></span>
           <span className={styles.termLine}><span className={styles.tPath}>~/myproject</span> <span className={styles.tPrompt}>❯</span> <span className={styles.tCmd}>rqml check</span></span>
           <span className={styles.termLine}>{'  '}<span className={styles.tErr}>error (drift) [changed-implementation]:</span><span className={styles.tOut}> implements edge "E-IMPL-AUTH-001"</span></span>
           <span className={styles.termLine}>{'    '}<span className={styles.tOut}>points at "src/auth.ts#verifyToken", which has changed since approval.</span></span>
-          <span className={styles.termLine}><span className={styles.tErr}>✗ check fail (standard) — requirements.rqml</span>{'      '}<span className={styles.tHl}>(exit 2)</span></span>
+          <span className={styles.termLine}><span className={styles.tErr}>✗ check fail (standard) — requirements.rqml</span>{'      '}<span className={styles.tDim}># exit 2</span></span>
         </pre>
       </div>
 
       <div className={styles.heroSubtitleCenter}>
-        No language model is involved in any of those verdicts. <code>rqml check</code> is a
-        pure function of your repository — same input, same answer, on your laptop and in CI.
-        The model proposes; the toolchain disposes.
+        <b>No AI checks the AI — a checksum does.</b> Drift means pinned code changed and
+        nobody re-reviewed the link; the gate forces a look. <code>rqml check</code> is a
+        pure function of your repository — same input, same verdict, on your laptop and in
+        CI. The model proposes; the toolchain disposes.
       </div>
     </div>
   </section>
 
-  {/* AGENT PLUGINS — make the loop automatic inside your coding agent */}
+  {/* ONE ENGINE, EVERY SURFACE — plugins + toolchain, merged in the 2026-07 restructure */}
   <section id="plugins" className={`${styles.section} ${styles.breakout} ${styles.bandPlugins}`}>
     <div className="container">
+      <Heading as="h2" className={styles.centerHeader}>One engine, every surface</Heading>
+      <div className={styles.heroSubtitleCenter}>
+        One open-source engine — Apache&#8209;2.0, published on npm, no telemetry — powers
+        the CLI, an MCP server, and the agent plugins.
+      </div>
+
+      <div className={styles.heroSubtitleCenter}>
+        The loop an agent runs — read one requirement, check the blast radius, implement,
+        record the link, pass the gate:
+      </div>
+      <div className={styles.heroCode}>
+        <CodeBlock language="bash">{`rqml show REQ-PAY-001     # one requirement: statement, acceptance criteria, trace neighborhood
+rqml impact REQ-PAY-001   # what is affected, transitively, if this changes?
+rqml link REQ-PAY-001 src/payments/capture.ts   # implements edge + content-hash baseline
+rqml check                # validation + coverage + drift; exit 0 or it isn't done`}</CodeBlock>
+      </div>
+
+      <div className={styles.heroSubtitleCenter}>
+        The <b>Claude Code</b> and <b>Codex</b> plugins run this loop automatically:
+        every session opens anchored on your spec, and the turn is gated
+        on <code>rqml check</code> — the same verdict your CI runs.
+      </div>
+
+      {/* Pre-restructure intro (2026-07), superseded by the copy above. Kept for reference:
       <Heading as="h1" className={styles.centerHeader}>Drop it into your coding agent</Heading>
       <div className={styles.heroSubtitleCenter}>
         The <b>Claude Code</b> and <b>Codex</b> plugins make the CLI loop above
@@ -99,6 +158,7 @@ import styles from './index.module.css';
         deterministic verdict your CI runs. The plugins ship no engine of their own; they shell
         out to <code>@rqml/cli</code>, so the agent is held to the same gate as your build.
       </div>
+      */}
 
       <div className={styles.grid2}>
         <div className={`card ${styles.featureCard}`}>
@@ -109,7 +169,7 @@ import styles from './index.module.css';
             <Heading as="h3" className={styles.cardTitle}>Claude Code plugin</Heading>
             <div className={styles.cardText}>
               Anchor, validate, and gate Claude in every session. Six <code>/rqml:*</code> commands
-              for the Spec → Design → Plan → Code → Verify loop, plus the bundled MCP tools and an
+              for the Spec → Design → Plan → Code → Verify workflow, plus the bundled MCP tools and an
               RQML authoring skill.
             </div>
             <CodeBlock language="bash">{`npm install -g @rqml/cli
@@ -130,7 +190,7 @@ import styles from './index.module.css';
             <Heading as="h3" className={styles.cardTitle}>Codex plugin</Heading>
             <div className={styles.cardText}>
               The same loop for OpenAI Codex: session anchoring, in-turn spec validation, and a
-              stop-time <code>rqml check</code> gate once you trust the plugin's hooks.
+              stop-time <code>rqml check</code> gate.
             </div>
             <CodeBlock language="bash">{`npm install -g @rqml/cli
 # then, inside Codex:
@@ -148,10 +208,20 @@ codex plugin marketplace add rqml-org/rqml-codex
         the same workflow to any skill-compatible agent, and the <a href="https://marketplace.visualstudio.com/items?itemName=rqml.rqml-vscode" target="_blank" rel="noopener noreferrer">VS Code extension</a> adds
         in-editor authoring and export. Plugins enforce; these assist.
       </div>
+
+      <div className={styles.heroSubtitleCenter}>
+        Under the hood it's three npm packages — <a href="/docs/tooling">explore the tooling →</a>
+      </div>
+      <ul className={styles.packagesList}>
+        <li><code>@rqml/cli</code> — <code>init</code>, <code>validate</code>, <code>status</code>, and the <code>check</code> gate, plus the agent loop: <code>show</code>, <code>impact</code>, <code>link</code>, <code>skeleton</code>.</li>
+        <li><code>@rqml/core</code> — the engine: parse, validate, lint, trace, impact, coverage, drift. Embed it in your own tools.</li>
+        <li><code>@rqml/mcp</code> — thirteen Model Context Protocol tools backed by the same engine, for any MCP-capable agent.</li>
+      </ul>
     </div>
   </section>
 
-  {/* TOOLING */}
+  {/* TOOLING — superseded by the merged "One engine, every surface" section above
+      (2026-07 restructure). Kept for reference:
   <section id="tooling" className={`container ${styles.section}`}>
     <div className="container">
       <Heading as="h1" className={styles.centerHeader}>Not just a format — a deterministic toolchain.</Heading>
@@ -213,18 +283,95 @@ rqml check                # validation + coverage + drift; exit 0 or it isn't do
       </div>
     </div>
   </section>
+  */}
 
-  {/* DOGFOOD + WHAT IT IS NOT */}
+  {/* START IN THREE STEPS — moved up from the page bottom in the 2026-07 restructure */}
+  <section className={`container ${styles.section}`}>
+    <div className={styles.twoCol}>
+      <div>
+        <Heading as="h2">Start in three steps</Heading>
+        <div className={styles.lead}>
+          A useful spec fits on one screen; a serious one scales to thousands of
+          requirements with goals, scenarios, state machines, and a typed traceability graph.
+        </div>
+        <ol className={styles.steps}>
+          <li>
+            <strong>Scaffold</strong> — <code>npx @rqml/cli init</code> drops a <code>requirements.rqml</code> and an <a href="/AGENTS.md" download><code>AGENTS.md</code></a> in your project root
+          </li>
+          <li>
+            <strong>Check</strong> — <code>npx @rqml/cli check</code> validates the schema, checks that every requirement is linked to code and tests, and catches implementation drift
+          </li>
+          <li>
+            Develop with your <strong>coding agent of choice</strong> — it works from the spec, records trace links with <code>rqml link</code>, and you gate CI with <code>rqml check</code>
+          </li>
+        </ol>
+
+        <div className={styles.punch}>
+          <b>Tip:</b> <code>rqml skeleton</code> keeps the structure valid while your agent
+          drafts, and the <a href="#plugins">Claude Code and Codex plugins</a> run the whole
+          loop for you.
+        </div>
+
+        <div className={styles.heroCtas}>
+          <a className="button button--primary button--lg" href="/docs/quick-start">Quick start</a>
+        </div>
+      </div>
+
+      <div className={`card ${styles.snippetCard}`}>
+        <div className="card__body">
+          <Heading as="h3" className={styles.cardTitle}>A complete, valid spec</Heading>
+          <CodeBlock language="xml">
+{`<rqml xmlns="https://rqml.org/schema/2.1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="https://rqml.org/schema/2.1.0
+        https://rqml.org/schema/rqml-2.1.0.xsd"
+      version="2.1.0" docId="DOC-HELLO-001" status="draft">
+  <meta>
+    <title>Hello World CLI</title>
+    <system>hello</system>
+  </meta>
+  <requirements>
+    <req id="REQ-HELLO-001" type="FR" title="Print greeting"
+         status="draft" priority="must">
+      <statement>
+        The program MUST print "Hello, world!" to standard output
+        and exit with status code 0.
+      </statement>
+    </req>
+  </requirements>
+</rqml>`}
+          </CodeBlock>
+          <div className={styles.cardText}>
+            The header boilerplate is scaffolded by <code>rqml init</code> and maintained by
+            your agent — what you review is the <code>statement</code>.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* TRUST BAND — dogfood + what-it-is-not + XML one-liner (2026-07 restructure) */}
   <section className={`container ${styles.section} ${styles.bandDogfood}`}>
     <div className={styles.twoCol}>
       <div>
         <Heading as="h2">It eats its own dog food.</Heading>
         <div className={styles.lead}>
-          The RQML repository is specified in RQML. <code>requirements.rqml</code> defines
-          the language and the toolchain as requirements; every shipped feature was specified
-          before it was built, is linked to the code that implements it and the tests that
-          verify it, and the repo gates its own CI with <code>rqml check</code>.
+          The RQML repository is specified in RQML — <code>requirements.rqml</code> in the
+          repo root. Every shipped feature was specified before it was built and is traced
+          to the code that implements it. The repo gates its own CI
+          with <code>rqml check</code>. <a href="https://github.com/rqml-org/rqml/blob/main/requirements.rqml" target="_blank" rel="noopener noreferrer">Read the self-spec →</a>
         </div>
+        <div className={styles.lead}>
+          Yes, it's XML — deliberately. Requirements are documents, not data records, and
+          XML is boring in useful ways: schemas, mixed content, deterministic
+          validation. <a href="/why-xml">Why XML →</a>
+        </div>
+        <div className={styles.lead}>
+          Need requirement-to-test traceability you can show an auditor? The trace graph is
+          plain XML in your repo — the VS Code extension renders it as a traceability map
+          and exports documents.
+        </div>
+        {/* Origin story, kept for reference (also in the FAQ):
         <div className={styles.lead}>
           The name is older than you might guess: RQML began as an XML DTD in a 2000 MSc
           thesis at the University of York. 2.x is a ground-up redesign of that idea for
@@ -234,6 +381,7 @@ rqml check                # validation + coverage + drift; exit 0 or it isn't do
           <a className="button button--primary button--lg" href="https://github.com/rqml-org/rqml/blob/main/requirements.rqml" target="_blank" rel="noopener noreferrer">Read the self-spec →</a>
           <a className="button button--secondary button--lg" href="/docs/faq/#is-rqml-really-25-years-old">The origin story</a>
         </div>
+        */}
       </div>
 
       <div className={`card ${styles.card}`}>
@@ -241,8 +389,11 @@ rqml check                # validation + coverage + drift; exit 0 or it isn't do
           <Heading as="h3" className={styles.cardTitle}>What RQML is not</Heading>
           <ul className={styles.bullets}>
             <li><strong>Not a code generator.</strong> It never writes your code — your agent does that. RQML is what keeps the agent honest.</li>
-            <li><strong>Not AI-powered.</strong> No model runs anywhere in the toolchain. Verdicts are reproducible functions of your repo.</li>
+            <li><strong>Not AI-powered.</strong> No model runs in the verdict path. Verdicts are reproducible functions of your repo.</li>
+            {/* Replaced 2026-07 (name means little to the agent-native audience):
             <li><strong>Not DOORS.</strong> A text file in your repo and a small npm package — not an enterprise requirements suite.</li>
+            */}
+            <li><strong>Not a platform.</strong> Plain files in your repo and a small npm package — no server, no dashboard, no account.</li>
             <li><strong>Not ceremony.</strong> <code>meta</code> plus one requirement is a valid spec. Everything else is optional and added when it earns its keep.</li>
           </ul>
         </div>
@@ -250,7 +401,8 @@ rqml check                # validation + coverage + drift; exit 0 or it isn't do
     </div>
   </section>
 
-  {/* WHY XML — meet the objection head-on */}
+  {/* WHY XML — collapsed to a one-liner in the trust band above (2026-07 restructure).
+      Kept for reference:
   <section className={styles.xmlCallout}>
     <div className="container">
     <Heading as="h1" className={styles.centerHeader}>Yes, XML</Heading>
@@ -272,8 +424,11 @@ rqml check                # validation + coverage + drift; exit 0 or it isn't do
       </div>
     </div>
   </section>
+  */}
 
-  {/* HERO: examples */}
+  {/* HERO: examples — tag explorer cut in the 2026-07 restructure (its default snippet
+      read as ceremony; the "fits on one screen" claim moved to "Start in three steps").
+      Kept for reference:
   <section id="examples" className={`${styles.hero}`}>
     <div className="container">
       <Heading as="h1" className={styles.centerHeader}>Eleven sections. Two are mandatory.</Heading>
@@ -289,6 +444,7 @@ rqml check                # validation + coverage + drift; exit 0 or it isn't do
       <a className="button button--secondary button--lg" href="/docs/quick-start">Get started</a>
     </div>
   </section>
+  */}
 
   {/* HERO: Workflow — superseded by the terminal demo above; the SVG says less than the shell does
   <section id="workflow" className={`container ${styles.section}`}>
@@ -448,7 +604,8 @@ rqml check                # validation + coverage + drift; exit 0 or it isn't do
   </section>
   */}
 
-  {/* HERO: HOW */}
+  {/* HERO: HOW — moved up and retitled "Start in three steps" in the 2026-07 restructure.
+      Original kept for reference:
   <section className={`container ${styles.section}`}>
     <div className={styles.twoCol}>
       <div>
@@ -505,6 +662,7 @@ rqml check                # validation + coverage + drift; exit 0 or it isn't do
       </div>
     </div>
   </section>
+  */}
 
   {/* SUPPORTING: USE CASES */}
   {/*

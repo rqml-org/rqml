@@ -24,7 +24,7 @@ engine and the [`@rqml/mcp`](./mcp.md) server.
 ```text
 rqml <command> [spec.rqml] [options]
 
-  init [path]        Scaffold a starter spec and an AGENTS.md project marker
+  init [path]        Scaffold a starter spec and merge the RQML block into AGENTS.md
   validate [path]    XML well-formedness, XSD, and referential integrity
   status [path]      Spec summary: requirement count, coverage, lint findings
   check [path]       Deterministic enforcement gate (validation + coverage + drift)
@@ -177,7 +177,7 @@ Stable and documented, so scripts can branch on them:
 ## Examples
 
 ```bash
-rqml init                       # scaffold requirements.rqml + AGENTS.md
+rqml init                       # scaffold requirements.rqml + merge the RQML block into AGENTS.md
 rqml validate                   # is the spec structurally valid?
 rqml status --json | jq .       # coverage/lint summary as JSON
 rqml show REQ-PAY-001           # one requirement as markdown (add --json for data)
