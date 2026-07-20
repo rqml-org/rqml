@@ -9,6 +9,7 @@ const WITH_TRACE = `<?xml version="1.0" encoding="UTF-8"?>
   <meta><title>t</title><system>s</system></meta>
   <goals>
     <goal id="G1" title="g"><statement>s</statement></goal>
+    <goal id="G2" title="g2"><statement>s</statement></goal>
   </goals>
   <requirements>
     <!-- a load-bearing comment that must survive editing -->
@@ -36,8 +37,8 @@ const NO_TRACE = `<?xml version="1.0" encoding="UTF-8"?>
 describe("appendTraceEdge (REQ-LOOP-LINK)", () => {
   it("appends an implements edge that coverage then counts (CRIT-LINK-ROUNDTRIP)", () => {
     const result = appendTraceEdge(WITH_TRACE, {
-      artifactId: "REQ-A",
-      uri: "src/a.ts#thing",
+      from: "REQ-A",
+      to: "src/a.ts#thing",
       type: "implements",
     });
     if (!result.ok) throw new Error(result.error);
@@ -51,23 +52,131 @@ describe("appendTraceEdge (REQ-LOOP-LINK)", () => {
     expect(computeCoverage(parsed.document).unimplementedRequirements).toEqual([]);
   });
 
+  it("appends a local satisfies edge that coverage then counts (CRIT-LINK-LOCAL)", () => {
+    const before = parse(WITH_TRACE);
+    if (!before.ok) throw new Error("fixture did not parse");
+    expect(computeCoverage(before.document).uncoveredGoals).toContain("G2");
+
+    const result = appendTraceEdge(WITH_TRACE, {
+      from: "REQ-A",
+      to: "G2",
+      type: "satisfies",
+    });
+    if (!result.ok) throw new Error(result.error);
+    expect(result.edgeId).toBe("E-SAT-A-G2");
+    expect(result.edgeXml).toContain(
+      '<from><locator><local id="REQ-A"/></locator></from>',
+    );
+    expect(result.edgeXml).toContain('<to><locator><local id="G2"/></locator></to>');
+    expect(validate(result.xml).valid).toBe(true);
+
+    const parsed = parse(result.xml);
+    if (!parsed.ok) throw new Error("result did not parse");
+    expect(computeCoverage(parsed.document).uncoveredGoals).not.toContain("G2");
+  });
+
+  it("stamps draft status and a createdBy identity (CRIT-LINK-PROVENANCE)", () => {
+    const result = appendTraceEdge(WITH_TRACE, {
+      from: "REQ-A",
+      to: "G2",
+      type: "satisfies",
+    });
+    if (!result.ok) throw new Error(result.error);
+    expect(result.edgeXml).toContain('status="draft"');
+    expect(result.edgeXml).toContain('createdBy="rqml"');
+
+    const parsed = parse(result.xml);
+    if (!parsed.ok) throw new Error("result did not parse");
+    const edge = parsed.document.trace.find((e) => e.id === result.edgeId);
+    expect(edge?.status).toBe("draft");
+    expect(edge?.createdBy).toBe("rqml");
+  });
+
+  it("honors status and createdBy overrides", () => {
+    const result = appendTraceEdge(WITH_TRACE, {
+      from: "REQ-A",
+      to: "G2",
+      type: "satisfies",
+      status: "approved",
+      createdBy: "gardar",
+    });
+    if (!result.ok) throw new Error(result.error);
+    expect(result.edgeXml).toContain('status="approved"');
+    expect(result.edgeXml).toContain('createdBy="gardar"');
+  });
+
+  it("emits notes, confidence, and tags when given", () => {
+    const result = appendTraceEdge(WITH_TRACE, {
+      from: "REQ-A",
+      to: "G2",
+      type: "satisfies",
+      notes: "gate & <check> hold",
+      confidence: 0.9,
+      tags: ["safety", "compliance"],
+    });
+    if (!result.ok) throw new Error(result.error);
+    expect(result.edgeXml).toContain('confidence="0.9"');
+    expect(result.edgeXml).toContain('tags="safety compliance"');
+    expect(result.edgeXml).toContain("<notes>gate &amp; &lt;check&gt; hold</notes>");
+    expect(validate(result.xml).valid).toBe(true);
+
+    const parsed = parse(result.xml);
+    if (!parsed.ok) throw new Error("result did not parse");
+    const edge = parsed.document.trace.find((e) => e.id === result.edgeId);
+    expect(edge?.confidence).toBe(0.9);
+    expect(edge?.tags).toEqual(["safety", "compliance"]);
+    expect(edge?.notes).toContain("gate & <check> hold");
+  });
+
+  it("orients implements external → local whichever order the endpoints came in", () => {
+    const artifactFirst = appendTraceEdge(WITH_TRACE, {
+      from: "REQ-A",
+      to: "src/a.ts",
+      type: "implements",
+    });
+    const uriFirst = appendTraceEdge(WITH_TRACE, {
+      from: "src/a.ts",
+      to: "REQ-A",
+      type: "implements",
+    });
+    if (!artifactFirst.ok || !uriFirst.ok) throw new Error("append failed");
+    expect(artifactFirst.edgeXml).toBe(uriFirst.edgeXml);
+    expect(artifactFirst.edgeXml).toContain(
+      '<to><locator><local id="REQ-A"/></locator></to>',
+    );
+  });
+
+  it("records general types exactly from → to", () => {
+    const result = appendTraceEdge(WITH_TRACE, {
+      from: "G2",
+      to: "REQ-A",
+      type: "refines",
+    });
+    if (!result.ok) throw new Error(result.error);
+    expect(result.edgeId).toBe("E-REF-G2-A");
+    expect(result.edgeXml).toContain('<from><locator><local id="G2"/></locator></from>');
+    expect(result.edgeXml).toContain('<to><locator><local id="REQ-A"/></locator></to>');
+  });
+
   it("preserves comments and existing formatting", () => {
     const result = appendTraceEdge(WITH_TRACE, {
-      artifactId: "REQ-A",
-      uri: "src/a.ts",
+      from: "REQ-A",
+      to: "src/a.ts",
       type: "implements",
     });
     if (!result.ok) throw new Error(result.error);
     expect(result.xml).toContain("a load-bearing comment that must survive editing");
     expect(result.xml).toContain('    <edge id="E-SAT" type="satisfies">');
     // New edge picks up the surrounding indentation.
-    expect(result.xml).toContain('    <edge id="E-IMPL-A" type="implements">');
+    expect(result.xml).toContain(
+      '    <edge id="E-IMPL-A" type="implements" status="draft" createdBy="rqml">',
+    );
   });
 
   it("orients verifiedBy edges requirement → test", () => {
     const result = appendTraceEdge(WITH_TRACE, {
-      artifactId: "REQ-A",
-      uri: "test/a.test.ts",
+      from: "REQ-A",
+      to: "test/a.test.ts",
       type: "verifiedBy",
     });
     if (!result.ok) throw new Error(result.error);
@@ -80,8 +189,8 @@ describe("appendTraceEdge (REQ-LOOP-LINK)", () => {
 
   it("creates the trace section before governance when none exists", () => {
     const result = appendTraceEdge(NO_TRACE, {
-      artifactId: "REQ-A",
-      uri: "src/a.ts",
+      from: "REQ-A",
+      to: "src/a.ts",
       type: "implements",
     });
     if (!result.ok) throw new Error(result.error);
@@ -92,49 +201,111 @@ describe("appendTraceEdge (REQ-LOOP-LINK)", () => {
 
   it("derives a fresh edge id when the default is taken", () => {
     const first = appendTraceEdge(WITH_TRACE, {
-      artifactId: "REQ-A",
-      uri: "src/a.ts",
+      from: "REQ-A",
+      to: "src/a.ts",
       type: "implements",
     });
     if (!first.ok) throw new Error(first.error);
     const second = appendTraceEdge(first.xml, {
-      artifactId: "REQ-A",
-      uri: "src/other.ts",
+      from: "REQ-A",
+      to: "src/other.ts",
       type: "implements",
     });
     if (!second.ok) throw new Error(second.error);
     expect(second.edgeId).toBe("E-IMPL-A-2");
   });
 
-  it("rejects unknown artifacts, taken ids, and malformed ids", () => {
-    const unknown = appendTraceEdge(WITH_TRACE, {
-      artifactId: "REQ-NOPE",
-      uri: "src/a.ts",
+  it("rejects undeclared bare ids instead of treating them as external", () => {
+    const typo = appendTraceEdge(WITH_TRACE, {
+      from: "REQ-NOPE",
+      to: "src/a.ts",
       type: "implements",
     });
-    expect(unknown.ok).toBe(false);
+    expect(typo.ok).toBe(false);
+    if (!typo.ok) expect(typo.error).toContain("not a declared artifact id");
 
+    // A bare filename with no path separator gets the same protection.
+    const bareFile = appendTraceEdge(WITH_TRACE, {
+      from: "REQ-A",
+      to: "a.ts",
+      type: "implements",
+    });
+    expect(bareFile.ok).toBe(false);
+    if (!bareFile.ok) expect(bareFile.error).toContain("./a.ts");
+  });
+
+  it("rejects endpoint combinations the type cannot take", () => {
+    const bothLocal = appendTraceEdge(WITH_TRACE, {
+      from: "REQ-A",
+      to: "G1",
+      type: "implements",
+    });
+    expect(bothLocal.ok).toBe(false);
+    if (!bothLocal.ok) expect(bothLocal.error).toContain("one declared artifact");
+
+    const bothExternal = appendTraceEdge(WITH_TRACE, {
+      from: "src/a.ts",
+      to: "urn:gdpr:article:17",
+      type: "conformsTo",
+    });
+    expect(bothExternal.ok).toBe(false);
+    if (!bothExternal.ok) expect(bothExternal.error).toContain("at least one endpoint");
+
+    const docRef = appendTraceEdge(WITH_TRACE, {
+      from: "REQ-A",
+      to: "rqml:other.rqml#REQ-X",
+      type: "dependsOn",
+    });
+    expect(docRef.ok).toBe(false);
+    if (!docRef.ok) expect(docRef.error).toContain("document locators");
+  });
+
+  it("rejects taken ids, malformed ids, and malformed extras", () => {
     const taken = appendTraceEdge(WITH_TRACE, {
-      artifactId: "REQ-A",
-      uri: "src/a.ts",
+      from: "REQ-A",
+      to: "src/a.ts",
       type: "implements",
       edgeId: "E-SAT",
     });
     expect(taken.ok).toBe(false);
 
     const malformed = appendTraceEdge(WITH_TRACE, {
-      artifactId: "REQ-A",
-      uri: "src/a.ts",
+      from: "REQ-A",
+      to: "src/a.ts",
       type: "implements",
       edgeId: "0bad id",
     });
     expect(malformed.ok).toBe(false);
+
+    const badConfidence = appendTraceEdge(WITH_TRACE, {
+      from: "REQ-A",
+      to: "G2",
+      type: "satisfies",
+      confidence: 1.5,
+    });
+    expect(badConfidence.ok).toBe(false);
+
+    const badTag = appendTraceEdge(WITH_TRACE, {
+      from: "REQ-A",
+      to: "G2",
+      type: "satisfies",
+      tags: ["has space"],
+    });
+    expect(badTag.ok).toBe(false);
+
+    const hintsWithoutExternal = appendTraceEdge(WITH_TRACE, {
+      from: "REQ-A",
+      to: "G2",
+      type: "satisfies",
+      kind: "code",
+    });
+    expect(hintsWithoutExternal.ok).toBe(false);
   });
 
   it("escapes attribute values in the generated edge", () => {
     const result = appendTraceEdge(WITH_TRACE, {
-      artifactId: "REQ-A",
-      uri: 'src/a"&<>.ts',
+      from: "REQ-A",
+      to: 'src/a"&<>.ts',
       type: "implements",
       title: "a & b",
     });
@@ -146,7 +317,7 @@ describe("appendTraceEdge (REQ-LOOP-LINK)", () => {
   });
 
   it("is deterministic", () => {
-    const request = { artifactId: "REQ-A", uri: "src/a.ts", type: "implements" as const };
+    const request = { from: "REQ-A", to: "src/a.ts", type: "implements" as const };
     expect(appendTraceEdge(WITH_TRACE, request)).toEqual(
       appendTraceEdge(WITH_TRACE, request),
     );
@@ -160,8 +331,8 @@ describe("updateTraceEdge (REQ-LOOP-RELINK)", () => {
     extra: Partial<Parameters<typeof appendTraceEdge>[1]> = {},
   ) {
     const result = appendTraceEdge(WITH_TRACE, {
-      artifactId: "REQ-A",
-      uri,
+      from: "REQ-A",
+      to: uri,
       type: "implements",
       ...extra,
     });
@@ -284,5 +455,33 @@ describe("updateTraceEdge (REQ-LOOP-RELINK)", () => {
     expect(updateTraceEdge(start.xml, request)).toEqual(
       updateTraceEdge(start.xml, request),
     );
+  });
+
+  it("matches the append-derived id for a long artifact id (no derivation drift)", () => {
+    // A requirement whose id sans REQ- exceeds the 76-char cap: append truncates
+    // the derived edge id, and update must derive the same truncated id.
+    const longId = `REQ-${"X".repeat(74)}`;
+    const spec = WITH_TRACE.replace(
+      '<req id="REQ-A" type="FR" title="r" status="approved"><statement>s</statement></req>',
+      `<req id="REQ-A" type="FR" title="r" status="approved"><statement>s</statement></req>
+    <req id="${longId}" type="FR" title="r" status="approved"><statement>s</statement></req>`,
+    );
+    const appended = appendTraceEdge(spec, {
+      from: longId,
+      to: "src/a.ts",
+      type: "implements",
+    });
+    if (!appended.ok) throw new Error(appended.error);
+    expect(appended.edgeId.length).toBeLessThanOrEqual(80);
+    expect(validate(appended.xml).valid).toBe(true);
+
+    const updated = updateTraceEdge(appended.xml, {
+      artifactId: longId,
+      uri: "src/b.ts",
+      type: "implements",
+    });
+    if (!updated.ok) throw new Error(updated.error);
+    expect(updated.edgeId).toBe(appended.edgeId);
+    expect(updated.previousUri).toBe("src/a.ts");
   });
 });

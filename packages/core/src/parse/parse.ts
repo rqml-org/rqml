@@ -55,6 +55,7 @@ import type {
   Transition,
   Verification,
 } from "../model/types.js";
+import { normalizeExternalUri, parseEndpointRef } from "../trace/endpoint.js";
 import { setRawSections } from "./raw.js";
 
 export type ParseResult =
@@ -772,7 +773,7 @@ function parseLocator(parent: unknown): Locator | undefined {
   if (isNode(loc.external)) {
     const out: ExternalLocator = {
       kind: "external",
-      uri: attr(loc.external, "uri") ?? "",
+      uri: normalizeExternalUri(attr(loc.external, "uri") ?? ""),
     };
     const hintKind = attr(loc.external, "kind");
     const title = attr(loc.external, "title");
@@ -817,6 +818,35 @@ function parseEdge(node: unknown): TraceEdge | undefined {
   return edge;
 }
 
+/**
+ * Compact 2.2.0 `<edge from="…" to="…"/>` (RFC-0003). Endpoint values use the
+ * micro-syntax in trace/endpoint.ts; a malformed endpoint drops the edge here,
+ * and checkIntegrity independently reports it (REQ-CORE-COMPACT-PARITY), so a
+ * broken edge can never silently pass enforcement.
+ */
+function parseCompactEdge(node: unknown): TraceEdge | undefined {
+  const fromRaw = attr(node, "from");
+  const toRaw = attr(node, "to");
+  if (fromRaw === undefined || toRaw === undefined) return undefined;
+  const from = parseEndpointRef(fromRaw, {
+    ...(attr(node, "fromKind") !== undefined ? { kind: attr(node, "fromKind") } : {}),
+    ...(attr(node, "fromTitle") !== undefined ? { title: attr(node, "fromTitle") } : {}),
+  });
+  const to = parseEndpointRef(toRaw, {
+    ...(attr(node, "toKind") !== undefined ? { kind: attr(node, "toKind") } : {}),
+    ...(attr(node, "toTitle") !== undefined ? { title: attr(node, "toTitle") } : {}),
+  });
+  if (!from.ok || !to.ok) return undefined;
+  const edge: TraceEdge = {
+    id: attr(node, "id") ?? "",
+    type: (attr(node, "type") ?? "satisfies") as TraceType,
+    from: from.locator,
+    to: to.locator,
+  };
+  applyEdgeMeta(edge, node);
+  return edge;
+}
+
 /** Flat 2.0.1 `<traceEdge from="A" to="B" type="…"/>`. */
 function parseFlatEdge(node: unknown): TraceEdge | undefined {
   const fromId = attr(node, "from");
@@ -846,7 +876,9 @@ function parseTrace(root: Node): TraceEdge[] {
   if (!isNode(traceNode)) return [];
   const edges: TraceEdge[] = [];
   for (const e of asArray(traceNode.edge)) {
-    const parsed = parseEdge(e);
+    // Nested 2.1.0 endpoints win when present; otherwise the compact 2.2.0
+    // attribute form is read from the same element name.
+    const parsed = parseEdge(e) ?? parseCompactEdge(e);
     if (parsed) edges.push(parsed);
   }
   for (const e of asArray(traceNode.traceEdge)) {

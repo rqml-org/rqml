@@ -36,12 +36,24 @@ export {
 export { checkIntegrity } from "./analyze/integrity.js";
 export {
   appendTraceEdge,
+  TRACE_TYPES,
   updateTraceEdge,
   type LinkRequest,
   type LinkResult,
   type UpdateLinkRequest,
   type UpdateLinkResult,
 } from "./edit/link.js";
+export {
+  MIGRATE_TARGET,
+  migrateDocument,
+  type MigrateResult,
+} from "./edit/migrate.js";
+export {
+  formatConfidence,
+  formatEndpointRef,
+  parseEndpointRef,
+  type EndpointParseResult,
+} from "./trace/endpoint.js";
 
 export {
   buildOutline,

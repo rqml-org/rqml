@@ -30,10 +30,7 @@ const TEMPLATES: Record<SkeletonKind, (id: string) => string> = {
     </criterion>
   </acceptance>
 </req>`,
-  edge: (id) => `<edge id="${id}" type="satisfies">
-  <from><locator><local id="REQ-AREA-001"/></locator></from>
-  <to><locator><local id="GOAL-NAME"/></locator></to>
-</edge>`,
+  edge: (id) => `<edge id="${id}" type="satisfies" from="REQ-AREA-001" to="GOAL-NAME"/>`,
   testCase: (id) => `<testCase id="${id}" type="unit" title="Title">
   <purpose>...</purpose>
   <steps>...</steps>

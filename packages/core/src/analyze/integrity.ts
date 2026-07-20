@@ -1,5 +1,6 @@
 import { XMLParser } from "fast-xml-parser";
 import type { Diagnostic } from "../model/diagnostic.js";
+import { parseEndpointRef } from "../trace/endpoint.js";
 
 /**
  * Referential-integrity checks: unique ids across the document, and trace
@@ -38,8 +39,16 @@ interface TraceRef {
   refId: string;
   edgeId: string;
   side: "from" | "to";
-  /** true for the flat 2.0.1 `<traceEdge from to>` form, false for nested `<edge>`. */
-  flat: boolean;
+  /** Which serialization carried the reference (drives the line-lookup regex). */
+  form: "nested" | "flat" | "compact";
+}
+
+/** A compact endpoint whose value is a malformed rqml: doc locator. */
+interface DocRefError {
+  edgeId: string;
+  side: "from" | "to";
+  value: string;
+  error: string;
 }
 
 function isNode(v: unknown): v is Node {
@@ -67,8 +76,73 @@ function nestedRefs(edge: Node, out: TraceRef[]): void {
     const locator = isNode(endpoint) ? endpoint.locator : undefined;
     const local = isNode(locator) ? locator.local : undefined;
     const refId = isNode(local) ? attr(local, "id") : undefined;
-    if (refId !== undefined) out.push({ refId, edgeId, side, flat: false });
+    if (refId !== undefined) out.push({ refId, edgeId, side, form: "nested" });
   }
+}
+
+/** Would parseLocator succeed on this nested endpoint child? */
+function hasNestedLocator(endpoint: unknown): boolean {
+  if (!isNode(endpoint)) return false;
+  const locator = endpoint.locator;
+  if (!isNode(locator)) return false;
+  return isNode(locator.local) || isNode(locator.doc) || isNode(locator.external);
+}
+
+/** An edge element the parser drops entirely — must be reported, never silent. */
+interface MalformedEdge {
+  edgeId: string;
+  reason: string;
+}
+
+/**
+ * Trace refs from one `<edge>` element, mirroring parseTrace's PER-EDGE form
+ * decision exactly (REQ-CORE-COMPACT-PARITY): nested endpoints carry the edge
+ * only when BOTH are complete (parseEdge succeeds); otherwise the compact
+ * from/to attributes do (RFC-0003). An edge that neither form can parse is
+ * reported as malformed — a malformed rqml: value via the invalid-doc-locator
+ * rule, everything else via malformed-trace-edge — so an edge the parser
+ * drops can never silently escape enforcement.
+ */
+function edgeRefs(
+  edge: Node,
+  out: TraceRef[],
+  docErrors: DocRefError[],
+  malformed: MalformedEdge[],
+): void {
+  const edgeId = attr(edge, "id") ?? "";
+  if (hasNestedLocator(edge.from) && hasNestedLocator(edge.to)) {
+    nestedRefs(edge, out);
+    return;
+  }
+  const fromRaw = attr(edge, "from");
+  const toRaw = attr(edge, "to");
+  if (fromRaw === undefined || toRaw === undefined) {
+    malformed.push({
+      edgeId,
+      reason:
+        "edge has neither two complete nested endpoints nor both from and to attributes",
+    });
+    return;
+  }
+  const locals: TraceRef[] = [];
+  let broken = false;
+  for (const side of ["from", "to"] as const) {
+    const value = side === "from" ? fromRaw : toRaw;
+    const result = parseEndpointRef(value);
+    if (!result.ok) {
+      broken = true;
+      if (/^rqml:/i.test(value.trim())) {
+        docErrors.push({ edgeId, side, value, error: result.error });
+      } else {
+        malformed.push({ edgeId, reason: `${side} endpoint: ${result.error}` });
+      }
+    } else if (result.locator.kind === "local") {
+      locals.push({ refId: result.locator.id, edgeId, side, form: "compact" });
+    }
+  }
+  // A broken endpoint drops the whole edge from the model; its refs must not
+  // enter the dangling check (they are not parser-visible), only the report.
+  if (!broken) out.push(...locals);
 }
 
 /** Trace refs from a flat 2.0.1 `<traceEdge from to>`. */
@@ -76,22 +150,29 @@ function flatRefs(edge: Node, out: TraceRef[]): void {
   const edgeId = attr(edge, "id") ?? "";
   const from = attr(edge, "from");
   const to = attr(edge, "to");
-  if (from !== undefined) out.push({ refId: from, edgeId, side: "from", flat: true });
-  if (to !== undefined) out.push({ refId: to, edgeId, side: "to", flat: true });
+  if (from !== undefined) out.push({ refId: from, edgeId, side: "from", form: "flat" });
+  if (to !== undefined) out.push({ refId: to, edgeId, side: "to", form: "flat" });
 }
 
 /** Collect declared ids, trace refs, and state machines over the whole tree. */
-function walk(node: Node, declared: string[], refs: TraceRef[], machines: Node[]): void {
+function walk(
+  node: Node,
+  declared: string[],
+  refs: TraceRef[],
+  machines: Node[],
+  docErrors: DocRefError[],
+  malformed: MalformedEdge[],
+): void {
   for (const [key, value] of Object.entries(node)) {
     if (key.startsWith(ATTR_PREFIX) || key === "#text") continue;
     for (const item of asArray<unknown>(value)) {
       if (!isNode(item)) continue;
       const id = attr(item, "id");
       if (id !== undefined && !REFERENCE_ELEMENTS.has(key)) declared.push(id);
-      if (key === "edge") nestedRefs(item, refs);
+      if (key === "edge") edgeRefs(item, refs, docErrors, malformed);
       else if (key === "traceEdge") flatRefs(item, refs);
       else if (key === "stateMachine") machines.push(item);
-      walk(item, declared, refs, machines);
+      walk(item, declared, refs, machines, docErrors, malformed);
     }
   }
 }
@@ -156,7 +237,9 @@ export function checkIntegrity(xml: string): Diagnostic[] {
   const declared: string[] = [];
   const refs: TraceRef[] = [];
   const machines: Node[] = [];
-  walk(root, declared, refs, machines);
+  const docErrors: DocRefError[] = [];
+  const malformed: MalformedEdge[] = [];
+  walk(root, declared, refs, machines, docErrors, malformed);
 
   const starts = lineStarts(xml);
   const diagnostics: Diagnostic[] = [];
@@ -184,22 +267,67 @@ export function checkIntegrity(xml: string): Diagnostic[] {
     }
   }
 
-  // Dangling trace endpoints (xs:keyref traceFromRef / traceToRef).
+  // Dangling trace endpoints (processor-enforced per RFC-0003; the 2.1.0
+  // trace keyrefs were inert and are deleted in 2.2.0).
   const declaredSet = new Set(declared);
   for (const ref of refs) {
     if (ref.refId === "" || declaredSet.has(ref.refId)) continue;
-    const re = ref.flat
-      ? new RegExp(
-          `<traceEdge\\b[^>]*?\\s${ref.side}\\s*=\\s*"${escapeRegExp(ref.refId)}"`,
-          "g",
-        )
-      : new RegExp(`<local\\b[^>]*?\\sid\\s*=\\s*"${escapeRegExp(ref.refId)}"`, "g");
+    const re =
+      ref.form === "flat"
+        ? new RegExp(
+            `<traceEdge\\b[^>]*?\\s${ref.side}\\s*=\\s*"${escapeRegExp(ref.refId)}"`,
+            "g",
+          )
+        : ref.form === "compact"
+          ? new RegExp(
+              `<edge\\b[^>]*?\\s${ref.side}\\s*=\\s*"${escapeRegExp(ref.refId)}"`,
+              "g",
+            )
+          : new RegExp(`<local\\b[^>]*?\\sid\\s*=\\s*"${escapeRegExp(ref.refId)}"`, "g");
     const lines = matchLines(xml, starts, re);
     const diag: Diagnostic = {
       source: "trace",
       severity: "error",
       rule: "unresolved-local-ref",
       message: `Trace edge "${ref.edgeId}" (${ref.side}) references unknown id "${ref.refId}".`,
+    };
+    if (lines.length > 0) diag.line = lines[0];
+    diagnostics.push(diag);
+  }
+
+  // Edges the parser drops entirely (REQ-CORE-COMPACT-PARITY): incomplete
+  // endpoint forms and malformed non-doc endpoint values must be reported,
+  // never silently vanish from the trace graph.
+  for (const bad of malformed) {
+    const re = new RegExp(
+      `<edge\\b[^>]*?\\bid\\s*=\\s*"${escapeRegExp(bad.edgeId)}"`,
+      "g",
+    );
+    const lines = matchLines(xml, starts, re);
+    const diag: Diagnostic = {
+      source: "trace",
+      severity: "error",
+      rule: "malformed-trace-edge",
+      message: `Trace edge "${bad.edgeId}": ${bad.reason}; the edge is not part of the trace graph.`,
+    };
+    if (lines.length > 0) diag.line = lines[0];
+    diagnostics.push(diag);
+  }
+
+  // Malformed rqml: doc locators in compact endpoints (RFC-0003): a doc
+  // reference without a valid target-id fragment must be reported, never
+  // treated as an external URI.
+  for (const err of docErrors) {
+    const re = new RegExp(
+      `<edge\\b[^>]*?\\s${err.side}\\s*=\\s*"${escapeRegExp(err.value)}"`,
+      "g",
+    );
+    const lines = matchLines(xml, starts, re);
+    const diag: Diagnostic = {
+      source: "trace",
+      severity: "error",
+      rule: "invalid-doc-locator",
+      message: `Trace edge "${err.edgeId}" (${err.side}): ${err.error}.`,
     };
     if (lines.length > 0) diag.line = lines[0];
     diagnostics.push(diag);

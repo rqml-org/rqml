@@ -8,6 +8,7 @@ import { runInit } from "./commands/init.js";
 import { runLink } from "./commands/link.js";
 import { runLint } from "./commands/lint.js";
 import { runMatrix } from "./commands/matrix.js";
+import { runMigrate } from "./commands/migrate.js";
 import { runOverview } from "./commands/overview.js";
 import { runShow } from "./commands/show.js";
 import { runSkeleton } from "./commands/skeleton.js";
@@ -42,6 +43,8 @@ Commands:
   approve <id>       Transition a requirement's status (--status, default approved)
   gate [paths...]    Block implementation of non-approved requirements (exit 2)
   skeleton <kind>    Print a schema-valid snippet (req|edge|testCase|stateMachine)
+  migrate [path]     Rewrite a 2.0.1/2.1.0 spec to the current schema version
+                     (compact trace edges, RFC-0003; --dry-run to preview)
 
 Options:
   --json                 Emit machine-readable JSON (reporting commands)
@@ -94,6 +97,8 @@ async function main(argv: string[]): Promise<number> {
       return runGate(rest);
     case "skeleton":
       return runSkeleton(rest);
+    case "migrate":
+      return runMigrate(rest);
     case "-v":
     case "--version":
       process.stdout.write(`${VERSION}\n`);

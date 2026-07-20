@@ -11,19 +11,21 @@ import agentsTemplate from "../templates/AGENTS.md";
  */
 import xsd201 from "../versions/2.0.1/rqml-2.0.1.xsd";
 import xsd210 from "../versions/2.1.0/rqml-2.1.0.xsd";
+import xsd220 from "../versions/2.2.0/rqml-2.2.0.xsd";
 
 /** Supported RQML schema versions, oldest first, newest-supported last. */
-export const SCHEMA_VERSIONS = ["2.0.1", "2.1.0"] as const;
+export const SCHEMA_VERSIONS = ["2.0.1", "2.1.0", "2.2.0"] as const;
 
 /** A version string known to have a bundled schema. */
 export type SchemaVersion = (typeof SCHEMA_VERSIONS)[number];
 
 /** Schema version used when a document declares none and none is forced. */
-export const DEFAULT_SCHEMA_VERSION: SchemaVersion = "2.1.0";
+export const DEFAULT_SCHEMA_VERSION: SchemaVersion = "2.2.0";
 
 const SCHEMAS: Record<string, string> = {
   "2.0.1": xsd201,
   "2.1.0": xsd210,
+  "2.2.0": xsd220,
 };
 
 /** The default RQML `AGENTS.md` template, published at `https://rqml.org/AGENTS.md`. */
