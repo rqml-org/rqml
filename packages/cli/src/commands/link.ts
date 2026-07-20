@@ -1,6 +1,8 @@
 import { writeFileSync } from "node:fs";
 import {
   type LinkRequest,
+  TRACE_TYPES,
+  type TraceType,
   appendTraceEdge,
   computeBaseline,
   implementsLinks,
@@ -20,17 +22,28 @@ import {
   specArgs,
 } from "../runtime.js";
 
-const USAGE =
-  "usage: rqml link <artifact-id> <uri> [--update] [--type implements|verifiedBy] [--id <edge-id>] [--kind <k>] [--title <t>] [--spec <path>]\n" +
-  "       rqml link --refresh <edge-id> [--spec <path>]";
+const USAGE = `usage: rqml link <from> <to> [--type <traceType>] [--id <edge-id>] [--kind <k>] [--title <t>]
+                 [--notes <why>] [--confidence <0-1>] [--tags <a,b>] [--by <who>] [--status <s>] [--spec <path>]
+       rqml link <artifact-id> <uri> --update [--type implements|verifiedBy] [--id <edge-id>] [--kind <k>] [--title <t>] [--spec <path>]
+       rqml link --refresh <edge-id> [--spec <path>]
+       trace types: ${TRACE_TYPES.join(" ")}`;
+
+/** A positional that can only be an external locator, never a declared id. */
+function looksExternal(value: string): boolean {
+  return /^[A-Za-z][A-Za-z0-9+.-]*:/.test(value) || value.includes("/");
+}
 
 /**
- * `rqml link` — record an implements/verifiedBy trace edge mechanically
- * (REQ-LOOP-LINK) and the drift baseline for the linked artifact
- * (REQ-CORE-DRIFT-BASELINE). With `--update` the existing edge's external
- * locator is replaced in place, and with `--refresh <edge-id>` only the
- * baseline entry is re-recorded (REQ-LOOP-RELINK). The spec file is only
- * written when the edited document still validates.
+ * `rqml link` — record a trace edge of any type mechanically (REQ-LOOP-LINK)
+ * and the drift baseline for the linked artifact where one applies
+ * (REQ-CORE-DRIFT-BASELINE). Endpoints are declared artifact ids or external
+ * URIs; implements/verifiedBy edges are auto-oriented, other types are
+ * recorded exactly from → to. New edges are stamped status="draft" and
+ * createdBy="rqml" unless overridden (--status, --by). With `--update` the
+ * existing edge's external locator is replaced in place, and with
+ * `--refresh <edge-id>` only the baseline entry is re-recorded
+ * (REQ-LOOP-RELINK). The spec file is only written when the edited document
+ * still validates.
  */
 export async function runLink(rest: string[]): Promise<number> {
   const args = parseArgs(rest);
@@ -40,24 +53,55 @@ export async function runLink(rest: string[]): Promise<number> {
     return runRefresh(args, edgeId);
   }
 
-  const [artifactId, uri] = args.positionals;
-  if (artifactId === undefined || uri === undefined) throw new UsageError(USAGE);
+  const [first, second] = args.positionals;
+  if (first === undefined || second === undefined) throw new UsageError(USAGE);
   const type = flagString(args, "type") ?? "implements";
-  if (type !== "implements" && type !== "verifiedBy") {
-    throw new UsageError(`unknown link type "${type}" (implements|verifiedBy)`);
+  if (!(TRACE_TYPES as readonly string[]).includes(type)) {
+    throw new UsageError(`unknown link type "${type}" (${TRACE_TYPES.join("|")})`);
   }
   const update = args.flags.get("update") === true || args.flags.get("update") === "true";
-
   const { path, xml } = readSpec(specArgs(args));
-  const request: LinkRequest = { artifactId, uri, type };
+
+  if (update) {
+    if (type !== "implements" && type !== "verifiedBy") {
+      throw new UsageError("--update maintains implements/verifiedBy edges only");
+    }
+    // Legacy order is <artifact-id> <uri>; accept either order when it is
+    // unambiguous which positional is the URI.
+    const [artifactId, uri] =
+      looksExternal(first) && !looksExternal(second) ? [second, first] : [first, second];
+    return runUpdate(args, path, xml, { artifactId, uri, type });
+  }
+
+  const request: LinkRequest = { from: first, to: second, type: type as TraceType };
   const edgeId = flagString(args, "id");
   if (edgeId !== undefined) request.edgeId = edgeId;
   const kind = flagString(args, "kind");
   if (kind !== undefined) request.kind = kind;
   const title = flagString(args, "title");
   if (title !== undefined) request.title = title;
+  const notes = flagString(args, "notes");
+  if (notes !== undefined) request.notes = notes;
+  const confidence = flagString(args, "confidence");
+  if (confidence !== undefined) {
+    const value = Number(confidence);
+    if (!Number.isFinite(value)) {
+      throw new UsageError(
+        `--confidence must be a number between 0 and 1, got "${confidence}"`,
+      );
+    }
+    request.confidence = value;
+  }
+  const tags = flagString(args, "tags");
+  if (tags !== undefined) {
+    request.tags = tags.split(/[\s,]+/).filter((t) => t !== "");
+  }
+  const status = flagString(args, "status");
+  if (status !== undefined) request.status = status as LinkRequest["status"];
+  const createdBy = flagString(args, "by");
+  if (createdBy !== undefined) request.createdBy = createdBy;
 
-  const result = update ? updateTraceEdge(xml, request) : appendTraceEdge(xml, request);
+  const result = appendTraceEdge(xml, request);
   if (!result.ok) {
     process.stderr.write(`✗ link failed: ${result.error}\n`);
     return EXIT.VALIDATION;
@@ -72,38 +116,91 @@ export async function runLink(rest: string[]): Promise<number> {
   }
   writeFileSync(path, result.xml);
 
-  // Hash the newly linked artifact only — re-hashing every link here would
-  // silently bless drifted artifacts.
-  let baselineRecorded = false;
-  const parsed = parse(result.xml);
-  if (parsed.ok) {
-    const fresh = computeBaseline(parsed.document, { baseDir: args.baseDir });
-    const hash = fresh[result.edgeId];
-    if (hash !== undefined) {
-      const baseline = loadBaseline(args.baseDir) ?? {};
-      baseline[result.edgeId] = hash;
-      saveBaseline(args.baseDir, baseline);
-      baselineRecorded = true;
-    }
-  }
+  const baselineRecorded = recordBaseline(args, result.xml, result.edgeId);
+  const statusValue = request.status ?? "draft";
 
   if (args.json) {
     const report = {
       spec: path,
-      mode: update ? "update" : "append",
+      mode: "append",
       edgeId: result.edgeId,
       type,
-      artifactId,
-      uri,
+      from: result.from,
+      to: result.to,
+      status: statusValue,
+      createdBy: request.createdBy ?? "rqml",
       baselineRecorded,
     };
     process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
   } else {
-    const arrow = type === "implements" ? "←" : "→";
-    const mode = update ? ", updated" : "";
     const baseline = baselineRecorded ? ", baseline recorded" : "";
     process.stdout.write(
-      `✓ ${artifactId} ${arrow} ${uri} (${result.edgeId}, ${type}${mode}${baseline})\n`,
+      `✓ ${result.from} —${type}→ ${result.to} (${result.edgeId}, ${statusValue}${baseline})\n`,
+    );
+  }
+  return EXIT.OK;
+}
+
+/** Hash the newly linked artifact only — re-hashing every link here would
+ * silently bless drifted artifacts. */
+function recordBaseline(args: Args, xml: string, edgeId: string): boolean {
+  const parsed = parse(xml);
+  if (!parsed.ok) return false;
+  const fresh = computeBaseline(parsed.document, { baseDir: args.baseDir });
+  const hash = fresh[edgeId];
+  if (hash === undefined) return false;
+  const baseline = loadBaseline(args.baseDir) ?? {};
+  baseline[edgeId] = hash;
+  saveBaseline(args.baseDir, baseline);
+  return true;
+}
+
+async function runUpdate(
+  args: Args,
+  path: string,
+  xml: string,
+  base: { artifactId: string; uri: string; type: "implements" | "verifiedBy" },
+): Promise<number> {
+  const request = { ...base } as Parameters<typeof updateTraceEdge>[1];
+  const edgeId = flagString(args, "id");
+  if (edgeId !== undefined) request.edgeId = edgeId;
+  const kind = flagString(args, "kind");
+  if (kind !== undefined) request.kind = kind;
+  const title = flagString(args, "title");
+  if (title !== undefined) request.title = title;
+
+  const result = updateTraceEdge(xml, request);
+  if (!result.ok) {
+    process.stderr.write(`✗ link failed: ${result.error}\n`);
+    return EXIT.VALIDATION;
+  }
+  const { validate } = await import("@rqml/core/validate");
+  const validation = validate(result.xml);
+  if (!validation.valid) {
+    printDiagnostics(validation.diagnostics);
+    process.stderr.write("✗ link would invalidate the document; nothing written\n");
+    return EXIT.VALIDATION;
+  }
+  writeFileSync(path, result.xml);
+  const baselineRecorded = recordBaseline(args, result.xml, result.edgeId);
+
+  if (args.json) {
+    const report = {
+      spec: path,
+      mode: "update",
+      edgeId: result.edgeId,
+      type: base.type,
+      artifactId: base.artifactId,
+      uri: base.uri,
+      previousUri: result.previousUri,
+      baselineRecorded,
+    };
+    process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+  } else {
+    const arrow = base.type === "implements" ? "←" : "→";
+    const baseline = baselineRecorded ? ", baseline recorded" : "";
+    process.stdout.write(
+      `✓ ${base.artifactId} ${arrow} ${base.uri} (${result.edgeId}, ${base.type}, updated${baseline})\n`,
     );
   }
   return EXIT.OK;

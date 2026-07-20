@@ -6,6 +6,8 @@ import {
   type ProjectionFilter,
   SKELETON_KINDS,
   type SkeletonKind,
+  TRACE_TYPES,
+  type TraceType,
   appendTraceEdge,
   approvalGate,
   buildMatrix,
@@ -241,7 +243,7 @@ export const TOOLS: ToolDef[] = [
   {
     name: "rqml_link",
     description:
-      "Record or maintain an implements/verifiedBy trace edge in the spec FILE and its drift baseline. Modes: append (default) adds a new edge; update repoints an existing edge's external locator; refresh re-records the drift baseline for one edge without touching the spec. Writes to disk — requires path (explicit caller intent per REQ-MCP-READONLY).",
+      "Record or maintain a trace edge in the spec FILE and its drift baseline. Modes: append (default) adds a new edge of any trace type between two endpoints (each a declared artifact id or an external URI; implements/verifiedBy are auto-oriented, other types are recorded exactly from → to); update repoints an existing implements/verifiedBy edge's external locator; refresh re-records the drift baseline for one edge without touching the spec. New edges are stamped status=draft and createdBy unless overridden. Writes to disk — requires path (explicit caller intent per REQ-MCP-READONLY).",
     inputSchema: {
       type: "object",
       properties: {
@@ -251,29 +253,62 @@ export const TOOLS: ToolDef[] = [
           type: "string",
           enum: ["append", "update", "refresh"],
           description:
-            "append (default): add a new edge. update: replace the external locator of an existing edge. refresh: re-record the baseline entry for edgeId only.",
+            "append (default): add a new edge. update: replace the external locator of an existing implements/verifiedBy edge. refresh: re-record the baseline entry for edgeId only.",
+        },
+        from: {
+          type: "string",
+          description:
+            "Source endpoint: a declared artifact id or an external locator URI. Required in append mode (or pass artifactId/uri).",
+        },
+        to: {
+          type: "string",
+          description:
+            "Target endpoint: a declared artifact id or an external locator URI. Required in append mode (or pass artifactId/uri).",
         },
         artifactId: {
           type: "string",
           description:
-            "Declared artifact id (usually a requirement). Required in append/update modes.",
+            "Legacy alias: declared artifact id. With uri, equivalent to from=artifactId, to=uri. Required in update mode.",
         },
         uri: {
           type: "string",
           description:
-            "External locator of the code or test artifact. Required in append/update modes.",
+            "Legacy alias: external locator of the code or test artifact. Required in update mode.",
         },
-        type: { type: "string", enum: ["implements", "verifiedBy"] },
+        type: { type: "string", enum: [...TRACE_TYPES] },
         edgeId: {
           type: "string",
           description:
-            "Explicit edge id (derived from artifactId when omitted). Required in refresh mode.",
+            "Explicit edge id (derived from the type and local endpoint(s) when omitted). Required in refresh mode.",
         },
         kind: {
           type: "string",
-          description: "Locator kind hint (default code/test by type).",
+          description:
+            "External locator kind hint (default code/test for implements/verifiedBy).",
         },
-        title: { type: "string", description: "Locator title hint." },
+        title: { type: "string", description: "External locator title hint." },
+        notes: {
+          type: "string",
+          description: "Why this relationship exists; recorded as the edge's notes.",
+        },
+        confidence: {
+          type: "number",
+          description: "Certainty of the relationship, 0.0-1.0.",
+        },
+        tags: {
+          type: "array",
+          items: { type: "string" },
+          description: 'Category tags (NMTOKENs), e.g. ["safety", "compliance"].',
+        },
+        status: {
+          type: "string",
+          enum: ["draft", "review", "approved", "deprecated"],
+          description: "Edge lifecycle status; new edges default to draft.",
+        },
+        createdBy: {
+          type: "string",
+          description: "Provenance identity; defaults to a toolchain-recorded edge.",
+        },
       },
       required: ["path"],
     },
@@ -283,6 +318,38 @@ export const TOOLS: ToolDef[] = [
 function str(args: Record<string, unknown>, name: string): string | undefined {
   const value = args[name];
   return typeof value === "string" ? value : undefined;
+}
+
+/** Validate the edited document and write it, or return the error result. */
+async function writeValidated(
+  path: string,
+  xml: string,
+): Promise<Record<string, unknown> | undefined> {
+  const { validate } = await import("@rqml/core/validate");
+  const validation = validate(xml);
+  if (!validation.valid) {
+    return {
+      ok: false,
+      error: "link would invalidate the document; nothing written",
+      diagnostics: validation.diagnostics,
+    };
+  }
+  writeFileSync(resolve(path), xml);
+  return undefined;
+}
+
+/** Hash the newly linked artifact only — re-hashing every link here would
+ * silently bless drifted artifacts. */
+function recordBaseline(xml: string, edgeId: string, baseDir: string): boolean {
+  const reparsed = parse(xml);
+  if (!reparsed.ok) return false;
+  const fresh = computeBaseline(reparsed.document, { baseDir });
+  const hash = fresh[edgeId];
+  if (hash === undefined) return false;
+  const baseline = loadBaseline(baseDir) ?? {};
+  baseline[edgeId] = hash;
+  saveBaseline(baseDir, baseline);
+  return true;
 }
 
 /**
@@ -572,58 +639,78 @@ export async function callTool(
         return { ok: true, mode, edgeId, uri: link.uri, hash };
       }
 
+      const type = str(args, "type") ?? "implements";
+      if (!(TRACE_TYPES as readonly string[]).includes(type)) {
+        throw new Error(`unknown link type "${type}" (${TRACE_TYPES.join("|")})`);
+      }
+      const edgeId = str(args, "edgeId");
+      const kind = str(args, "kind");
+      const title = str(args, "title");
       const artifactId = str(args, "artifactId");
       const uri = str(args, "uri");
-      if (artifactId === undefined || uri === undefined) {
-        throw new Error(`artifactId and uri are required in ${mode} mode`);
-      }
-      const type = str(args, "type") ?? "implements";
-      if (type !== "implements" && type !== "verifiedBy") {
-        throw new Error(`unknown link type "${type}" (implements|verifiedBy)`);
-      }
-      const request: LinkRequest = { artifactId, uri, type };
-      const edgeId = str(args, "edgeId");
-      if (edgeId !== undefined) request.edgeId = edgeId;
-      const kind = str(args, "kind");
-      if (kind !== undefined) request.kind = kind;
-      const title = str(args, "title");
-      if (title !== undefined) request.title = title;
 
-      const result =
-        mode === "update" ? updateTraceEdge(xml, request) : appendTraceEdge(xml, request);
-      if (!result.ok) return { ok: false, error: result.error };
-      const { validate } = await import("@rqml/core/validate");
-      const validation = validate(result.xml);
-      if (!validation.valid) {
+      if (mode === "update") {
+        if (type !== "implements" && type !== "verifiedBy") {
+          throw new Error("update mode maintains implements/verifiedBy edges only");
+        }
+        if (artifactId === undefined || uri === undefined) {
+          throw new Error("artifactId and uri are required in update mode");
+        }
+        const request: Parameters<typeof updateTraceEdge>[1] = { artifactId, uri, type };
+        if (edgeId !== undefined) request.edgeId = edgeId;
+        if (kind !== undefined) request.kind = kind;
+        if (title !== undefined) request.title = title;
+        const result = updateTraceEdge(xml, request);
+        if (!result.ok) return { ok: false, error: result.error };
+        const written = await writeValidated(path, result.xml);
+        if (written !== undefined) return written;
         return {
-          ok: false,
-          error: "link would invalidate the document; nothing written",
-          diagnostics: validation.diagnostics,
+          ok: true,
+          mode,
+          edgeId: result.edgeId,
+          type,
+          artifactId,
+          uri,
+          baselineRecorded: recordBaseline(result.xml, result.edgeId, baseDir),
+          previousUri: result.previousUri,
         };
       }
-      writeFileSync(resolve(path), result.xml);
 
-      let baselineRecorded = false;
-      const reparsed = parse(result.xml);
-      if (reparsed.ok) {
-        const fresh = computeBaseline(reparsed.document, { baseDir });
-        const hash = fresh[result.edgeId];
-        if (hash !== undefined) {
-          const baseline = loadBaseline(baseDir) ?? {};
-          baseline[result.edgeId] = hash;
-          saveBaseline(baseDir, baseline);
-          baselineRecorded = true;
-        }
+      // append: from/to endpoints, with artifactId/uri accepted as the
+      // legacy spelling of the same request.
+      const from = str(args, "from") ?? artifactId;
+      const to = str(args, "to") ?? uri;
+      if (from === undefined || to === undefined) {
+        throw new Error("from and to endpoints are required in append mode");
       }
+      const request: LinkRequest = { from, to, type: type as TraceType };
+      if (edgeId !== undefined) request.edgeId = edgeId;
+      if (kind !== undefined) request.kind = kind;
+      if (title !== undefined) request.title = title;
+      const notes = str(args, "notes");
+      if (notes !== undefined) request.notes = notes;
+      if (typeof args.confidence === "number") request.confidence = args.confidence;
+      if (Array.isArray(args.tags)) {
+        request.tags = args.tags.filter((t): t is string => typeof t === "string");
+      }
+      const status = str(args, "status");
+      if (status !== undefined) request.status = status as LinkRequest["status"];
+      const createdBy = str(args, "createdBy");
+      if (createdBy !== undefined) request.createdBy = createdBy;
+
+      const result = appendTraceEdge(xml, request);
+      if (!result.ok) return { ok: false, error: result.error };
+      const written = await writeValidated(path, result.xml);
+      if (written !== undefined) return written;
       return {
         ok: true,
         mode,
         edgeId: result.edgeId,
         type,
-        artifactId,
-        uri,
-        baselineRecorded,
-        ...("previousUri" in result ? { previousUri: result.previousUri } : {}),
+        from: result.from,
+        to: result.to,
+        status: request.status ?? "draft",
+        baselineRecorded: recordBaseline(result.xml, result.edgeId, baseDir),
       };
     }
     default:

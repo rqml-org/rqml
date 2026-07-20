@@ -189,7 +189,7 @@ describe("MCP tools", () => {
     expect(linked.edgeId).toBe("E-IMPL-A");
     expect(linked.baselineRecorded).toBe(true);
     expect(readFileSync(spec, "utf8")).toContain(
-      '<edge id="E-IMPL-A" type="implements">',
+      '<edge id="E-IMPL-A" type="implements" status="draft" createdBy="rqml">',
     );
 
     const clean = (await callTool("rqml_check", { path: spec })) as { verdict: string };

@@ -27,6 +27,7 @@ rqml <command> [spec.rqml] [options]
   approve <id>     Transition a requirement's status (--status, default approved)
   gate [paths...]  Block implementation of non-approved requirements (exit 2)
   skeleton <kind>  Print a schema-valid snippet (req|edge|testCase|stateMachine)
+  migrate [path]   Rewrite a 2.0.1/2.1.0 spec to the current schema version (--dry-run)
 
   --json                     Machine-readable output (REQ-CLI-JSON)
   --strictness <level>       relaxed | standard | strict | certified

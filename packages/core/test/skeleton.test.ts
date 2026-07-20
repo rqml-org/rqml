@@ -7,7 +7,7 @@ import { validate } from "../src/validate/index.js";
  * edge skeleton references declared so integrity passes too. */
 function withSkeletons(): string {
   return `<?xml version="1.0" encoding="UTF-8"?>
-<rqml xmlns="https://rqml.org/schema/2.1.0" version="2.1.0" docId="SKEL-1" status="draft">
+<rqml xmlns="https://rqml.org/schema/2.2.0" version="2.2.0" docId="SKEL-1" status="draft">
   <meta><title>t</title><system>s</system></meta>
   <goals>
     <goal id="GOAL-NAME" title="g"><statement>s</statement></goal>

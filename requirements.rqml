@@ -998,7 +998,10 @@
     </reqPackage>
 
     <reqPackage id="PKG-TRACE" title="Traceability model" ownerRef="STK-MAINTAINER">
-      <description>The structured-endpoint trace graph introduced in 2.1.0.</description>
+      <description>
+        The trace graph: a structured-endpoint model (2.1.0) serialized in
+        compact attribute form from 2.2.0 (RFC-0003).
+      </description>
       <req id="REQ-TRACE-EDGE" type="FR" title="Typed trace edges" status="approved" priority="must">
         <statement>
           The trace section SHALL express relationships as edge elements, each
@@ -1007,27 +1010,63 @@
       </req>
       <req id="REQ-TRACE-LOCATORS" type="FR" title="Three locator kinds" status="approved" priority="must">
         <statement>
-          Each trace endpoint SHALL contain a locator of exactly one kind: local
+          Each trace endpoint SHALL resolve to exactly one locator kind: local
           (same document), doc (another RQML document), or external (any URI).
         </statement>
       </req>
+      <req id="REQ-TRACE-COMPACT" type="FR" title="Compact edge serialization" status="approved" priority="must">
+        <statement>
+          From schema version 2.2.0 the edge SHALL serialize its endpoints as
+          required from and to attributes carrying a lexically discriminated
+          micro-syntax — a bare id is local, an rqml: URI whose fragment is the
+          target id followed by optional semicolon-separated version/git/docId
+          pins is doc, and any other scheme URI or schemeless relative path
+          containing a slash is external — with locator hints as
+          fromKind/fromTitle/toKind/toTitle attributes. This is the only edge
+          form in 2.2.0; the 2.1.0 nested endpoint elements are removed
+          (RFC-0003).
+        </statement>
+        <rationale>
+          Trace edges measured 32.1% of all spec bytes across the dogfood
+          corpus, almost entirely endpoint scaffolding that encodes one bit
+          (locator kind) per 44 bytes. The compact form cuts edge bytes 43%
+          losslessly. One canonical form avoids a permanent two-dialect
+          standard (RFC-0003, ADR-0017).
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-COMPACT-LOSSLESS">
+            <given>Any 2.1.0 trace edge (local, doc with version/git/docId pins, or external, with hints and notes)</given>
+            <when>It is re-expressed in the 2.2.0 compact form and parsed</when>
+            <then>The parsed TraceEdge model is identical to the 2.1.0 parse.</then>
+          </criterion>
+          <criterion id="CRIT-COMPACT-REQUIRED">
+            <given>A 2.2.0 edge missing its from or to attribute, or carrying a malformed endpoint value</given>
+            <when>The document is validated against the 2.2.0 schema</when>
+            <then>Validation fails.</then>
+          </criterion>
+        </acceptance>
+      </req>
       <req id="REQ-TRACE-INTEGRITY" type="DR" title="Local reference integrity" status="approved" priority="must">
         <statement>
-          Every local locator id SHALL resolve to a declared id in the same
-          document; dangling local references SHALL fail validation.
+          Every local trace endpoint SHALL resolve to a declared id in the same
+          document; dangling local references SHALL fail the toolchain's
+          validation. A conforming processor MUST enforce id-uniqueness and
+          local-reference resolution itself; XSD validation alone is not
+          conformance (RFC-0003).
         </statement>
         <acceptance>
           <criterion id="CRIT-DANGLING">
-            <given>An edge whose local locator id does not exist</given>
-            <when>The document is validated</when>
-            <then>Validation fails on the traceFromRef/traceToRef keyref.</then>
+            <given>An edge whose local endpoint id does not exist, in either the 2.1.0 nested or 2.2.0 compact form</given>
+            <when>The document is checked</when>
+            <then>The integrity checker reports an unresolved local reference.</then>
           </criterion>
         </acceptance>
       </req>
       <req id="REQ-TRACE-PINNING" type="IR" title="Cross-document pinning" status="approved" priority="should">
         <statement>
-          Doc locators SHALL support optional version and git attributes so
-          cross-document references can be pinned for immutability.
+          Doc locators SHALL support optional version and git pins so
+          cross-document references can be pinned for immutability, in both the
+          2.1.0 attribute form and the 2.2.0 fragment micro-syntax.
         </statement>
       </req>
     </reqPackage>
@@ -1553,6 +1592,38 @@
           </criterion>
         </acceptance>
       </req>
+      <req id="REQ-CORE-COMPACT-PARITY" type="DR" title="Compact-form parse/integrity parity" status="approved" priority="must" appliesTo="core">
+        <statement>
+          The engine SHALL parse the 2.2.0 compact edge form into the same
+          TraceEdge model as the equivalent 2.1.0 nested form, SHALL enforce
+          referential integrity over every accepted edge form such that the
+          edges visible to the parser and the references visible to the
+          integrity checker are always the same set, SHALL reject an rqml:
+          endpoint whose fragment does not carry a valid target id rather than
+          treat it as external, and SHALL emit edges in the one canonical
+          attribute order with confidence rendered as a plain decimal.
+        </statement>
+        <rationale>
+          The integrity checker is an independent second reader of the raw XML;
+          an edge form it does not know silently escapes duplicate-id and
+          dangling-reference enforcement — the worst failure available to a
+          deterministic-enforcement tool. Parity is therefore a requirement,
+          not an implementation detail (RFC-0003). Plain-decimal confidence:
+          ConfidenceType is xs:decimal, which rejects exponential notation.
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-PARITY-FORMS">
+            <given>Equivalent documents in 2.1.0 nested and 2.2.0 compact form, each containing a dangling local endpoint and a duplicate id</given>
+            <when>Both are parsed and integrity-checked</when>
+            <then>Both parses yield the same TraceEdge model and both checks report the same violations.</then>
+          </criterion>
+          <criterion id="CRIT-PARITY-DOCREF">
+            <given>A compact edge whose endpoint is an rqml: URI without a valid id fragment</given>
+            <when>The document is checked</when>
+            <then>The checker reports an invalid doc locator; the endpoint is not treated as external.</then>
+          </criterion>
+        </acceptance>
+      </req>
     </reqPackage>
 
     <reqPackage id="PKG-CLI" title="Command-line interface (rqml)" ownerRef="STK-TOOLBUILDERS">
@@ -1766,21 +1837,43 @@
       <req id="REQ-LOOP-LINK" type="FR" title="Link recording" status="approved" priority="must" appliesTo="core cli mcp">
         <statement>
           The toolchain SHALL provide a link operation, on both the CLI and MCP
-          surfaces, that appends a schema-valid implements or verifiedBy trace
-          edge to the spec document given an artifact id and an external
-          locator URI, and records the drift baseline for the linked artifact.
+          surfaces, that appends a schema-valid trace edge of any trace type to
+          the spec document given two endpoints, each a declared artifact id or
+          an external locator URI, at least one of them local. The operation
+          SHALL orient implements edges external-to-local and verifiedBy edges
+          local-to-external regardless of argument order, record other types
+          exactly as given, reject a bare undeclared token rather than treat it
+          as an external locator, stamp new edges status="draft" with a
+          createdBy identity unless the caller overrides them, accept optional
+          notes, confidence, and tags, and record the drift baseline for the
+          linked artifact where one applies.
         </statement>
         <rationale>
           Hand-editing XML trace edges is the highest-friction step of the loop
-          and the one agents skip; recording links must be mechanical for the
-          drift and coverage story to hold. The write is explicit caller
-          intent, consistent with REQ-MCP-READONLY.
+          and the one agents skip; recording links must be mechanical for every
+          trace type — satisfies and refines edges are appended continuously in
+          agent-driven authoring — for the drift and coverage story to hold.
+          Draft/createdBy stamping gives the trace log the provenance its
+          review-and-approve curation depends on, while notes, confidence, and
+          tags make judgment-bearing markup one flag away instead of a hand
+          edit (ADR-0017). The write is explicit caller intent, consistent
+          with REQ-MCP-READONLY.
         </rationale>
         <acceptance>
           <criterion id="CRIT-LINK-ROUNDTRIP">
             <given>A valid spec, a requirement id, and an existing source path</given>
             <when>The link operation runs</when>
             <then>The document revalidates and coverage counts the requirement as implemented.</then>
+          </criterion>
+          <criterion id="CRIT-LINK-LOCAL">
+            <given>A valid spec declaring a requirement and a goal</given>
+            <when>The link operation runs with the two ids and type satisfies</when>
+            <then>A satisfies edge from the requirement to the goal is appended, the document revalidates, and coverage counts the goal as covered.</then>
+          </criterion>
+          <criterion id="CRIT-LINK-PROVENANCE">
+            <given>A valid spec and any append-mode link request without status or createdBy overrides</given>
+            <when>The link operation appends the edge</when>
+            <then>The recorded edge carries status="draft" and a non-empty createdBy identity.</then>
           </criterion>
         </acceptance>
       </req>
@@ -1812,6 +1905,39 @@
             <given>A linked artifact intentionally modified after its baseline was recorded</given>
             <when>Refresh mode runs with the edge id</when>
             <then>The spec document is byte-identical and a subsequent check reports no drift for that edge.</then>
+          </criterion>
+        </acceptance>
+      </req>
+      <req id="REQ-LOOP-MIGRATE" type="FR" title="Document migration" status="approved" priority="must" appliesTo="core cli">
+        <statement>
+          The toolchain SHALL provide a migrate operation that rewrites a 2.0.1
+          or 2.1.0 document to the current schema version by updating the root
+          version and namespace and re-emitting each trace edge in the
+          canonical compact form, leaving every byte outside the root element
+          tag and the rewritten edges unchanged — including bytes inside XML
+          comments, which SHALL never absorb an edge rewrite — and leaving the
+          recorded drift baseline untouched, so the document's drift state
+          before and after migration is identical.
+        </statement>
+        <rationale>
+          The 2.2.0 serialization change (RFC-0003) is breaking; migration must
+          be a mechanical, reviewable sweep. Byte-minimality keeps the diff to
+          exactly "the trace section got shorter" (QGOAL-DIFF). Baselines hash
+          linked-artifact content keyed by edge id, and migration changes
+          neither — so no re-baselining is needed for a clean repo, and
+          re-recording would silently bless any drift that already existed,
+          the one thing a deterministic-enforcement tool must never do.
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-MIGRATE-ROUNDTRIP">
+            <given>A valid 2.1.0 document with local, external, and doc edges, comments, and hand formatting</given>
+            <when>The migrate operation runs</when>
+            <then>The result validates against the 2.2.0 schema, parses to the identical TraceEdge model, and differs from the source only in the root element tag and the trace edges.</then>
+          </criterion>
+          <criterion id="CRIT-MIGRATE-BASELINE">
+            <given>A 2.1.0 document with implements edges and a recorded drift baseline, one linked artifact of which has drifted</given>
+            <when>The migrate operation runs via the CLI</when>
+            <then>A subsequent check reports exactly the drift it reported before migration: the undrifted edges stay clean and the drifted edge still fails.</then>
           </criterion>
         </acceptance>
       </req>
@@ -3279,6 +3405,34 @@
     <edge id="E-VER-CLI-INIT-MERGE" type="verifiedBy">
       <from><locator><local id="REQ-CLI-INIT-MERGE"/></locator></from>
       <to><locator><external uri="packages/cli/test/init.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-TRACE-COMPACT" type="implements">
+      <from><locator><external uri="packages/schema/versions/2.2.0/rqml-2.2.0.xsd" kind="schema"/></locator></from>
+      <to><locator><local id="REQ-TRACE-COMPACT"/></locator></to>
+    </edge>
+    <edge id="E-VER-TRACE-COMPACT" type="verifiedBy">
+      <from><locator><local id="REQ-TRACE-COMPACT"/></locator></from>
+      <to><locator><external uri="packages/core/test/compact-trace.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-CORE-COMPACT-PARITY" type="implements">
+      <from><locator><external uri="packages/core/src/trace/endpoint.ts" kind="code"/></locator></from>
+      <to><locator><local id="REQ-CORE-COMPACT-PARITY"/></locator></to>
+    </edge>
+    <edge id="E-VER-CORE-COMPACT-PARITY" type="verifiedBy">
+      <from><locator><local id="REQ-CORE-COMPACT-PARITY"/></locator></from>
+      <to><locator><external uri="packages/core/test/compact-trace.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-LOOP-MIGRATE" type="implements">
+      <from><locator><external uri="packages/core/src/edit/migrate.ts" kind="code"/></locator></from>
+      <to><locator><local id="REQ-LOOP-MIGRATE"/></locator></to>
+    </edge>
+    <edge id="E-VER-LOOP-MIGRATE" type="verifiedBy">
+      <from><locator><local id="REQ-LOOP-MIGRATE"/></locator></from>
+      <to><locator><external uri="packages/core/test/migrate.test.ts" kind="test"/></locator></to>
+    </edge>
+    <edge id="E-IMPL-LOOP-MIGRATE-CLI" type="implements">
+      <from><locator><external uri="packages/cli/src/commands/migrate.ts" kind="code"/></locator></from>
+      <to><locator><local id="REQ-LOOP-MIGRATE"/></locator></to>
     </edge>
   </trace>
 

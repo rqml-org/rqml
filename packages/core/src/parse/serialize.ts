@@ -43,11 +43,16 @@ import type {
   Transition,
   Verification,
 } from "../model/types.js";
+import { formatConfidence, formatEndpointRef } from "../trace/endpoint.js";
 import { getRawSections } from "./raw.js";
 
 const ATTR_PREFIX = "@_";
 
 const XSI = "http://www.w3.org/2001/XMLSchema-instance";
+const NS_220 = {
+  xmlns: "https://rqml.org/schema/2.2.0",
+  schemaLocation: "https://rqml.org/schema/2.2.0 https://rqml.org/schema/rqml-2.2.0.xsd",
+};
 const NS_210 = {
   xmlns: "https://rqml.org/schema/2.1.0",
   schemaLocation: "https://rqml.org/schema/2.1.0 https://rqml.org/schema/rqml-2.1.0.xsd",
@@ -58,7 +63,9 @@ const NS_201 = {
 };
 
 function namespaceFor(version: string): { xmlns: string; schemaLocation: string } {
-  return version === "2.0.1" ? NS_201 : NS_210;
+  if (version === "2.0.1") return NS_201;
+  if (version === "2.1.0") return NS_210;
+  return NS_220;
 }
 
 /**
@@ -523,11 +530,32 @@ function buildLocator(loc: Locator): Obj {
 }
 
 function applyEdgeMetaAttrs(out: Obj, edge: TraceEdge): void {
-  setIfDefined(out, "@_confidence", edge.confidence);
+  if (edge.confidence !== undefined) {
+    // ConfidenceType is xs:decimal: exponential notation is invalid.
+    out["@_confidence"] = formatConfidence(edge.confidence);
+  }
   setIfDefined(out, "@_status", edge.status);
   setIfDefined(out, "@_createdBy", edge.createdBy);
   setIfDefined(out, "@_createdAt", edge.createdAt);
   if (edge.tags && edge.tags.length > 0) out["@_tags"] = edge.tags.join(" ");
+}
+
+/**
+ * Compact 2.2.0 `<edge>` form (RFC-0003): endpoints as micro-syntax
+ * attributes in the canonical order id, type, from, fromKind?, fromTitle?,
+ * to, toKind?, toTitle?, then relationship/lifecycle metadata, then notes.
+ */
+function buildCompactEdge(edge: TraceEdge): Obj {
+  const out: Obj = { "@_id": edge.id, "@_type": edge.type };
+  out["@_from"] = formatEndpointRef(edge.from);
+  setIfDefined(out, "@_fromKind", edge.from.hintKind);
+  setIfDefined(out, "@_fromTitle", edge.from.title);
+  out["@_to"] = formatEndpointRef(edge.to);
+  setIfDefined(out, "@_toKind", edge.to.hintKind);
+  setIfDefined(out, "@_toTitle", edge.to.title);
+  applyEdgeMetaAttrs(out, edge);
+  setIfDefined(out, "notes", edge.notes);
+  return out;
 }
 
 /** Nested 2.1.0 `<edge>` form. */
@@ -594,7 +622,8 @@ function buildGovernance(g: Governance): Obj {
  *
  * The output namespace, schema location, and trace serialization are chosen
  * from `doc.version` (2.0.1 emits flat `<traceEdge>`; 2.1.0 emits nested
- * `<edge>`). Sections are written in canonical order and omitted when absent;
+ * `<edge>`; 2.2.0 emits the compact attribute form, RFC-0003). Sections are
+ * written in canonical order and omitted when absent;
  * unknown root attributes and top-level elements retained by {@link parse} are
  * re-emitted, so an unmodified `parse` → `serialize` round-trip preserves the
  * document.
@@ -640,7 +669,9 @@ export function serialize(doc: RqmlDocument): string {
     root.trace =
       doc.version === "2.0.1"
         ? { traceEdge: doc.trace.map(buildFlatEdge) }
-        : { edge: doc.trace.map(buildEdge) };
+        : doc.version === "2.1.0"
+          ? { edge: doc.trace.map(buildEdge) }
+          : { edge: doc.trace.map(buildCompactEdge) };
   }
 
   if (doc.governance) root.governance = buildGovernance(doc.governance);

@@ -9,6 +9,7 @@ import { runGate } from "../src/commands/gate.js";
 import { runImpact } from "../src/commands/impact.js";
 import { runLink } from "../src/commands/link.js";
 import { runMatrix } from "../src/commands/matrix.js";
+import { runMigrate } from "../src/commands/migrate.js";
 import { runOverview } from "../src/commands/overview.js";
 import { runShow } from "../src/commands/show.js";
 import { runSkeleton } from "../src/commands/skeleton.js";
@@ -49,7 +50,9 @@ describe("loop commands", () => {
     expect(code).toBe(EXIT.OK);
 
     const spec = readFileSync(join(dir, "requirements.rqml"), "utf8");
-    expect(spec).toContain('<edge id="E-IMPL-A" type="implements">');
+    expect(spec).toContain(
+      '<edge id="E-IMPL-A" type="implements" status="draft" createdBy="rqml">',
+    );
     expect(spec).toContain('<external uri="src/a.ts" kind="code"/>');
 
     const baseline = JSON.parse(
@@ -60,6 +63,40 @@ describe("loop commands", () => {
 
     // The check gate stays green right after linking…
     expect(await runCheck(["--base-dir", dir])).toBe(EXIT.OK);
+  });
+
+  it("migrate rewrites the spec to 2.2.0 and check stays green (CRIT-MIGRATE-BASELINE)", async () => {
+    // A 2.1.0 spec with a recorded implements link and baseline…
+    await runLink(["REQ-A", "src/a.ts", "--base-dir", dir]);
+    expect(await runCheck(["--base-dir", dir])).toBe(EXIT.OK);
+
+    // …migrates in place: compact edges, 2.2.0 namespace, no false drift.
+    const code = await runMigrate(["--base-dir", dir]);
+    expect(code).toBe(EXIT.OK);
+    const spec = readFileSync(join(dir, "requirements.rqml"), "utf8");
+    expect(spec).toContain('version="2.2.0"');
+    expect(spec).toContain('<edge id="E-SAT" type="satisfies" from="REQ-A" to="G1"/>');
+    expect(spec).toContain('from="src/a.ts" fromKind="code" to="REQ-A"');
+    expect(spec).not.toContain("<locator>");
+    expect(await runCheck(["--base-dir", dir])).toBe(EXIT.OK);
+
+    // A second run is a no-op.
+    expect(await runMigrate(["--base-dir", dir])).toBe(EXIT.OK);
+    expect(readFileSync(join(dir, "requirements.rqml"), "utf8")).toBe(spec);
+  });
+
+  it("migrate preserves pre-existing drift instead of blessing it (CRIT-MIGRATE-BASELINE)", async () => {
+    await runLink(["REQ-A", "src/a.ts", "--base-dir", dir]);
+    // The linked artifact drifts BEFORE migration…
+    writeFileSync(join(dir, "src", "a.ts"), "export const a = 2;\n");
+    expect(await runCheck(["--base-dir", dir])).toBe(EXIT.CHECK);
+
+    // …and migration must not convert that red check to green.
+    expect(await runMigrate(["--base-dir", dir])).toBe(EXIT.OK);
+    expect(readFileSync(join(dir, "requirements.rqml"), "utf8")).toContain(
+      'version="2.2.0"',
+    );
+    expect(await runCheck(["--base-dir", dir])).toBe(EXIT.CHECK);
   });
 
   it("check reports changed artifacts after linking (CRIT-DRIFT-CHANGED)", async () => {
@@ -87,7 +124,9 @@ describe("loop commands", () => {
     ]);
     expect(code).toBe(EXIT.OK);
     const spec = readFileSync(join(dir, "requirements.rqml"), "utf8");
-    expect(spec).toContain('<edge id="E-VER-A" type="verifiedBy">');
+    expect(spec).toContain(
+      '<edge id="E-VER-A" type="verifiedBy" status="draft" createdBy="rqml">',
+    );
   });
 
   it("link --update repoints an edge and refreshes its baseline (CRIT-RELINK-UPDATE)", async () => {
