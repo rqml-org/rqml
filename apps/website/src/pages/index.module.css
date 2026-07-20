@@ -4,6 +4,14 @@
   gap: 0;
 }
 
+/* Section headers (h2) read small on wide monitors; scale them up on desktop
+   only — mobile keeps the theme default. Card titles are h3 and unaffected. */
+@media (min-width: 997px) {
+  .page h2 {
+    font-size: 2.4rem;
+  }
+}
+
 .hero {
   padding: 4rem 0 3rem 0;
   background: radial-gradient(
@@ -100,6 +108,9 @@
 .heroLogo {
   display: block;
   margin: 0 auto 1.25rem auto;
+  /* clamp keeps the logo prominent on phones (where a %-width shrank it to a
+     sliver) without letting it dominate a desktop viewport */
+  width: clamp(160px, 24vw, 260px);
 }
 
 .heroCtas {
@@ -263,13 +274,20 @@
   opacity: 0.95;
 }
 
+/* Final CTA band — full bleed, mirroring the hero's purple/cyan glow so the
+   page closes on the same visual note it opened with. */
 .final {
   padding: 3.5rem 0 4rem 0;
   text-align: center;
   background: radial-gradient(
-      900px 400px at 50% 0%,
-      rgba(250, 255, 0, 0.14),
+      900px 400px at 30% 100%,
+      rgba(133, 104, 171, 0.25),
       transparent 60%
+    ),
+    radial-gradient(
+      700px 350px at 85% 0%,
+      rgba(2, 169, 234, 0.14),
+      transparent 55%
     );
   border-top: 1px solid var(--ifm-toc-border-color);
   width: 100vw;
