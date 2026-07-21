@@ -9,7 +9,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      # Full history: the changeset guard below diffs against the PR's base ref.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       # Version comes from package.json "packageManager"; don't also pass `version`.
       - uses: pnpm/action-setup@v4
@@ -38,3 +41,17 @@ jobs:
       # drift-checks every implements edge against .rqml/baseline.json.
       - name: RQML gate
         run: node packages/cli/dist/index.js check
+
+      # Publishing is changeset-driven: a package change with no changeset
+      # versions nothing and publishes nothing, while the release run still
+      # reports success — so the fix silently never reaches users
+      # (REQ-RELEASE-CHANGESET). Runs last so real build/test failures surface
+      # first. The automated release PR consumes changesets instead of adding
+      # them, so it is exempt.
+      - name: Changeset covers package changes
+        if: github.event_name == 'pull_request' && github.head_ref != 'changeset-release/main'
+        env:
+          BASE: ${{ github.base_ref }}
+        run: |
+          git fetch --no-tags --quiet origin "$BASE"
+          pnpm changeset status --since="origin/$BASE"

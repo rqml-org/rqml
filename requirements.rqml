@@ -1309,6 +1309,36 @@
           versions of the toolchain.
         </statement>
       </req>
+      <req id="REQ-RELEASE-CHANGESET" type="PR" title="Package changes carry a changeset" status="approved" priority="must">
+        <statement>
+          Continuous integration SHALL fail a pull request that modifies a
+          published package without adding a changeset. The automated release
+          pull request, which consumes changesets rather than adding them, SHALL
+          be exempt. A change that intentionally warrants no release SHALL be
+          recorded with an empty changeset rather than by omission.
+        </statement>
+        <rationale>
+          Publishing is changeset-driven: with no changeset the release workflow
+          versions nothing and publishes nothing, yet still reports success — so
+          a merged fix silently never reaches users, and the omission is
+          invisible precisely because everything looks green. This has already
+          happened twice: the 2.2.0 compact-edge work and the CLI
+          safe-invocation fix both landed on main unreleased. A failure mode
+          that presents as success must be caught mechanically, not remembered.
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-CHANGESET-REQUIRED">
+            <given>A pull request that modifies a file under packages/</given>
+            <when>It adds no changeset</when>
+            <then>CI fails, naming the command that resolves it.</then>
+          </criterion>
+          <criterion id="CRIT-CHANGESET-BOT-EXEMPT">
+            <given>The automated Version Packages pull request, which removes changesets and bumps package versions</given>
+            <when>CI runs</when>
+            <then>The guard does not fail it.</then>
+          </criterion>
+        </acceptance>
+      </req>
     </reqPackage>
 
     <reqPackage id="PKG-CORE" title="Core engine (rqml-core)" ownerRef="STK-TOOLBUILDERS">
@@ -2715,6 +2745,7 @@
     <edge id="E-IMPL-CLI-SAFE-DISPATCH" type="implements" from="packages/cli/src/index.ts" fromKind="code" fromTitle="global -h/--help interception" to="REQ-CLI-SAFE-INVOCATION" status="draft" createdBy="rqml"/>
     <edge id="E-IMPL-CLI-SAFE-FLAGS" type="implements" from="packages/cli/src/commands/migrate.ts" fromKind="code" fromTitle="migrate rejects unknown flags" to="REQ-CLI-SAFE-INVOCATION" status="draft" createdBy="rqml"/>
     <edge id="E-VER-CLI-SAFE-INVOCATION" type="verifiedBy" from="REQ-CLI-SAFE-INVOCATION" to="packages/cli/test/safe-invocation.test.ts" toKind="test" status="draft" createdBy="rqml"/>
+    <edge id="E-IMPL-RELEASE-CHANGESET" type="implements" from=".github/workflows/ci.yml" fromKind="ci" fromTitle="changeset guard step" to="REQ-RELEASE-CHANGESET" status="draft" createdBy="rqml"/>
   </trace>
 
   <!-- ============================================================= -->
