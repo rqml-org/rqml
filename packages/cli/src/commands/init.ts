@@ -1,10 +1,26 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { AGENTS_TEMPLATE } from "@rqml/schema";
+import {
+  AGENTS_TEMPLATE,
+  DEFAULT_SCHEMA_VERSION,
+  schemaNamespace,
+  schemaUrl,
+} from "@rqml/schema";
 import { EXIT, type Strictness, parseArgs } from "../runtime.js";
 
+/**
+ * The scaffolded spec is pinned to {@link DEFAULT_SCHEMA_VERSION} rather than a
+ * literal, so a schema release can never leave `rqml init` starting new projects
+ * on the previous generation — which is exactly what happened through the 2.2.0
+ * release, when this string still said 2.1.0. It carries `xsi:schemaLocation` so
+ * the scaffolded document exercises the same published-URL contract every other
+ * RQML document depends on.
+ */
 const STARTER_SPEC = `<?xml version="1.0" encoding="UTF-8"?>
-<rqml xmlns="https://rqml.org/schema/2.1.0" version="2.1.0" docId="PROJECT-001" status="draft">
+<rqml xmlns="${schemaNamespace(DEFAULT_SCHEMA_VERSION)}"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="${schemaNamespace(DEFAULT_SCHEMA_VERSION)} ${schemaUrl(DEFAULT_SCHEMA_VERSION)}"
+      version="${DEFAULT_SCHEMA_VERSION}" docId="PROJECT-001" status="draft">
   <meta>
     <title>My Project</title>
     <system>my-system</system>

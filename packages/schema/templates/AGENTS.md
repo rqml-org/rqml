@@ -16,7 +16,7 @@ This project uses **RQML** as the single source of truth for system intent. Fami
 **Specification file:** A spec lives in one `.rqml` file — by convention `requirements.rqml` — alongside its own `.rqml/` directory (which holds `adr/`, `plan.md`, and the drift baseline) in the directory it governs. That spec governs its directory and every subdirectory beneath it, **down to any nested spec that takes over its own subtree**; it never governs a parent directory. In a monorepo, give a project unit (package, app, service) its own spec where it needs distinct requirements; a file is then governed by the spec in its nearest enclosing directory (no inheritance or merging across that boundary). A directory holding several `*.rqml` files and no `requirements.rqml` is ambiguous — name one `requirements.rqml`. The toolchain resolves the governing spec automatically by walking up from the working directory, and `rqml check --workspace` runs the gate across every spec in the repository.
 
 **Schema file:**
-The RQML XSD schema is at https://rqml.org/schema/rqml-2.1.0.xsd (insert correct version number). Make sure to adhere to the schema at all times and follow guidelines in schema comments. Use as much of the RQML tagset as is necessary to capture and describe high quality requirements.
+The current RQML XSD schema is at https://rqml.org/schema/rqml-2.2.0.xsd. Every version is published at `https://rqml.org/schema/rqml-<version>.xsd`, so use the one your spec's root `version` attribute declares — that URL is also its `xsi:schemaLocation`. Make sure to adhere to the schema at all times and follow guidelines in schema comments. Use as much of the RQML tagset as is necessary to capture and describe high quality requirements.
 
 ---
 
@@ -31,11 +31,18 @@ rqml show <REQ-ID>         # one requirement: statement, acceptance criteria, tr
 rqml impact <ID>           # what is affected, transitively, if this artifact changes
 rqml overview              # readable projection of the spec (--section/--id to scope)
 rqml matrix                # traceability matrix: status, goals, code, tests, coverage gaps
-rqml link <REQ-ID> <path>  # record an implements edge + drift baseline (--type verifiedBy for tests)
+rqml link <from> <to>      # record any trace edge + drift baseline (--type, default implements)
 rqml approve <REQ-ID>      # transition a requirement's status (default approved)
 rqml gate                  # block implementation of non-approved requirements
 rqml skeleton <kind>       # schema-valid snippet: req | edge | testCase | stateMachine
+rqml migrate               # rewrite a spec to the current schema version (--dry-run to preview)
 ```
+
+`rqml link` records **every** trace type — `implements` and `verifiedBy` for code and
+tests, but equally `satisfies`, `refines`, `mitigates`, `dependsOn`, and the rest. Never
+hand-write trace edges: the CLI emits the correct serialization for your spec's schema
+version and records the drift baseline in the same step. Add provenance with
+`--notes`, `--confidence`, `--tags`, `--by`, and `--status`.
 
 Run `rqml status` when you start a session to re-anchor on the spec. Run `rqml check` before finishing any task — it must exit 0.
 
@@ -141,8 +148,11 @@ rqml validate
 
 If the `rqml` CLI is not installed, `npx @rqml/cli validate` works without installation. As a last resort, xmllint (pre-installed on macOS/Linux) checks XSD validity only:
 ```bash
-xmllint --schema https://rqml.org/schema/rqml-2.1.0.xsd <rqml-file-name> --noout
+xmllint --schema https://rqml.org/schema/rqml-2.2.0.xsd <rqml-file-name> --noout
 ```
+
+Substitute the version your spec declares. If it declares an older one, `rqml migrate`
+rewrites it to the current schema version (`--dry-run` previews the change first).
 
 **IDE validation:** If the `.rqml` file includes `xsi:schemaLocation`, XML-aware editors (VS Code with XML extension, IntelliJ) validate automatically.
 
