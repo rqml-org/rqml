@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rqml xmlns="https://rqml.org/schema/2.1.0"
-      version="2.1.0"
+<rqml xmlns="https://rqml.org/schema/2.2.0"
+      version="2.2.0"
       docId="CARRENTAL-SPEC"
       status="draft">
 
@@ -2159,230 +2159,116 @@
   <trace>
 
     <!-- === satisfies: Requirements satisfy Goals === -->
-    <edge id="TRC-001" type="satisfies" confidence="1.0"
-          status="approved" createdBy="bjarki" createdAt="2026-02-10T10:00:00Z">
-      <from><locator><local id="REQ-RES-001"/></locator></from>
-      <to><locator><local id="GOAL-ONLINE-BOOKING"/></locator></to>
+    <edge id="TRC-001" type="satisfies" from="REQ-RES-001" to="GOAL-ONLINE-BOOKING" confidence="1" status="approved" createdBy="bjarki" createdAt="2026-02-10T10:00:00Z">
       <notes>Vehicle search is the entry point for online self-service booking.</notes>
     </edge>
 
-    <edge id="TRC-002" type="satisfies" confidence="1.0" status="approved">
-      <from><locator><local id="REQ-RES-002"/></locator></from>
-      <to><locator><local id="GOAL-ONLINE-BOOKING"/></locator></to>
-    </edge>
+    <edge id="TRC-002" type="satisfies" from="REQ-RES-002" to="GOAL-ONLINE-BOOKING" confidence="1" status="approved"/>
 
-    <edge id="TRC-003" type="satisfies" confidence="0.9" status="approved">
-      <from><locator><local id="REQ-RES-003"/></locator></from>
-      <to><locator><local id="GOAL-FLEET-UTIL"/></locator></to>
+    <edge id="TRC-003" type="satisfies" from="REQ-RES-003" to="GOAL-FLEET-UTIL" confidence="0.9" status="approved">
       <notes>Concurrency-safe availability prevents overbooking and fleet mismanagement.</notes>
     </edge>
 
-    <edge id="TRC-004" type="satisfies" confidence="1.0" status="approved">
-      <from><locator><local id="REQ-NFR-002"/></locator></from>
-      <to><locator><local id="QGOAL-AVAILABILITY"/></locator></to>
-    </edge>
+    <edge id="TRC-004" type="satisfies" from="REQ-NFR-002" to="QGOAL-AVAILABILITY" confidence="1" status="approved"/>
 
-    <edge id="TRC-005" type="satisfies" confidence="1.0" status="approved">
-      <from><locator><local id="REQ-NFR-001"/></locator></from>
-      <to><locator><local id="QGOAL-LATENCY"/></locator></to>
-    </edge>
+    <edge id="TRC-005" type="satisfies" from="REQ-NFR-001" to="QGOAL-LATENCY" confidence="1" status="approved"/>
 
-    <edge id="TRC-006" type="satisfies" confidence="0.8" status="approved">
-      <from><locator><local id="REQ-NFR-003"/></locator></from>
-      <to><locator><local id="QGOAL-SCALABILITY"/></locator></to>
-    </edge>
+    <edge id="TRC-006" type="satisfies" from="REQ-NFR-003" to="QGOAL-SCALABILITY" confidence="0.8" status="approved"/>
 
-    <edge id="TRC-007" type="satisfies" confidence="1.0" status="approved">
-      <from><locator><local id="REQ-SEC-001"/></locator></from>
-      <to><locator><local id="QGOAL-SECURITY"/></locator></to>
-    </edge>
+    <edge id="TRC-007" type="satisfies" from="REQ-SEC-001" to="QGOAL-SECURITY" confidence="1" status="approved"/>
 
-    <edge id="TRC-008" type="satisfies" confidence="1.0" status="approved">
-      <from><locator><local id="REQ-PR-001"/></locator></from>
-      <to><locator><local id="GOAL-COMPLIANCE"/></locator></to>
-    </edge>
+    <edge id="TRC-008" type="satisfies" from="REQ-PR-001" to="GOAL-COMPLIANCE" confidence="1" status="approved"/>
 
-    <edge id="TRC-009" type="satisfies" confidence="0.7" status="approved">
-      <from><locator><local id="REQ-RES-006"/></locator></from>
-      <to><locator><local id="GOAL-CUST-SAT"/></locator></to>
+    <edge id="TRC-009" type="satisfies" from="REQ-RES-006" to="GOAL-CUST-SAT" confidence="0.7" status="approved">
       <notes>Modification flexibility improves customer satisfaction.</notes>
     </edge>
 
     <!-- === mitigates: Requirements mitigate Risks === -->
-    <edge id="TRC-010" type="mitigates" confidence="0.9" status="approved">
-      <from><locator><local id="REQ-SEC-002"/></locator></from>
-      <to><locator><local id="RISK-FRAUD"/></locator></to>
+    <edge id="TRC-010" type="mitigates" from="REQ-SEC-002" to="RISK-FRAUD" confidence="0.9" status="approved">
       <notes>3D-Secure reduces card-not-present fraud significantly.</notes>
     </edge>
 
-    <edge id="TRC-011" type="mitigates" confidence="0.8" status="approved">
-      <from><locator><local id="REQ-SEC-001"/></locator></from>
-      <to><locator><local id="RISK-FRAUD"/></locator></to>
-    </edge>
+    <edge id="TRC-011" type="mitigates" from="REQ-SEC-001" to="RISK-FRAUD" confidence="0.8" status="approved"/>
 
-    <edge id="TRC-012" type="mitigates" confidence="0.9" status="approved">
-      <from><locator><local id="REQ-RES-003"/></locator></from>
-      <to><locator><local id="RISK-OVERBOOKING"/></locator></to>
-    </edge>
+    <edge id="TRC-012" type="mitigates" from="REQ-RES-003" to="RISK-OVERBOOKING" confidence="0.9" status="approved"/>
 
-    <edge id="TRC-013" type="mitigates" confidence="0.95" status="approved" tags="security">
-      <from><locator><local id="REQ-SEC-003"/></locator></from>
-      <to><locator><local id="RISK-DATA-BREACH"/></locator></to>
-    </edge>
+    <edge id="TRC-013" type="mitigates" from="REQ-SEC-003" to="RISK-DATA-BREACH" confidence="0.95" status="approved" tags="security"/>
 
-    <edge id="TRC-014" type="mitigates" confidence="0.95" status="approved" tags="security">
-      <from><locator><local id="REQ-SEC-004"/></locator></from>
-      <to><locator><local id="RISK-DATA-BREACH"/></locator></to>
-    </edge>
+    <edge id="TRC-014" type="mitigates" from="REQ-SEC-004" to="RISK-DATA-BREACH" confidence="0.95" status="approved" tags="security"/>
 
     <!-- === verifiedBy: Requirements verified by Test Cases === -->
-    <edge id="TRC-020" type="verifiedBy" confidence="1.0" status="approved">
-      <from><locator><local id="REQ-RES-001"/></locator></from>
-      <to><locator><local id="TC-RES-001"/></locator></to>
-    </edge>
+    <edge id="TRC-020" type="verifiedBy" from="REQ-RES-001" to="TC-RES-001" confidence="1" status="approved"/>
 
-    <edge id="TRC-021" type="verifiedBy" confidence="1.0" status="approved">
-      <from><locator><local id="REQ-RES-002"/></locator></from>
-      <to><locator><local id="TC-RES-002"/></locator></to>
-    </edge>
+    <edge id="TRC-021" type="verifiedBy" from="REQ-RES-002" to="TC-RES-002" confidence="1" status="approved"/>
 
-    <edge id="TRC-022" type="verifiedBy" confidence="1.0" status="approved">
-      <from><locator><local id="REQ-RES-004"/></locator></from>
-      <to><locator><local id="TC-RES-003"/></locator></to>
-    </edge>
+    <edge id="TRC-022" type="verifiedBy" from="REQ-RES-004" to="TC-RES-003" confidence="1" status="approved"/>
 
-    <edge id="TRC-023" type="verifiedBy" confidence="1.0" status="approved">
-      <from><locator><local id="REQ-PAY-001"/></locator></from>
-      <to><locator><local id="TC-PAY-001"/></locator></to>
-    </edge>
+    <edge id="TRC-023" type="verifiedBy" from="REQ-PAY-001" to="TC-PAY-001" confidence="1" status="approved"/>
 
-    <edge id="TRC-024" type="verifiedBy" confidence="1.0" status="approved">
-      <from><locator><local id="REQ-SEC-001"/></locator></from>
-      <to><locator><local id="TC-SEC-001"/></locator></to>
-    </edge>
+    <edge id="TRC-024" type="verifiedBy" from="REQ-SEC-001" to="TC-SEC-001" confidence="1" status="approved"/>
 
-    <edge id="TRC-025" type="verifiedBy" confidence="1.0" status="approved">
-      <from><locator><local id="REQ-SEC-005"/></locator></from>
-      <to><locator><local id="TC-SEC-002"/></locator></to>
-    </edge>
+    <edge id="TRC-025" type="verifiedBy" from="REQ-SEC-005" to="TC-SEC-002" confidence="1" status="approved"/>
 
-    <edge id="TRC-026" type="verifiedBy" confidence="1.0" status="approved">
-      <from><locator><local id="REQ-NFR-001"/></locator></from>
-      <to><locator><local id="TC-PERF-001"/></locator></to>
-    </edge>
+    <edge id="TRC-026" type="verifiedBy" from="REQ-NFR-001" to="TC-PERF-001" confidence="1" status="approved"/>
 
-    <edge id="TRC-027" type="verifiedBy" confidence="1.0" status="approved">
-      <from><locator><local id="REQ-RES-003"/></locator></from>
-      <to><locator><local id="TC-PERF-002"/></locator></to>
-    </edge>
+    <edge id="TRC-027" type="verifiedBy" from="REQ-RES-003" to="TC-PERF-002" confidence="1" status="approved"/>
 
-    <edge id="TRC-028" type="verifiedBy" confidence="1.0" status="approved">
-      <from><locator><local id="REQ-PR-001"/></locator></from>
-      <to><locator><local id="TC-INSP-001"/></locator></to>
-    </edge>
+    <edge id="TRC-028" type="verifiedBy" from="REQ-PR-001" to="TC-INSP-001" confidence="1" status="approved"/>
 
     <!-- === covers: Test cases cover test suites === -->
-    <edge id="TRC-030" type="covers" confidence="1.0" status="approved">
-      <from><locator><local id="TC-RES-001"/></locator></from>
-      <to><locator><local id="TS-RESERVATION"/></locator></to>
-    </edge>
+    <edge id="TRC-030" type="covers" from="TC-RES-001" to="TS-RESERVATION" confidence="1" status="approved"/>
 
-    <edge id="TRC-031" type="covers" confidence="1.0" status="approved">
-      <from><locator><local id="TC-RES-002"/></locator></from>
-      <to><locator><local id="TS-RESERVATION"/></locator></to>
-    </edge>
+    <edge id="TRC-031" type="covers" from="TC-RES-002" to="TS-RESERVATION" confidence="1" status="approved"/>
 
-    <edge id="TRC-032" type="covers" confidence="1.0" status="approved">
-      <from><locator><local id="TC-PAY-001"/></locator></from>
-      <to><locator><local id="TS-PAYMENT"/></locator></to>
-    </edge>
+    <edge id="TRC-032" type="covers" from="TC-PAY-001" to="TS-PAYMENT" confidence="1" status="approved"/>
 
-    <edge id="TRC-033" type="covers" confidence="1.0" status="approved">
-      <from><locator><local id="TC-SEC-001"/></locator></from>
-      <to><locator><local id="TS-SECURITY"/></locator></to>
-    </edge>
+    <edge id="TRC-033" type="covers" from="TC-SEC-001" to="TS-SECURITY" confidence="1" status="approved"/>
 
-    <edge id="TRC-034" type="covers" confidence="1.0" status="approved">
-      <from><locator><local id="TC-PERF-001"/></locator></from>
-      <to><locator><local id="TS-PERFORMANCE"/></locator></to>
-    </edge>
+    <edge id="TRC-034" type="covers" from="TC-PERF-001" to="TS-PERFORMANCE" confidence="1" status="approved"/>
 
     <!-- === dependsOn: Requirements depend on other requirements === -->
-    <edge id="TRC-040" type="dependsOn" confidence="1.0" status="approved">
-      <from><locator><local id="REQ-RES-002"/></locator></from>
-      <to><locator><local id="REQ-PAY-001"/></locator></to>
+    <edge id="TRC-040" type="dependsOn" from="REQ-RES-002" to="REQ-PAY-001" confidence="1" status="approved">
       <notes>Reservation creation requires payment pre-authorization.</notes>
     </edge>
 
-    <edge id="TRC-041" type="dependsOn" confidence="1.0" status="approved">
-      <from><locator><local id="REQ-VEH-002"/></locator></from>
-      <to><locator><local id="REQ-PAY-002"/></locator></to>
+    <edge id="TRC-041" type="dependsOn" from="REQ-VEH-002" to="REQ-PAY-002" confidence="1" status="approved">
       <notes>Vehicle check-in triggers final payment capture.</notes>
     </edge>
 
-    <edge id="TRC-042" type="dependsOn" confidence="1.0" status="approved">
-      <from><locator><local id="REQ-PAY-001"/></locator></from>
-      <to><locator><local id="REQ-IR-002"/></locator></to>
+    <edge id="TRC-042" type="dependsOn" from="REQ-PAY-001" to="REQ-IR-002" confidence="1" status="approved">
       <notes>Payment pre-authorization depends on Stripe integration.</notes>
     </edge>
 
     <!-- === conformsTo: Requirements conform to external standards === -->
-    <edge id="TRC-050" type="conformsTo" confidence="1.0" status="approved" tags="compliance">
-      <from><locator><local id="REQ-PR-001"/></locator></from>
-      <to><locator><external uri="urn:gdpr:article:17" kind="regulation" title="GDPR Art. 17 - Right to Erasure"/></locator></to>
-    </edge>
+    <edge id="TRC-050" type="conformsTo" from="REQ-PR-001" to="urn:gdpr:article:17" toKind="regulation" toTitle="GDPR Art. 17 - Right to Erasure" confidence="1" status="approved" tags="compliance"/>
 
-    <edge id="TRC-051" type="conformsTo" confidence="1.0" status="approved" tags="compliance">
-      <from><locator><local id="REQ-SEC-003"/></locator></from>
-      <to><locator><external uri="urn:pci-dss:v4.0:req:3.4" kind="standard" title="PCI-DSS v4.0 Requirement 3.4"/></locator></to>
-    </edge>
+    <edge id="TRC-051" type="conformsTo" from="REQ-SEC-003" to="urn:pci-dss:v4.0:req:3.4" toKind="standard" toTitle="PCI-DSS v4.0 Requirement 3.4" confidence="1" status="approved" tags="compliance"/>
 
-    <edge id="TRC-052" type="conformsTo" confidence="1.0" status="approved" tags="compliance">
-      <from><locator><local id="REQ-SEC-002"/></locator></from>
-      <to><locator><external uri="urn:psd2:sca" kind="regulation" title="PSD2 Strong Customer Authentication"/></locator></to>
-    </edge>
+    <edge id="TRC-052" type="conformsTo" from="REQ-SEC-002" to="urn:psd2:sca" toKind="regulation" toTitle="PSD2 Strong Customer Authentication" confidence="1" status="approved" tags="compliance"/>
 
-    <edge id="TRC-053" type="conformsTo" confidence="1.0" status="approved">
-      <from><locator><local id="REQ-UXR-002"/></locator></from>
-      <to><locator><external uri="https://www.w3.org/TR/WCAG21/" kind="standard" title="WCAG 2.1 Level AA"/></locator></to>
-    </edge>
+    <edge id="TRC-053" type="conformsTo" from="REQ-UXR-002" to="https://www.w3.org/TR/WCAG21/" toKind="standard" toTitle="WCAG 2.1 Level AA" confidence="1" status="approved"/>
 
     <!-- === cross-document trace (doc locator) === -->
-    <edge id="TRC-060" type="dependsOn" confidence="0.8" status="draft" tags="cross-system">
-      <from><locator><local id="REQ-IR-002"/></locator></from>
-      <to><locator><doc uri="payment-gateway-spec.rqml" docId="PAYMENT-GW-SPEC" id="REQ-PG-API-001" version="1.0.0"/></locator></to>
+    <edge id="TRC-060" type="dependsOn" from="REQ-IR-002" to="rqml:payment-gateway-spec.rqml#REQ-PG-API-001;version=1.0.0;docId=PAYMENT-GW-SPEC" confidence="0.8" status="draft" tags="cross-system">
       <notes>Stripe integration depends on payment gateway interface spec maintained by the payments team.</notes>
     </edge>
 
     <!-- === implements: Code implements requirements (external locator) === -->
-    <edge id="TRC-070" type="implements" confidence="0.9" status="draft"
-          createdBy="bjarki" createdAt="2026-02-15T14:30:00Z" tags="backend">
-      <from><locator><external uri="file:src/main/java/com/driveeasy/reservation/ReservationService.java#L45-L120" kind="source-code" title="ReservationService.createReservation()"/></locator></from>
-      <to><locator><local id="REQ-RES-002"/></locator></to>
+    <edge id="TRC-070" type="implements" from="file:src/main/java/com/driveeasy/reservation/ReservationService.java#L45-L120" fromKind="source-code" fromTitle="ReservationService.createReservation()" to="REQ-RES-002" confidence="0.9" status="draft" createdBy="bjarki" createdAt="2026-02-15T14:30:00Z" tags="backend">
       <notes>Primary implementation of reservation creation logic.</notes>
     </edge>
 
-    <edge id="TRC-071" type="implements" confidence="0.9" status="draft" tags="backend">
-      <from><locator><external uri="file:src/main/java/com/driveeasy/payment/StripePaymentGateway.java" kind="source-code" title="StripePaymentGateway"/></locator></from>
-      <to><locator><local id="REQ-IR-002"/></locator></to>
-    </edge>
+    <edge id="TRC-071" type="implements" from="file:src/main/java/com/driveeasy/payment/StripePaymentGateway.java" fromKind="source-code" fromTitle="StripePaymentGateway" to="REQ-IR-002" confidence="0.9" status="draft" tags="backend"/>
 
     <!-- === consumesInterface / providesInterface === -->
-    <edge id="TRC-080" type="consumesInterface" confidence="1.0" status="approved">
-      <from><locator><local id="REQ-IR-002"/></locator></from>
-      <to><locator><external uri="https://docs.stripe.com/api/payment_intents" kind="api" title="Stripe PaymentIntents API"/></locator></to>
+    <edge id="TRC-080" type="consumesInterface" from="REQ-IR-002" to="https://docs.stripe.com/api/payment_intents" toKind="api" toTitle="Stripe PaymentIntents API" confidence="1" status="approved">
       <notes>DriveEasy consumes the Stripe PaymentIntents API for payment processing.</notes>
     </edge>
 
-    <edge id="TRC-081" type="providesInterface" confidence="1.0" status="approved">
-      <from><locator><local id="API-CUSTOMER"/></locator></from>
-      <to><locator><external uri="file:docs/openapi/customer-api.yaml" kind="api-spec" title="Customer API OpenAPI Spec"/></locator></to>
-    </edge>
+    <edge id="TRC-081" type="providesInterface" from="API-CUSTOMER" to="file:docs/openapi/customer-api.yaml" toKind="api-spec" toTitle="Customer API OpenAPI Spec" confidence="1" status="approved"/>
 
     <!-- === threatens (risk to goal via trace, complementing goalLinks) === -->
-    <edge id="TRC-090" type="threatens" confidence="0.7" status="approved">
-      <from><locator><local id="RISK-VENDOR-LOCK"/></locator></from>
-      <to><locator><local id="GOAL-REVENUE"/></locator></to>
+    <edge id="TRC-090" type="threatens" from="RISK-VENDOR-LOCK" to="GOAL-REVENUE" confidence="0.7" status="approved">
       <notes>Vendor lock-in could constrain future payment optimization opportunities.</notes>
     </edge>
 
