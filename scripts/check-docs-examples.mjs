@@ -25,7 +25,9 @@ import { fileURLToPath } from "node:url";
 
 // Imported from the build output by path: this script runs at the workspace
 // root, which does not depend on the packages it is checking the docs against.
-const { parseEndpointRef } = await import("../packages/core/dist/index.js");
+const { parseEndpointRef, checkIntegrity } = await import(
+  "../packages/core/dist/index.js"
+);
 const { validate } = await import("../packages/core/dist/validate/index.js");
 const { DEFAULT_SCHEMA_VERSION, schemaNamespace } = await import(
   "../packages/schema/dist/index.js"
@@ -34,6 +36,16 @@ const { DEFAULT_SCHEMA_VERSION, schemaNamespace } = await import(
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const ROOTS = ["apps/website/docs", "apps/website/src"];
 const EXTENSIONS = [".md", ".mdx", ".tsx", ".ts"];
+
+/**
+ * Complete example specs. These are published at rqml.org/examples and shipped
+ * in @rqml/schema, so they are documentation as much as the prose is — and
+ * unlike a fenced snippet they are whole documents, checked for referential
+ * integrity too. The two directories are byte-identical mirrors; that is
+ * asserted rather than assumed, because a manual copy is exactly the kind of
+ * duplication that drifts silently.
+ */
+const SPEC_MIRRORS = ["packages/schema/examples", "apps/website/static/examples"];
 const VERBOSE = process.argv.includes("--verbose");
 
 const FENCE = /```xml\n([\s\S]*?)```/g;
@@ -122,6 +134,45 @@ for (const root of ROOTS) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Published example specs: whole documents, so validated as-is and checked for
+// referential integrity — not just XSD shape.
+// ---------------------------------------------------------------------------
+const [primary, ...mirrors] = SPEC_MIRRORS;
+let specs = 0;
+
+for (const name of readdirSync(join(ROOT, primary)).sort()) {
+  if (!name.endsWith(".rqml")) continue;
+  specs++;
+  const rel = join(primary, name);
+  const xml = readFileSync(join(ROOT, primary, name), "utf8");
+
+  const result = validate(xml);
+  if (result.schemaVersion !== DEFAULT_SCHEMA_VERSION) {
+    problems.push(
+      `${rel} — declares schema ${result.schemaVersion}, expected ${DEFAULT_SCHEMA_VERSION} (run: rqml migrate --spec ${rel})`,
+    );
+  }
+  for (const d of result.diagnostics) problems.push(`${rel} — ${d.message ?? d}`);
+  for (const d of checkIntegrity(xml)) problems.push(`${rel} — ${d.message ?? d}`);
+
+  for (const mirror of mirrors) {
+    const copy = join(ROOT, mirror, name);
+    let other;
+    try {
+      other = readFileSync(copy, "utf8");
+    } catch {
+      problems.push(`${join(mirror, name)} — missing; mirror of ${rel}`);
+      continue;
+    }
+    if (other !== xml) {
+      problems.push(
+        `${join(mirror, name)} — differs from ${rel}; the two example directories must stay byte-identical`,
+      );
+    }
+  }
+}
+
 if (problems.length) {
   console.error(`\n✗ ${problems.length} problem(s) in documentation examples:\n`);
   for (const p of problems) console.error(`  ${p}`);
@@ -133,5 +184,5 @@ if (problems.length) {
 }
 
 console.log(
-  `✓ ${examples} documentation examples valid against RQML ${DEFAULT_SCHEMA_VERSION} (${endpoints} endpoints parsed)${elided ? `; ${elided} elided outline(s) skipped` : ""}`,
+  `✓ ${examples} documentation examples and ${specs} published specs valid against RQML ${DEFAULT_SCHEMA_VERSION} (${endpoints} endpoints parsed)${elided ? `; ${elided} elided outline(s) skipped` : ""}`,
 );

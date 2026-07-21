@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rqml xmlns="https://rqml.org/schema/2.1.0"
+<rqml xmlns="https://rqml.org/schema/2.2.0"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="https://rqml.org/schema/2.1.0 https://rqml.org/schema/rqml-2.1.0.xsd"
-      version="2.1.0" docId="ROBOT-001" status="draft">
+      xsi:schemaLocation="https://rqml.org/schema/2.2.0 https://rqml.org/schema/rqml-2.2.0.xsd"
+      version="2.2.0" docId="ROBOT-001" status="draft">
   <meta>
     <title>Autonomous Warehouse Robots</title>
     <system>FleetControl</system>
@@ -122,37 +122,13 @@
   </verification>
 
   <trace>
-    <edge id="TR-ASSIGN" type="satisfies">
-      <from><locator><local id="REQ-ASSIGN"/></locator></from>
-      <to><locator><local id="GOAL-THROUGHPUT"/></locator></to>
-    </edge>
-    <edge id="TR-ASSIGN-SCN" type="satisfies">
-      <from><locator><local id="REQ-ASSIGN"/></locator></from>
-      <to><locator><local id="SCN-PICK"/></locator></to>
-    </edge>
-    <edge id="TR-ASSIGN-ENT" type="dependsOn">
-      <from><locator><local id="REQ-ASSIGN"/></locator></from>
-      <to><locator><local id="ENT-TASK"/></locator></to>
-    </edge>
-    <edge id="TR-AVOID" type="satisfies">
-      <from><locator><local id="REQ-AVOID"/></locator></from>
-      <to><locator><local id="QGOAL-SAFETY"/></locator></to>
-    </edge>
-    <edge id="TR-AVOID-SCN" type="satisfies">
-      <from><locator><local id="REQ-AVOID"/></locator></from>
-      <to><locator><local id="SCN-OBST"/></locator></to>
-    </edge>
-    <edge id="TR-RISK" type="mitigates">
-      <from><locator><local id="REQ-AVOID"/></locator></from>
-      <to><locator><local id="RISK-COLLISION"/></locator></to>
-    </edge>
-    <edge id="TR-ASSIGN-TEST" type="verifiedBy">
-      <from><locator><local id="REQ-ASSIGN"/></locator></from>
-      <to><locator><local id="TC-ASSIGN"/></locator></to>
-    </edge>
-    <edge id="TR-AVOID-TEST" type="verifiedBy">
-      <from><locator><local id="REQ-AVOID"/></locator></from>
-      <to><locator><local id="TC-AVOID"/></locator></to>
-    </edge>
+    <edge id="TR-ASSIGN" type="satisfies" from="REQ-ASSIGN" to="GOAL-THROUGHPUT"/>
+    <edge id="TR-ASSIGN-SCN" type="satisfies" from="REQ-ASSIGN" to="SCN-PICK"/>
+    <edge id="TR-ASSIGN-ENT" type="dependsOn" from="REQ-ASSIGN" to="ENT-TASK"/>
+    <edge id="TR-AVOID" type="satisfies" from="REQ-AVOID" to="QGOAL-SAFETY"/>
+    <edge id="TR-AVOID-SCN" type="satisfies" from="REQ-AVOID" to="SCN-OBST"/>
+    <edge id="TR-RISK" type="mitigates" from="REQ-AVOID" to="RISK-COLLISION"/>
+    <edge id="TR-ASSIGN-TEST" type="verifiedBy" from="REQ-ASSIGN" to="TC-ASSIGN"/>
+    <edge id="TR-AVOID-TEST" type="verifiedBy" from="REQ-AVOID" to="TC-AVOID"/>
   </trace>
 </rqml>

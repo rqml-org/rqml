@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rqml xmlns="https://rqml.org/schema/2.1.0"
+<rqml xmlns="https://rqml.org/schema/2.2.0"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="https://rqml.org/schema/2.1.0 https://rqml.org/schema/rqml-2.1.0.xsd"
-      version="2.1.0" docId="TELEMED-001" status="review">
+      xsi:schemaLocation="https://rqml.org/schema/2.2.0 https://rqml.org/schema/rqml-2.2.0.xsd"
+      version="2.2.0" docId="TELEMED-001" status="review">
   <meta>
     <title>Telemedicine Platform</title>
     <system>CareConnect</system>
@@ -133,49 +133,16 @@
   </verification>
 
   <trace>
-    <edge id="TR-SCHED-GOAL" type="satisfies">
-      <from><locator><local id="REQ-SCHED"/></locator></from>
-      <to><locator><local id="GOAL-ACCESS"/></locator></to>
-    </edge>
-    <edge id="TR-SCHED-SCN" type="satisfies">
-      <from><locator><local id="REQ-SCHED"/></locator></from>
-      <to><locator><local id="SCN-BOOK"/></locator></to>
-    </edge>
-    <edge id="TR-SCHED-ENT" type="dependsOn">
-      <from><locator><local id="REQ-SCHED"/></locator></from>
-      <to><locator><local id="ENT-VISIT"/></locator></to>
-    </edge>
-    <edge id="TR-VIDEO-SCN" type="satisfies">
-      <from><locator><local id="REQ-VIDEO"/></locator></from>
-      <to><locator><local id="SCN-CALL"/></locator></to>
-    </edge>
-    <edge id="TR-VIDEO-PHI" type="dependsOn">
-      <from><locator><local id="REQ-VIDEO"/></locator></from>
-      <to><locator><local id="REQ-PHI"/></locator></to>
-    </edge>
-    <edge id="TR-PHI-HIPAA" type="satisfies">
-      <from><locator><local id="REQ-PHI"/></locator></from>
-      <to><locator><local id="POL-HIPAA"/></locator></to>
-    </edge>
-    <edge id="TR-PRESC-SCN" type="satisfies">
-      <from><locator><local id="REQ-PRESC"/></locator></from>
-      <to><locator><local id="SCN-PRESC"/></locator></to>
-    </edge>
-    <edge id="TR-PRESC-ENT" type="dependsOn">
-      <from><locator><local id="REQ-PRESC"/></locator></from>
-      <to><locator><local id="ENT-PRESC"/></locator></to>
-    </edge>
-    <edge id="TR-SCHED-TEST" type="verifiedBy">
-      <from><locator><local id="REQ-SCHED"/></locator></from>
-      <to><locator><local id="TC-SCHED"/></locator></to>
-    </edge>
-    <edge id="TR-VIDEO-TEST" type="verifiedBy">
-      <from><locator><local id="REQ-VIDEO"/></locator></from>
-      <to><locator><local id="TC-VIDEO"/></locator></to>
-    </edge>
-    <edge id="TR-PHI-TEST" type="verifiedBy">
-      <from><locator><local id="REQ-PHI"/></locator></from>
-      <to><locator><local id="TC-VIDEO"/></locator></to>
-    </edge>
+    <edge id="TR-SCHED-GOAL" type="satisfies" from="REQ-SCHED" to="GOAL-ACCESS"/>
+    <edge id="TR-SCHED-SCN" type="satisfies" from="REQ-SCHED" to="SCN-BOOK"/>
+    <edge id="TR-SCHED-ENT" type="dependsOn" from="REQ-SCHED" to="ENT-VISIT"/>
+    <edge id="TR-VIDEO-SCN" type="satisfies" from="REQ-VIDEO" to="SCN-CALL"/>
+    <edge id="TR-VIDEO-PHI" type="dependsOn" from="REQ-VIDEO" to="REQ-PHI"/>
+    <edge id="TR-PHI-HIPAA" type="satisfies" from="REQ-PHI" to="POL-HIPAA"/>
+    <edge id="TR-PRESC-SCN" type="satisfies" from="REQ-PRESC" to="SCN-PRESC"/>
+    <edge id="TR-PRESC-ENT" type="dependsOn" from="REQ-PRESC" to="ENT-PRESC"/>
+    <edge id="TR-SCHED-TEST" type="verifiedBy" from="REQ-SCHED" to="TC-SCHED"/>
+    <edge id="TR-VIDEO-TEST" type="verifiedBy" from="REQ-VIDEO" to="TC-VIDEO"/>
+    <edge id="TR-PHI-TEST" type="verifiedBy" from="REQ-PHI" to="TC-VIDEO"/>
   </trace>
 </rqml>
