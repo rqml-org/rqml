@@ -38,14 +38,31 @@ The idea was ahead of its tooling: a structured, machine-readable requirements f
 Use `xmllint` (ships with most systems) or any XSD-capable validator:
 
 ```bash
-xmllint --schema rqml-2.1.0.xsd my-spec.rqml --noout
+xmllint --schema rqml-2.2.0.xsd my-spec.rqml --noout
 ```
 
-The schema enforces structure, ID uniqueness, and referential integrity for trace edges. Download it from the [schema page](https://rqml.org/schema/rqml-2.1.0.xsd).
+The schema enforces structure, ID uniqueness, and referential integrity for trace edges. Download it from the [schema page](https://rqml.org/schema/rqml-2.2.0.xsd). Every version stays published at `https://rqml.org/schema/rqml-<version>.xsd`.
+
+## What changed in version 2.2.0?
+
+Trace edges are written in a **compact form**: the endpoints are the `from` and `to` attributes rather than nested `locator` elements. The three endpoint kinds are unchanged in meaning — the kind is now inferred from the value's shape.
+
+```xml
+<!-- 2.1.0 -->
+<edge id="TR-1" type="satisfies">
+  <from><locator><local id="REQ-A"/></locator></from>
+  <to><locator><local id="GOAL-B"/></locator></to>
+</edge>
+
+<!-- 2.2.0 -->
+<edge id="TR-1" type="satisfies" from="REQ-A" to="GOAL-B"/>
+```
+
+This is the only change in 2.2.0, and it is breaking: the nested elements are removed. Run `rqml migrate` to upgrade a spec (`--dry-run` previews it).
 
 ## What changed in version 2.1.0?
 
-The biggest change is the **trace redesign**: `traceEdge` was replaced by `edge` with structured endpoints supporting three locator types — `local` (same document, keyref-validated), `doc` (cross-document with version/git pinning), and `external` (URI-based).
+The **trace redesign**: `traceEdge` was replaced by `edge` with structured endpoints supporting three locator types — `local` (same document), `doc` (cross-document with version/git pinning), and `external` (URI-based). 2.2.0 kept these three kinds but changed how they are written.
 
 Other changes:
 - Five new TraceType values: `consumesInterface`, `providesInterface`, `conformsTo`, `deprecates`, `breaks`
@@ -55,33 +72,28 @@ See the full [Changelog](/changelog) for details.
 
 ## How do I link requirements to external systems like Jira or GitHub?
 
-Use `external` locators in trace edges with URI conventions:
+Use a URI as the endpoint value:
 
 ```xml
-<edge id="TR-JIRA" type="implements">
-  <from><locator><local id="REQ-AUTH-001"/></locator></from>
-  <to><locator><external uri="jira:PROJ-1234"/></locator></to>
-</edge>
+<edge id="TR-JIRA" type="implements" from="REQ-AUTH-001" to="jira:PROJ-1234"/>
 ```
 
 Common URI schemes: `jira:PROJ-1234`, `github:owner/repo/issues/42`, `git:a1b2c3d`, `file:src/auth.ts#L42`, `urn:gdpr:article:17`.
 
 ## Can I reference requirements across multiple RQML documents?
 
-Yes. Use `doc` locators with `uri` and `id` attributes, optionally pinned to a `version` or `git` commit:
+Yes. Use an `rqml:` endpoint — the other document's URI, `#`, and the target id — optionally pinned to a `version` or `git` commit:
 
 ```xml
-<edge id="TR-CROSS" type="dependsOn">
-  <from><locator><local id="REQ-PAY-001"/></locator></from>
-  <to><locator><doc uri="auth-spec.rqml" docId="AUTH-001" id="REQ-AUTH-001" version="2.1.0"/></locator></to>
-</edge>
+<edge id="TR-CROSS" type="dependsOn" from="REQ-PAY-001"
+      to="rqml:auth-spec.rqml#REQ-AUTH-001;version=1.4;docId=AUTH-001"/>
 ```
 
 ## How does RQML work in a monorepo?
 
 One repository can hold many specs — one per package, app, or service. A spec governs its own directory and everything beneath it, a nested spec takes over its own subtree, and the **nearest** spec to a file wins — the same model as `.editorconfig` or `tsconfig.json`. The `rqml` CLI resolves the governing spec automatically, and `rqml check --workspace` gates every spec in the repository with a single exit code.
 
-See the [**Monorepo guide**](/docs/monorepo) for the full model, the design decisions behind it, and the workspace and `rqml_discover` tooling. To reference a requirement that lives in *another* spec, use the `doc` locator shown above.
+See the [**Monorepo guide**](/docs/monorepo) for the full model, the design decisions behind it, and the workspace and `rqml_discover` tooling. To reference a requirement that lives in *another* spec, use the `rqml:` endpoint shown above.
 
 ## What requirement types does RQML support?
 

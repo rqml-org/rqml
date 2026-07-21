@@ -32,7 +32,7 @@ Root container for an RQML document.
 
 ## Example (minimal)
 ```xml
-<rqml xmlns="https://rqml.org/schema/2.1.0" version="2.1.0" docId="DOC-001" status="draft">
+<rqml xmlns="https://rqml.org/schema/2.2.0" version="2.2.0" docId="DOC-001" status="draft">
   <meta>
     <title>Example Spec</title>
     <system>Example System</system>
@@ -43,7 +43,7 @@ Root container for an RQML document.
 
 ## Example (typical)
 ```xml
-<rqml xmlns="https://rqml.org/schema/2.1.0" version="2.1.0" docId="PAY-REQS" status="review">
+<rqml xmlns="https://rqml.org/schema/2.2.0" version="2.2.0" docId="PAY-REQS" status="review">
   <meta>...</meta>
   <catalogs>...</catalogs>
   <domain>...</domain>
