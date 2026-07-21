@@ -1,6 +1,6 @@
 {
   "name": "@rqml/schema",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Canonical RQML XSD schemas (the single source of truth), example documents, and the AGENTS.md template, with a typed version resolver. Schema text is inlined for offline, bundler-friendly consumption.",
   "type": "module",
   "license": "Apache-2.0",
