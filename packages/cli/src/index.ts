@@ -68,8 +68,21 @@ Options:
 Exit codes: 0 ok · 1 validation failure · 2 check (drift/coverage) failure · 64 usage
 `;
 
+/** `-h`/`--help` anywhere in a command's arguments is a help request. */
+const HELP_FLAGS = new Set(["-h", "--help"]);
+
 async function main(argv: string[]): Promise<number> {
   const [cmd, ...rest] = argv;
+
+  // A help request is never an action (REQ-CLI-SAFE-INVOCATION). Handled here,
+  // before dispatch, so it holds for every command: previously only the command
+  // position was checked, so `rqml migrate --help` fell through to the command,
+  // which — having no required positional — discovered a spec and rewrote it.
+  if (cmd !== undefined && rest.some((a) => HELP_FLAGS.has(a))) {
+    process.stdout.write(HELP);
+    return EXIT.OK;
+  }
+
   switch (cmd) {
     case "validate":
       return runValidate(rest);

@@ -1701,6 +1701,36 @@
           validation failure, drift or coverage failure, and usage error.
         </statement>
       </req>
+      <req id="REQ-CLI-SAFE-INVOCATION" type="IR" title="Help and unrecognized input never mutate" status="approved" priority="must" appliesTo="cli">
+        <statement>
+          rqml SHALL treat -h and --help as a help request for every command,
+          printing usage and exiting successfully without reading or writing any
+          project file. A command that modifies files SHALL additionally reject
+          unrecognized flags rather than proceeding, so that a mistyped or
+          unsupported option can never cause a write.
+        </statement>
+        <rationale>
+          `rqml migrate --help` silently migrated the discovered spec in place:
+          help was only handled in the command position, and migrate takes no
+          required positional, so the flag fell through to spec discovery and a
+          write. Commands that require positionals (link, approve) were spared
+          only by accident. A mutating command must never act on input it does
+          not understand — the spec is the user's source of truth, and a
+          surprise rewrite of it is the worst failure this CLI can produce.
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-CLI-HELP-NOWRITE">
+            <given>A project whose spec a command would otherwise modify</given>
+            <when>That command is invoked with --help or -h</when>
+            <then>Usage is printed, the exit status is success, and the spec is byte-identical.</then>
+          </criterion>
+          <criterion id="CRIT-CLI-UNKNOWN-FLAG">
+            <given>A project whose spec a mutating command would otherwise modify</given>
+            <when>That command is invoked with an unrecognized flag</when>
+            <then>It exits with the usage status and the spec is byte-identical.</then>
+          </criterion>
+        </acceptance>
+      </req>
       <req id="REQ-CLI-OFFLINE" type="NFR" title="Offline operation" status="approved" priority="must" appliesTo="cli">
         <statement>rqml SHALL run fully offline, bundling the schema via @rqml/core.</statement>
       </req>
@@ -2682,6 +2712,9 @@
     <edge id="E-IMPL-LOOP-MIGRATE" type="implements" from="packages/core/src/edit/migrate.ts" fromKind="code" to="REQ-LOOP-MIGRATE"/>
     <edge id="E-VER-LOOP-MIGRATE" type="verifiedBy" from="REQ-LOOP-MIGRATE" to="packages/core/test/migrate.test.ts" toKind="test"/>
     <edge id="E-IMPL-LOOP-MIGRATE-CLI" type="implements" from="packages/cli/src/commands/migrate.ts" fromKind="code" to="REQ-LOOP-MIGRATE"/>
+    <edge id="E-IMPL-CLI-SAFE-DISPATCH" type="implements" from="packages/cli/src/index.ts" fromKind="code" fromTitle="global -h/--help interception" to="REQ-CLI-SAFE-INVOCATION" status="draft" createdBy="rqml"/>
+    <edge id="E-IMPL-CLI-SAFE-FLAGS" type="implements" from="packages/cli/src/commands/migrate.ts" fromKind="code" fromTitle="migrate rejects unknown flags" to="REQ-CLI-SAFE-INVOCATION" status="draft" createdBy="rqml"/>
+    <edge id="E-VER-CLI-SAFE-INVOCATION" type="verifiedBy" from="REQ-CLI-SAFE-INVOCATION" to="packages/cli/test/safe-invocation.test.ts" toKind="test" status="draft" createdBy="rqml"/>
   </trace>
 
   <!-- ============================================================= -->
