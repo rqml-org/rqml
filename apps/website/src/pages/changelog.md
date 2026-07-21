@@ -8,6 +8,42 @@ All notable changes to the RQML schema are documented here.
 
 ---
 
+## 2.2.0
+_July 2026_
+
+### Compact trace edges (breaking)
+Trace edge endpoints move from nested elements to `from` / `to` attributes. The `locator`, `local`, `doc`, and `external` elements are removed.
+
+```xml
+<!-- 2.1.0 -->
+<edge id="TR-001" type="satisfies">
+  <from><locator><local id="REQ-A"/></locator></from>
+  <to><locator><local id="GOAL-B"/></locator></to>
+</edge>
+
+<!-- 2.2.0 -->
+<edge id="TR-001" type="satisfies" from="REQ-A" to="GOAL-B"/>
+```
+
+The three endpoint kinds are unchanged in meaning; the kind is now inferred from the value's shape:
+
+- a bare id is **local** — `REQ-A`
+- an `rqml:` URI is a **cross-document** reference — `rqml:goals.rqml#GOAL-B;version=2.0`
+- any other scheme URI, or a relative path containing `/`, is **external** — `jira:PROJ-1`, `src/auth.ts`
+
+The locator's `kind` and `title` hints become per-side `fromKind` / `fromTitle` / `toKind` / `toTitle` attributes. `confidence`, `status`, `createdBy`, `createdAt`, `tags`, and `<notes>` are unchanged.
+
+No other part of the schema changed, and no functionality was added or removed — this release is a serialization change only. It shrinks the trace section by about 40%; how much that saves overall depends on how trace-heavy the document is (7–13% of total bytes on the specs we measured).
+
+### Migrating
+`rqml migrate` rewrites a 2.0.1 or 2.1.0 document in place; `--dry-run` previews it. See the [Migration guide](/docs/migration).
+
+### Fixed
+- The XSD's `allIds` identity constraint used an unprefixed selector, so it never fired. Its selector is namespace-qualified in 2.2.0, and duplicate ids are now caught.
+- The inert trace keyrefs are removed. Endpoint integrity is enforced by the processor — `rqml validate` — since XSD 1.0 cannot express the endpoint grammar.
+
+---
+
 ## 2.1.0
 _February 2026_
 
