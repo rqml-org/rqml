@@ -8,17 +8,61 @@ description: Connect goals, scenarios, requirements, interfaces, and tests.
 The optional `trace` section encodes explicit relationships between artifacts to support impact analysis and coverage.
 
 ## Elements
-- `edge`: Each edge has `@id`, `type`, optional `confidence` (0.0–1.0), optional lifecycle metadata, optional `tags`, and optional `notes`.
-- Endpoints are structured: each `from` and `to` contains a `locator` with one of `local`, `doc`, or `external`.
+- `edge`: Each edge has `@id`, `@type`, the required endpoints `@from` and `@to`, optional `confidence` (0.0–1.0), optional lifecycle metadata, optional `tags`, and an optional `notes` child.
+- Endpoints are **attribute values**, written in a compact micro-syntax: the shape of the value determines whether it is a local, cross-document, or external reference.
 - `type` uses `TraceType` enumeration: `refines`, `satisfies`, `dependsOn`, `conflictsWith`, `threatens`, `mitigates`, `verifiedBy`, `covers`, `implements`, `supersedes`, `consumesInterface`, `providesInterface`, `conformsTo`, `deprecates`, `breaks`.
 
-### Endpoint types
+:::note Schema 2.2.0 changed how endpoints are written
+Through 2.1.0 an endpoint was a nested element tree — `<from><locator><local id="REQ-A"/></locator></from>`. Since 2.2.0 the same three kinds are expressed as `from` / `to` attribute values, and the nested elements are gone. Nothing about the *meaning* of an edge changed; only its serialization did. Run `rqml migrate` to rewrite an older spec (`--dry-run` previews it first).
+:::
 
-| Locator | Purpose | Validation |
-|---------|---------|------------|
-| `local` | Reference by `@id` within this document | Keyref-validated |
-| `doc` | Reference by `@id` in another RQML document (addressed by `@uri` / `@docId`) | Not validated by schema |
-| `external` | Reference by `@uri` to any external artifact | Not validated by schema |
+### Endpoint kinds
+
+The endpoint kind is inferred from the value, in this order:
+
+| Kind | Value shape | Example | Validation |
+|------|-------------|---------|------------|
+| local | A bare id: starts with a letter, then letters/digits/`.`/`_`/`-` (2–80 chars) | `REQ-AUTH-001` | Checked against the ids declared in this document |
+| doc | `rqml:` + document URI + `#` + target id, plus optional pins | `rqml:goals.rqml#GOAL-SECURITY;version=2.0` | Shape checked; the target document is not resolved |
+| external | Any other scheme URI, **or** a schemeless relative path containing `/` | `jira:PROJ-1234`, `src/auth/login.ts#L42` | Not validated |
+
+Because a local id can never contain `:` or `/`, the three shapes are unambiguous.
+
+### Writing endpoints
+
+Record edges with the CLI rather than by hand — it emits the right serialization for whatever schema version your spec declares, and stores the drift baseline in the same step:
+
+```bash
+rqml link REQ-AUTH-001 GOAL-AVAIL --type satisfies
+rqml link REQ-AUTH-001 src/auth/login.ts            # implements (default)
+rqml link REQ-AUTH-001 test/auth.spec.ts --type verifiedBy
+```
+
+`rqml link` accepts all fifteen trace types and the `--notes`, `--confidence`, `--tags`, `--by`, and `--status` flags.
+
+### Cross-document pins
+
+A `rqml:` endpoint may carry immutability pins after the target id, each introduced by `;`:
+
+| Pin | Meaning |
+|-----|---------|
+| `version` | Pin to a released version of the other document |
+| `git` | Pin to a Git ref (commit, tag, branch) |
+| `docId` | The other document's `docId`, recorded for verification |
+
+```
+rqml:contracts/api-spec.rqml#IR-REST-001;git=a1b2c3d;docId=DOC-API
+```
+
+The value is split at the **last** `#`, so a document URI may itself contain `#`. Pin values may not contain `;`, `#`, or whitespace.
+
+### Endpoint hints
+| Attribute | Purpose |
+|-----------|---------|
+| `fromKind` / `toKind` | Category hint for that endpoint (e.g. `code`, `test`, `standard`) |
+| `fromTitle` / `toTitle` | Human-readable title hint for tooling and renderers |
+
+Hints are advisory: they let a renderer label an endpoint without resolving it.
 
 ### Lifecycle metadata
 | Attribute | Type | Purpose |
@@ -51,9 +95,9 @@ Use tags to categorize traces for domain-specific filtering and reporting:
 Custom tags can be added for project-specific concerns. A trace can have multiple tags: `tags="safety compliance"`.
 
 ## Authoring tips
-- Use `local` for same-document references; the schema enforces these via keyrefs.
-- Use `doc` to trace to artifacts in other RQML documents—pin with `version` or `git` for immutability.
-- Use `external` to trace to non-RQML systems (Jira, Git, files, regulations).
+- Use a bare id for same-document references; the toolchain checks these against the ids you declared.
+- Use an `rqml:` endpoint to trace into another RQML document—pin with `version` or `git` for immutability.
+- Use a URI or repo-relative path to trace to non-RQML systems (Jira, Git, files, regulations).
 - Choose the most specific relation type; prefer `satisfies` for requirement coverage and `mitigates` for risk handling.
 - Keep `notes` concise to explain rationale or scope boundaries for the link.
 - Use `consumesInterface` / `providesInterface` to model cross-project API contracts.
@@ -63,19 +107,11 @@ Custom tags can be added for project-specific concerns. A trace can have multipl
 ## Example
 ```xml
 <trace>
-  <edge id="TR-001" type="satisfies" confidence="0.9">
-    <from><locator><local id="REQ-AUTH-001"/></locator></from>
-    <to><locator><local id="GOAL-AVAIL"/></locator></to>
+  <edge id="TR-001" type="satisfies" from="REQ-AUTH-001" to="GOAL-AVAIL" confidence="0.9">
     <notes>Primary requirement fulfilling availability goal for payments.</notes>
   </edge>
-  <edge id="TR-002" type="verifiedBy">
-    <from><locator><local id="TC-AUTH-001"/></locator></from>
-    <to><locator><local id="REQ-AUTH-001"/></locator></to>
-  </edge>
-  <edge id="TR-003" type="threatens">
-    <from><locator><local id="OBS-DB"/></locator></from>
-    <to><locator><local id="GOAL-AVAIL"/></locator></to>
-  </edge>
+  <edge id="TR-002" type="verifiedBy" from="TC-AUTH-001" to="REQ-AUTH-001"/>
+  <edge id="TR-003" type="threatens" from="OBS-DB" to="GOAL-AVAIL"/>
 </trace>
 ```
 
@@ -83,25 +119,18 @@ Custom tags can be added for project-specific concerns. A trace can have multipl
 ```xml
 <trace>
   <!-- Approved trace with full audit trail -->
-  <edge id="TR-001" type="satisfies"
+  <edge id="TR-001" type="satisfies" from="REQ-AUTH-001" to="GOAL-AVAIL"
         status="approved" createdBy="jane.doe" createdAt="2025-03-15T10:30:00Z">
-    <from><locator><local id="REQ-AUTH-001"/></locator></from>
-    <to><locator><local id="GOAL-AVAIL"/></locator></to>
     <notes>Verified in design review DR-2025-03.</notes>
   </edge>
 
   <!-- Auto-generated trace pending review -->
-  <edge id="TR-002" type="satisfies"
-        status="draft" createdBy="import-jira" createdAt="2025-03-20T08:00:00Z">
-    <from><locator><local id="REQ-API-001"/></locator></from>
-    <to><locator><local id="GOAL-PERF"/></locator></to>
-  </edge>
+  <edge id="TR-002" type="satisfies" from="REQ-API-001" to="GOAL-PERF"
+        status="draft" createdBy="import-jira" createdAt="2025-03-20T08:00:00Z"/>
 
   <!-- Deprecated trace kept for history -->
-  <edge id="TR-003" type="satisfies"
+  <edge id="TR-003" type="satisfies" from="REQ-OLD-001" to="GOAL-SECURITY"
         status="deprecated" createdBy="john.smith" createdAt="2024-01-10T14:00:00Z">
-    <from><locator><local id="REQ-OLD-001"/></locator></from>
-    <to><locator><local id="GOAL-SECURITY"/></locator></to>
     <notes>Superseded by REQ-AUTH-002 after security audit.</notes>
   </edge>
 </trace>
@@ -111,29 +140,22 @@ Custom tags can be added for project-specific concerns. A trace can have multipl
 ```xml
 <trace>
   <!-- Safety-critical trace for automotive system -->
-  <edge id="TR-020" type="satisfies" tags="safety" status="approved">
-    <from><locator><local id="REQ-BRAKE-001"/></locator></from>
-    <to><locator><local id="GOAL-SAFETY"/></locator></to>
-  </edge>
+  <edge id="TR-020" type="satisfies" from="REQ-BRAKE-001" to="GOAL-SAFETY"
+        tags="safety" status="approved"/>
 
   <!-- Security trace for authentication -->
-  <edge id="TR-021" type="satisfies" tags="security compliance">
-    <from><locator><local id="REQ-AUTH-001"/></locator></from>
-    <to><locator><local id="GOAL-SECURITY"/></locator></to>
-  </edge>
+  <edge id="TR-021" type="satisfies" from="REQ-AUTH-001" to="GOAL-SECURITY"
+        tags="security compliance"/>
 
   <!-- Multi-domain trace: safety and compliance -->
-  <edge id="TR-022" type="satisfies" tags="safety security compliance">
-    <from><locator><local id="REQ-AUDIT-001"/></locator></from>
-    <to><locator><local id="GOAL-COMPLIANCE"/></locator></to>
+  <edge id="TR-022" type="satisfies" from="REQ-AUDIT-001" to="GOAL-COMPLIANCE"
+        tags="safety security compliance">
     <notes>Required for both ISO 26262 and SOX compliance.</notes>
   </edge>
 
   <!-- Performance trace -->
-  <edge id="TR-023" type="satisfies" tags="performance">
-    <from><locator><local id="REQ-PERF-001"/></locator></from>
-    <to><locator><local id="GOAL-PERF"/></locator></to>
-  </edge>
+  <edge id="TR-023" type="satisfies" from="REQ-PERF-001" to="GOAL-PERF"
+        tags="performance"/>
 </trace>
 ```
 
@@ -151,9 +173,7 @@ When replacing a requirement, mark the old one as deprecated and link with `supe
 
 <!-- In trace section -->
 <trace>
-  <edge id="TR-050" type="supersedes">
-    <from><locator><local id="REQ-AUTH-002"/></locator></from>
-    <to><locator><local id="REQ-AUTH-001"/></locator></to>
+  <edge id="TR-050" type="supersedes" from="REQ-AUTH-002" to="REQ-AUTH-001">
     <notes>OAuth replaces password auth per security audit 2025-Q1.</notes>
   </edge>
 </trace>
@@ -164,32 +184,18 @@ Use `consumesInterface`, `providesInterface`, and `conformsTo` for cross-project
 ```xml
 <trace>
   <!-- Service consumes an API defined in this document -->
-  <edge id="TR-060" type="consumesInterface">
-    <from><locator><local id="REQ-CHECKOUT-001"/></locator></from>
-    <to><locator><local id="API-PAYMENTS"/></locator></to>
-  </edge>
+  <edge id="TR-060" type="consumesInterface" from="REQ-CHECKOUT-001" to="API-PAYMENTS"/>
 
   <!-- Service provides an endpoint for consumers -->
-  <edge id="TR-061" type="providesInterface">
-    <from><locator><local id="REQ-API-001"/></locator></from>
-    <to><locator><local id="EP-CREATE-PAYMENT"/></locator></to>
-  </edge>
+  <edge id="TR-061" type="providesInterface" from="REQ-API-001" to="EP-CREATE-PAYMENT"/>
 
   <!-- Requirement conforms to an external standard -->
-  <edge id="TR-062" type="conformsTo">
-    <from><locator><local id="REQ-CRYPTO-001"/></locator></from>
-    <to><locator><external uri="urn:nist:fips:140-3" kind="standard"/></locator></to>
-  </edge>
+  <edge id="TR-062" type="conformsTo" from="REQ-CRYPTO-001"
+        to="urn:nist:fips:140-3" toKind="standard"/>
 
   <!-- Cross-document interface contract -->
-  <edge id="TR-063" type="consumesInterface">
-    <from><locator><local id="REQ-CHECKOUT-001"/></locator></from>
-    <to>
-      <locator>
-        <doc uri="payments-api.rqml" docId="DOC-PAY-API" id="EP-CHARGE" version="1.2"/>
-      </locator>
-    </to>
-  </edge>
+  <edge id="TR-063" type="consumesInterface" from="REQ-CHECKOUT-001"
+        to="rqml:payments-api.rqml#EP-CHARGE;version=1.2;docId=DOC-PAY-API"/>
 </trace>
 ```
 
@@ -198,16 +204,12 @@ Use `deprecates` and `breaks` to record change impacts explicitly:
 ```xml
 <trace>
   <!-- New API version deprecates old one -->
-  <edge id="TR-070" type="deprecates">
-    <from><locator><local id="REQ-API-V2"/></locator></from>
-    <to><locator><local id="REQ-API-V1"/></locator></to>
+  <edge id="TR-070" type="deprecates" from="REQ-API-V2" to="REQ-API-V1">
     <notes>v2 deprecates v1; v1 sunset date 2026-06-01.</notes>
   </edge>
 
   <!-- Breaking change -->
-  <edge id="TR-071" type="breaks">
-    <from><locator><local id="REQ-AUTH-003"/></locator></from>
-    <to><locator><local id="REQ-AUTH-001"/></locator></to>
+  <edge id="TR-071" type="breaks" from="REQ-AUTH-003" to="REQ-AUTH-001">
     <notes>PKCE-only flow removes implicit grant; clients must migrate.</notes>
   </edge>
 </trace>
@@ -215,31 +217,21 @@ Use `deprecates` and `breaks` to record change impacts explicitly:
 
 ## Cross-document references
 
-The `doc` locator enables tracing between separate RQML documents. Use `version` or `git` to pin references for immutability.
+An `rqml:` endpoint traces between separate RQML documents. Use `version` or `git` to pin references for immutability.
 
 ```xml
 <trace>
   <!-- Reference a goal in another RQML document -->
-  <edge id="TR-080" type="satisfies">
-    <from><locator><local id="REQ-AUTH-001"/></locator></from>
-    <to>
-      <locator>
-        <doc uri="goals.rqml" docId="DOC-GOALS" id="GOAL-SECURITY" version="2.0"/>
-      </locator>
-    </to>
-  </edge>
+  <edge id="TR-080" type="satisfies" from="REQ-AUTH-001"
+        to="rqml:goals.rqml#GOAL-SECURITY;version=2.0;docId=DOC-GOALS"/>
 
   <!-- Pinned to a specific Git commit -->
-  <edge id="TR-081" type="conformsTo">
-    <from><locator><local id="REQ-API-001"/></locator></from>
-    <to>
-      <locator>
-        <doc uri="contracts/api-spec.rqml" id="IR-REST-001" git="a1b2c3d"/>
-      </locator>
-    </to>
-  </edge>
+  <edge id="TR-081" type="conformsTo" from="REQ-API-001"
+        to="rqml:contracts/api-spec.rqml#IR-REST-001;git=a1b2c3d"/>
 </trace>
 ```
+
+This is the **only** way information crosses a spec boundary. Where a spec file sits determines what it governs, never what it can reference — see the [Monorepo guide](/docs/monorepo).
 
 ## External references
 
@@ -249,46 +241,31 @@ External references enable tracing between RQML artifacts and external systems l
 ```xml
 <trace>
   <!-- Requirement implements a Jira story -->
-  <edge id="TR-010" type="implements">
-    <from><locator><local id="REQ-AUTH-001"/></locator></from>
-    <to><locator><external uri="jira:PROJ-1234" kind="issue" title="Login flow"/></locator></to>
-  </edge>
+  <edge id="TR-010" type="implements" from="REQ-AUTH-001"
+        to="jira:PROJ-1234" toKind="issue" toTitle="Login flow"/>
 
   <!-- Git commit implements a requirement -->
-  <edge id="TR-011" type="implements">
-    <from><locator><external uri="git:a1b2c3d4e5f6"/></locator></from>
-    <to><locator><local id="REQ-AUTH-001"/></locator></to>
-  </edge>
+  <edge id="TR-011" type="implements" from="git:a1b2c3d4e5f6" to="REQ-AUTH-001"/>
 
-  <!-- Code file implements a requirement -->
-  <edge id="TR-012" type="implements">
-    <from><locator><external uri="file:src/auth/login.ts#L42-L87"/></locator></from>
-    <to><locator><local id="REQ-AUTH-001"/></locator></to>
-  </edge>
+  <!-- Code file implements a requirement (repo-relative path) -->
+  <edge id="TR-012" type="implements" from="src/auth/login.ts#L42-L87" to="REQ-AUTH-001"/>
 
   <!-- Requirement satisfies a GDPR article -->
-  <edge id="TR-013" type="satisfies">
-    <from><locator><local id="REQ-GDPR-001"/></locator></from>
-    <to><locator><external uri="urn:gdpr:article:17" kind="regulation"/></locator></to>
-  </edge>
+  <edge id="TR-013" type="satisfies" from="REQ-GDPR-001"
+        to="urn:gdpr:article:17" toKind="regulation"/>
 
   <!-- External Confluence doc refines a goal -->
-  <edge id="TR-014" type="refines">
-    <from><locator><external uri="confluence:12345678"/></locator></from>
-    <to><locator><local id="GOAL-SECURITY"/></locator></to>
-  </edge>
+  <edge id="TR-014" type="refines" from="confluence:12345678" to="GOAL-SECURITY"/>
 
   <!-- GitHub PR implements multiple requirements -->
-  <edge id="TR-015" type="implements">
-    <from><locator><external uri="github:acme/api/pull/99"/></locator></from>
-    <to><locator><local id="REQ-API-001"/></locator></to>
-  </edge>
+  <edge id="TR-015" type="implements" from="github:acme/api/pull/99" to="REQ-API-001"/>
 </trace>
 ```
 
 ### URI conventions
 | System | Pattern | Example |
 |--------|---------|---------|
+| Repo file | `{path}` (must contain `/`) | `src/auth/login.ts#L42-L87` |
 | Jira | `jira:{issue-key}` | `jira:PROJ-1234` |
 | GitHub Issue | `github:{owner}/{repo}/issues/{num}` | `github:acme/api/issues/42` |
 | GitHub PR | `github:{owner}/{repo}/pull/{num}` | `github:acme/api/pull/99` |
@@ -299,6 +276,10 @@ External references enable tracing between RQML artifacts and external systems l
 | Full URL | Standard URL | `https://jira.example.com/browse/PROJ-1234` |
 
 These conventions are recommendations; any valid URI is accepted by the schema.
+
+:::caution A path in the repository root needs `./`
+A schemeless value with no `/` — `README.md`, `Makefile` — has the same shape as a local id and would be read as one. Write it as `./README.md` so it is unambiguously a path. `rqml link` adds this for you; the `./` is syntax only and is not part of the recorded path.
+:::
 
 ## Code generation examples
 
@@ -404,5 +385,5 @@ Trace edges inform intelligent test generation:
 - Traceability supports impact analysis, coverage, and compliance—core to IEEE 29148 and safety standards like IEC 61508/ISO 26262.
 - Relation types encode rationale (satisfies/refines/mitigates) and help tools visualize coverage graphs.
 - Confidence values express uncertainty, enabling risk-aware decisions during change.
-- Structured endpoints (local/doc/external) enable multi-document traceability and integration with external systems without sacrificing schema validation for local references.
+- Typed endpoints (local/doc/external) enable multi-document traceability and integration with external systems without sacrificing validation for local references. Encoding the kind in the value's shape rather than in nested elements keeps an edge to a single line, which matters when a mature spec carries hundreds of them.
 - Bibliography: [IEEE 29148-2018](https://standards.ieee.org/standard/29148-2018.html), [IEC 61508](https://webstore.iec.ch/publication/5510), [ISO 26262](https://www.iso.org/standard/68383.html), [An Analysis of Traceability](https://dl.acm.org/doi/10.1145/167088.167111).

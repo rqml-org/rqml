@@ -136,21 +136,19 @@ you, so an agent never has to know the spec's exact path.
 
 ## Cross-spec references and federation
 
-You can reference an artifact declared in **another** spec with a
-[`doc` locator](../reference/elements/trace.md) — a `uri` to the other document
+You can reference an artifact declared in **another** spec with an
+[`rqml:` endpoint](../reference/elements/trace.md) — a URI to the other document
 plus the target `id`, optionally pinned to a `version` or `git` commit:
 
 ```xml
-<edge id="TR-CROSS" type="dependsOn">
-  <from><locator><local id="REQ-PAY-001"/></locator></from>
-  <to><locator><doc uri="../auth/requirements.rqml" docId="AUTH-001" id="REQ-AUTH-001" version="2.1.0"/></locator></to>
-</edge>
+<edge id="TR-CROSS" type="dependsOn" from="REQ-PAY-001"
+      to="rqml:../auth/requirements.rqml#REQ-AUTH-001;version=1.4;docId=AUTH-001"/>
 ```
 
 This is valid RQML you can author today. Note, though, that the toolchain
 currently validates and enforces coverage **within each spec**; resolving and
-checking `doc` references *across* specs repo-wide (full federation) is on the
-roadmap, not yet enforced by `rqml check`. Treat cross-spec `doc` edges as
+checking `rqml:` references *across* specs repo-wide (full federation) is on the
+roadmap, not yet enforced by `rqml check`. Treat cross-spec `rqml:` edges as
 intentional, human-meaningful links until then.
 
 ## Quick reference
@@ -162,4 +160,4 @@ intentional, human-meaningful links until then.
 | Check the whole repo (CI) | `rqml check --workspace` |
 | Skip directories in workspace mode | `rqml check --workspace --ignore <names>` |
 | List every spec in the repo (agent) | the `rqml_discover` MCP tool |
-| Reference another spec's requirement | a [`doc` locator](../reference/elements/trace.md) |
+| Reference another spec's requirement | an [`rqml:` endpoint](../reference/elements/trace.md) |

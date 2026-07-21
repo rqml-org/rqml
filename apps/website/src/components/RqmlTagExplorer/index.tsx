@@ -246,21 +246,16 @@ const TAGS: Tag[] = [
     label: 'trace',
     description: 'Traceability across goals, requirements, and tests',
     snippet: `<trace>
-  <edge id="TRC-001" type="satisfies" confidence="1.0" status="approved">
-    <from><locator><local id="REQ-RES-001"/></locator></from>
-    <to><locator><local id="GOAL-ONLINE-BOOKING"/></locator></to>
+  <edge id="TRC-001" type="satisfies" from="REQ-RES-001" to="GOAL-ONLINE-BOOKING"
+        confidence="1.0" status="approved">
     <notes>Vehicle search is the entry point for online booking.</notes>
   </edge>
 
-  <edge id="TRC-012" type="mitigates" confidence="0.9" status="approved">
-    <from><locator><local id="REQ-RES-003"/></locator></from>
-    <to><locator><local id="RISK-OVERBOOKING"/></locator></to>
-  </edge>
+  <edge id="TRC-012" type="mitigates" from="REQ-RES-003" to="RISK-OVERBOOKING"
+        confidence="0.9" status="approved"/>
 
-  <edge id="TRC-020" type="verifiedBy" confidence="1.0" status="approved">
-    <from><locator><local id="REQ-RES-001"/></locator></from>
-    <to><locator><local id="TC-RES-001"/></locator></to>
-  </edge>
+  <edge id="TRC-020" type="verifiedBy" from="REQ-RES-001" to="TC-RES-001"
+        confidence="1.0" status="approved"/>
 </trace>`,
   },
   {

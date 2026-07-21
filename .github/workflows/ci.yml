@@ -36,6 +36,12 @@ jobs:
       - name: Test
         run: pnpm test
 
+      # Every trace example on rqml.org was invalid for the whole 2.2.0 release
+      # — the docs taught an endpoint form the schema had dropped, and nothing
+      # checked them. Validate the published examples with the shipped engine.
+      - name: Docs examples match the schema
+        run: node scripts/check-docs-examples.mjs
+
       # Dogfood: this repo is specified in requirements.rqml; the same gate
       # we ship is the gate we pass. Validates the spec, checks coverage, and
       # drift-checks every implements edge against .rqml/baseline.json.
