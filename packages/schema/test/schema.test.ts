@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
+  AGENTS_TEMPLATE,
   DEFAULT_SCHEMA_VERSION,
   SCHEMA_VERSIONS,
   isSchemaVersion,
@@ -47,5 +48,20 @@ describe("@rqml/schema", () => {
     expect(schemaNamespace("2.1.0")).toBe("https://rqml.org/schema/2.1.0");
     // Flat URL form — the immutable schemaLocation contract.
     expect(schemaUrl("2.1.0")).toBe("https://rqml.org/schema/rqml-2.1.0.xsd");
+  });
+
+  // The template is copied verbatim into every project by `rqml init` and is
+  // served at https://rqml.org/AGENTS.md, so a stale schema URL here teaches
+  // the previous generation's syntax to every adopting agent. It sat on 2.1.0
+  // for the whole 2.2.0 release; assert it mechanically instead of hoping the
+  // next release remembers.
+  it("AGENTS.md template points at the default schema version", () => {
+    const urls = AGENTS_TEMPLATE.match(
+      /https:\/\/rqml\.org\/schema\/rqml-\d+\.\d+\.\d+\.xsd/g,
+    );
+    expect(urls, "template should cite the schema URL at least once").not.toBeNull();
+    for (const url of urls ?? []) {
+      expect(url).toBe(schemaUrl(DEFAULT_SCHEMA_VERSION));
+    }
   });
 });

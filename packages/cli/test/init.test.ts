@@ -1,7 +1,13 @@
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { AGENTS_TEMPLATE } from "@rqml/schema";
+import { checkIntegrity } from "@rqml/core";
+import {
+  AGENTS_TEMPLATE,
+  DEFAULT_SCHEMA_VERSION,
+  schemaNamespace,
+  schemaUrl,
+} from "@rqml/schema";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { applyAgentsTemplate, runInit } from "../src/commands/init.js";
 import { EXIT } from "../src/runtime.js";
@@ -89,6 +95,37 @@ describe("runInit — end to end (REQ-CLI-INIT-MERGE)", () => {
     const agents = readFileSync(join(dir, "AGENTS.md"), "utf8");
     expect(agents).toContain(BEGIN);
     expect(agents).toContain(AGENTS_TEMPLATE.split("\n")[0]); // "# RQML Agent Guidelines"
+  });
+
+  // Through the whole 2.2.0 release `init` scaffolded a 2.1.0 document while the
+  // template it wrote alongside cited a different version. Pin both to
+  // DEFAULT_SCHEMA_VERSION and assert they agree, so the pair cannot drift apart
+  // or fall behind a schema release again.
+  it("scaffolds the default schema version, and AGENTS.md agrees", async () => {
+    expect(await runInit(["--base-dir", dir])).toBe(EXIT.OK);
+    const spec = readFileSync(join(dir, "requirements.rqml"), "utf8");
+    expect(spec).toContain(`version="${DEFAULT_SCHEMA_VERSION}"`);
+    expect(spec).toContain(`xmlns="${schemaNamespace(DEFAULT_SCHEMA_VERSION)}"`);
+    expect(spec).toContain(schemaUrl(DEFAULT_SCHEMA_VERSION));
+
+    const agents = readFileSync(join(dir, "AGENTS.md"), "utf8");
+    for (const url of agents.match(
+      /https:\/\/rqml\.org\/schema\/rqml-\d+\.\d+\.\d+\.xsd/g,
+    ) ?? []) {
+      expect(url).toBe(schemaUrl(DEFAULT_SCHEMA_VERSION));
+    }
+  });
+
+  it("scaffolds a spec that is XSD-valid and referentially sound", async () => {
+    expect(await runInit(["--base-dir", dir])).toBe(EXIT.OK);
+    const spec = readFileSync(join(dir, "requirements.rqml"), "utf8");
+    // Same two-part check `rqml validate` runs: XSD, then referential integrity.
+    const { validate } = await import("@rqml/core/validate");
+    const result = validate(spec);
+    expect(result.diagnostics).toEqual([]);
+    expect(result.valid).toBe(true);
+    expect(result.schemaVersion).toBe(DEFAULT_SCHEMA_VERSION);
+    expect(checkIntegrity(spec)).toEqual([]);
   });
 
   it("merges into a pre-existing AGENTS.md instead of skipping it", async () => {
