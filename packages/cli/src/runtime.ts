@@ -85,14 +85,33 @@ export function specArgs(args: Args): Args {
 }
 
 /**
- * Resolve the spec governing the base directory: an explicit positional path,
- * otherwise the nearest spec walking up from `baseDir` to the repository
- * boundary (REQ-CORE-SPEC-DISCOVERY, via `@rqml/core`). A directory holding
- * several `*.rqml` and no `requirements.rqml` is reported as ambiguous rather
- * than guessed. The `.rqml/` governance folder is never mistaken for the spec.
+ * Resolve the spec governing the base directory: an explicit positional path
+ * or `--spec`, otherwise the nearest spec walking up from `baseDir` to the
+ * repository boundary (REQ-CORE-SPEC-DISCOVERY, via `@rqml/core`). A directory
+ * holding several `*.rqml` and no `requirements.rqml` is reported as ambiguous
+ * rather than guessed. The `.rqml/` governance folder is never the spec.
+ *
+ * `--spec` is honoured here, not only by the commands whose positional is an
+ * artifact id (REQ-CLI-SAFE-INVOCATION). It used to be read solely via
+ * `specArgs`, so `rqml validate --spec other.rqml` silently validated the
+ * *discovered* spec and reported success for a file it never opened — a
+ * validator's worst failure mode, and indistinguishable from a real pass.
+ * A flag that names the document a command operates on must either take
+ * effect or be refused; it must never be dropped.
  */
 export function resolveSpecPath(args: Args): string {
-  const explicit = args.positionals[0];
+  const viaFlag = flagString(args, "spec");
+  const positional = args.positionals[0];
+  if (viaFlag !== undefined && positional !== undefined) {
+    // `specArgs` funnels --spec into the positional, so equal values are the
+    // normal path for link/show/impact and are not a conflict.
+    if (resolve(args.baseDir, viaFlag) !== resolve(args.baseDir, positional)) {
+      throw new UsageError(
+        `conflicting spec paths: "${positional}" and --spec "${viaFlag}"; pass one`,
+      );
+    }
+  }
+  const explicit = positional ?? viaFlag;
   if (explicit !== undefined) {
     const p = resolve(args.baseDir, explicit);
     if (!existsSync(p)) throw new UsageError(`spec file not found: ${explicit}`);

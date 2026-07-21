@@ -56,7 +56,7 @@ ambiguous. In a repository with multiple specs, see the
 | `--base-dir <dir>` | Where spec discovery starts (and the `--workspace` root); code links resolve against the spec's own directory |
 | `--workspace`, `--all` | Run `validate` / `status` / `check` across every spec in the repository, with one aggregated exit code (non-zero if any unit fails) — see the [Monorepo guide](/docs/monorepo) |
 | `--ignore <names>` | Comma-separated directory names to skip during `--workspace` discovery |
-| `--spec <path>` | Explicit spec file for `link`, `show`, and `impact` (whose positional argument is an artifact id, not a path) |
+| `--spec <path>` | Explicit spec file, for any command. Required by `link`, `show`, and `impact`, whose positional argument is an artifact id rather than a path; for the commands that take a path positionally it is an equivalent spelling, and giving both a positional and a *different* `--spec` is an error rather than one silently winning |
 | `--type <type>` | Link type: `implements` (default) · `verifiedBy` |
 | `--id <id>` | Explicit edge id for `link`, or the root id for `skeleton` |
 | `--kind`, `--title` | Optional locator hints recorded on the edge by `link` (preserved on `--update` unless re-stated) |
