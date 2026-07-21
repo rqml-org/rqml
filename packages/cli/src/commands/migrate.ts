@@ -3,7 +3,15 @@ import { MIGRATE_TARGET, migrateDocument } from "@rqml/core";
 import { printDiagnostics } from "../report.js";
 import { EXIT, UsageError, parseArgs, readSpec, specArgs } from "../runtime.js";
 
-const USAGE = "usage: rqml migrate [--dry-run] [--spec <path>]";
+const USAGE = "usage: rqml migrate [path] [--dry-run] [--spec <path>]";
+
+/**
+ * Options this command understands; anything else is refused rather than
+ * ignored (REQ-CLI-SAFE-INVOCATION). migrate rewrites the user's source of
+ * truth and takes no required argument, so an unrecognized flag must never be
+ * silently dropped and allowed to fall through to a write.
+ */
+const KNOWN_FLAGS = new Set(["dry-run", "spec", "base-dir", "json", "strictness"]);
 
 /**
  * `rqml migrate` — rewrite a 2.0.1/2.1.0 spec to the current schema version
@@ -17,6 +25,11 @@ const USAGE = "usage: rqml migrate [--dry-run] [--spec <path>]";
  */
 export async function runMigrate(rest: string[]): Promise<number> {
   const args = parseArgs(rest);
+  for (const name of args.flags.keys()) {
+    if (!KNOWN_FLAGS.has(name)) {
+      throw new UsageError(`unknown option "--${name}"\n${USAGE}`);
+    }
+  }
   const dryRun =
     args.flags.get("dry-run") === true || args.flags.get("dry-run") === "true";
   if (args.positionals.length > 1) throw new UsageError(USAGE);
