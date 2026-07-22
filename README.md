@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/schema-2.1.0-8568ab" alt="Schema version">
+  <img src="https://img.shields.io/badge/schema-2.2.0-8568ab" alt="Schema version">
   <img src="https://img.shields.io/npm/v/@rqml/cli?label=%40rqml%2Fcli&color=8568ab" alt="@rqml/cli on npm">
   <img src="https://img.shields.io/badge/license-Apache%202.0-blue" alt="License">
 </p>
@@ -60,10 +60,10 @@ agents, with a strictness level from `relaxed` to `certified`). A complete,
 valid spec is small:
 
 ```xml
-<rqml xmlns="https://rqml.org/schema/2.1.0"
+<rqml xmlns="https://rqml.org/schema/2.2.0"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="https://rqml.org/schema/2.1.0 https://rqml.org/schema/rqml-2.1.0.xsd"
-      version="2.1.0" docId="DOC-HELLO-001" status="draft">
+      xsi:schemaLocation="https://rqml.org/schema/2.2.0 https://rqml.org/schema/rqml-2.2.0.xsd"
+      version="2.2.0" docId="DOC-HELLO-001" status="draft">
   <meta>
     <title>Hello World CLI</title>
     <system>hello</system>

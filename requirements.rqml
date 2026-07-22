@@ -3,7 +3,7 @@
   requirements.rqml — RQML specified in RQML.
 
   This document is the canonical self-description of the Requirements Markup
-  Language (RQML) 2.1.0, written in RQML itself. It reverse-engineers the
+  Language (RQML) 2.2.0, written in RQML itself. It reverse-engineers the
   language's intent, structure, controlled vocabularies, traceability model,
   and lifecycle from the published XSD schema, the rqml.org documentation
   (why-rqml, why-xml, about), the changelog, and RFC-0002.
@@ -46,7 +46,7 @@
     <dates>
       <created>2026-02-01</created>
       <updated>2026-06-13</updated>
-      <targetRelease>RQML 2.1.0</targetRelease>
+      <targetRelease>RQML 2.2.0</targetRelease>
     </dates>
     <conventions>
       <normativeKeywords>
@@ -231,9 +231,9 @@
       <constraint id="CON-XSD" severity="blocking">
         <statement>
           A conforming RQML document MUST validate against the published XSD for
-          its declared version (namespace https://rqml.org/schema/2.1.0).
+          its declared version (namespace https://rqml.org/schema/&lt;version&gt;).
         </statement>
-        <source>schema/xsd/rqml-2.1.0.xsd</source>
+        <source>packages/schema/versions/2.2.0/rqml-2.2.0.xsd</source>
       </constraint>
       <constraint id="CON-HUMAN-READABLE" severity="high">
         <statement>
@@ -450,7 +450,7 @@
       </decision>
       <decision id="DEC-VERSION-DECOUPLE" status="review">
         <context>
-          The RQML language version (e.g. 2.1.0) and the npm package versions of
+          The RQML language version (e.g. 2.2.0) and the npm package versions of
           the toolchain change at very different rates.
         </context>
         <decision>
@@ -559,9 +559,9 @@
     <entities>
       <entity id="ENT-DOC" name="RqmlDocument">
         <description>The root rqml element and container for all sections.</description>
-        <attr id="ATTR-DOC-VERSION" name="version" type="enum:2.1.0" required="true">
+        <attr id="ATTR-DOC-VERSION" name="version" type="enum:2.2.0" required="true">
           <description>Schema version.</description>
-          <constraints>Fixed to "2.1.0" for this schema generation.</constraints>
+          <constraints>Fixed to "2.2.0" for the current schema generation; each generation pins its own value (BR-VERSION-FIXED).</constraints>
         </attr>
         <attr id="ATTR-DOC-ID" name="docId" type="string" required="true">
           <description>Stable, unique document identifier.</description>
@@ -691,7 +691,7 @@
         <statement>States of type "final" MUST NOT have outgoing transitions.</statement>
       </rule>
       <rule id="BR-VERSION-FIXED">
-        <statement>The root @version MUST equal the schema generation ("2.1.0").</statement>
+        <statement>The root @version MUST equal the schema generation the document declares, and the default namespace MUST be the matching https://rqml.org/schema/&lt;version&gt; URI.</statement>
       </rule>
       <rule id="BR-CORE-PURE">
         <statement>@rqml/core MUST NOT declare CLI argument-parsing or MCP SDK packages as runtime dependencies.</statement>
@@ -912,10 +912,20 @@
       </req>
       <req id="REQ-VERSION" type="CR" title="Fixed version" status="approved" priority="must">
         <statement>
-          The root version attribute SHALL equal "2.1.0" and the default
-          namespace SHALL be https://rqml.org/schema/2.1.0.
+          Each schema generation SHALL fix the root version attribute to the
+          generation it defines, and a document's default namespace SHALL be the
+          matching https://rqml.org/schema/&lt;version&gt; URI. The two SHALL never
+          disagree.
         </statement>
-        <rationale>Binds a document to a specific, immutable schema generation.</rationale>
+        <rationale>
+          Binds a document to a specific, immutable schema generation. The
+          obligation is that version and namespace agree and name a published
+          generation — not any one value. Naming a literal here made this
+          requirement assert "2.1.0" from inside a 2.2.0 document, so the
+          language's own self-description contradicted itself for an entire
+          release. The current generation is carried by ATTR-DOC-VERSION and
+          enforced mechanically by the XSD's fixed attribute.
+        </rationale>
       </req>
       <req id="REQ-REQUIRED-SECTIONS" type="DR" title="Required sections" status="approved" priority="must">
         <statement>
@@ -1296,8 +1306,9 @@
       </req>
       <req id="REQ-SCHEMA-URLS" type="CR" title="Stable schema URLs" status="approved" priority="must">
         <statement>
-          The documentation site SHALL publish each schema version at its stable
-          https://rqml.org/schema/&lt;version&gt;/ URL and the AGENTS.md template
+          The documentation site SHALL publish every supported schema version at
+          its stable https://rqml.org/schema/rqml-&lt;version&gt;.xsd URL — the flat
+          form documents carry in xsi:schemaLocation — and the AGENTS.md template
           at https://rqml.org/AGENTS.md, preserving the namespace and
           schemaLocation contract that existing documents resolve against.
         </statement>
@@ -2311,7 +2322,7 @@
     <testSuite id="TS-CONFORMANCE" title="RQML conformance suite">
       <description>
         Validates that a document conforms to the structural and referential
-        rules of the RQML 2.1.0 schema.
+        rules of the schema generation it declares.
       </description>
     </testSuite>
     <testSuite id="TS-TOOLCHAIN" title="Reference toolchain suite">
@@ -2321,8 +2332,8 @@
       </description>
     </testSuite>
     <testCase id="TC-XSD-VALID" type="integration" title="Valid document passes XSD">
-      <purpose>Confirm a correct 2.1.0 document validates.</purpose>
-      <steps>Validate an example document (e.g. payments.rqml) against rqml-2.1.0.xsd.</steps>
+      <purpose>Confirm a correct document validates against the schema generation it declares.</purpose>
+      <steps>Validate each bundled example document against the XSD for its declared version.</steps>
       <expected>No schema violations are reported.</expected>
     </testCase>
     <testCase id="TC-UNIQUE-ID" type="unit" title="Duplicate IDs rejected">
@@ -2371,9 +2382,9 @@
       <expected>No CLI argument-parser or MCP SDK runtime dependencies are present.</expected>
     </testCase>
     <testCase id="TC-SCHEMA-URL" type="integration" title="Schema served at canonical URL">
-      <purpose>Verify the published-URL contract.</purpose>
-      <steps>Build the site and request /schema/2.1.0/rqml-2.1.0.xsd.</steps>
-      <expected>The canonical XSD is served at the stable URL.</expected>
+      <purpose>Verify the published-URL contract for every supported version.</purpose>
+      <steps>For each version in SCHEMA_VERSIONS, request https://rqml.org/schema/rqml-&lt;version&gt;.xsd.</steps>
+      <expected>Each request returns 200 with a body byte-identical to that version's canonical file in the schema package. A version missing from the site is a failure — rqml-2.2.0.xsd returned 404 for the whole 2.2.0 release because this case had no executable form.</expected>
     </testCase>
     <testCase id="TC-MCP-PARITY" type="integration" title="MCP and CLI agree">
       <purpose>Verify single-engine parity.</purpose>
@@ -2509,25 +2520,25 @@
     <!-- ========================================================= -->
 
     <!-- Format requirements realized by the canonical XSD -->
-    <edge id="E-IMPL-DOC-ROOT" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd" fromKind="schema" fromTitle="RQML 2.1.0 XSD" to="REQ-DOC-ROOT"/>
-    <edge id="E-IMPL-VERSION" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd" fromKind="schema" fromTitle="RQML 2.1.0 XSD" to="REQ-VERSION"/>
-    <edge id="E-IMPL-REQUIRED-SECTIONS" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd" fromKind="schema" fromTitle="RQML 2.1.0 XSD" to="REQ-REQUIRED-SECTIONS"/>
-    <edge id="E-IMPL-SECTION-ORDER" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd" fromKind="schema" fromTitle="RQML 2.1.0 XSD" to="REQ-SECTION-ORDER"/>
-    <edge id="E-IMPL-ID-PATTERN" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#IdType" fromKind="schema" fromTitle="IdType pattern" to="REQ-ID-PATTERN"/>
-    <edge id="E-IMPL-STATUS-ENUM" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#StatusType" fromKind="schema" fromTitle="StatusType enumeration" to="REQ-STATUS-ENUM"/>
-    <edge id="E-IMPL-PRIORITY-ENUM" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#PriorityType" fromKind="schema" fromTitle="PriorityType enumeration" to="REQ-PRIORITY-ENUM"/>
-    <edge id="E-IMPL-REQTYPE-ENUM" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#ReqType" fromKind="schema" fromTitle="ReqType enumeration" to="REQ-REQTYPE-ENUM"/>
-    <edge id="E-IMPL-TRACETYPE-ENUM" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#TraceType" fromKind="schema" fromTitle="TraceType enumeration" to="REQ-TRACETYPE-ENUM"/>
-    <edge id="E-IMPL-TESTTYPE-ENUM" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#TestType" fromKind="schema" fromTitle="TestType enumeration" to="REQ-TESTTYPE-ENUM"/>
-    <edge id="E-IMPL-CONFIDENCE-RANGE" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#ConfidenceType" fromKind="schema" fromTitle="ConfidenceType range" to="REQ-CONFIDENCE-RANGE"/>
-    <edge id="E-IMPL-TRACE-EDGE" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#TraceEdgeType" fromKind="schema" fromTitle="TraceEdgeType" to="REQ-TRACE-EDGE"/>
-    <edge id="E-IMPL-TRACE-LOCATORS" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#TraceLocatorType" fromKind="schema" fromTitle="Locator choice: local/doc/external" to="REQ-TRACE-LOCATORS"/>
-    <edge id="E-IMPL-TRACE-PINNING" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#TraceDocRefType" fromKind="schema" fromTitle="Doc locator version/git pinning" to="REQ-TRACE-PINNING"/>
-    <edge id="E-IMPL-SM" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#StateMachineType" fromKind="schema" fromTitle="Behavior section" to="REQ-SM"/>
-    <edge id="E-IMPL-XML" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd" fromKind="schema" fromTitle="RQML 2.1.0 XSD" to="REQ-XML"/>
-    <edge id="E-IMPL-MIXED-CONTENT" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd#TextBlockType" fromKind="schema" fromTitle="TextBlockType mixed content" to="REQ-MIXED-CONTENT"/>
-    <edge id="E-IMPL-NAMESPACE" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd" fromKind="schema" fromTitle="RQML target namespace" to="REQ-NAMESPACE"/>
-    <edge id="E-IMPL-COMMENTS" type="implements" from="packages/schema/versions/2.1.0/rqml-2.1.0.xsd" fromKind="schema" fromTitle="RQML 2.1.0 XSD" to="REQ-COMMENTS"/>
+    <edge id="E-IMPL-DOC-ROOT" type="implements" from="packages/schema/versions/2.2.0/rqml-2.2.0.xsd" fromKind="schema" fromTitle="RQML 2.2.0 XSD" to="REQ-DOC-ROOT"/>
+    <edge id="E-IMPL-VERSION" type="implements" from="packages/schema/versions/2.2.0/rqml-2.2.0.xsd" fromKind="schema" fromTitle="RQML 2.2.0 XSD (version fixed per generation)" to="REQ-VERSION"/>
+    <edge id="E-IMPL-REQUIRED-SECTIONS" type="implements" from="packages/schema/versions/2.2.0/rqml-2.2.0.xsd" fromKind="schema" fromTitle="RQML 2.2.0 XSD" to="REQ-REQUIRED-SECTIONS"/>
+    <edge id="E-IMPL-SECTION-ORDER" type="implements" from="packages/schema/versions/2.2.0/rqml-2.2.0.xsd" fromKind="schema" fromTitle="RQML 2.2.0 XSD" to="REQ-SECTION-ORDER"/>
+    <edge id="E-IMPL-ID-PATTERN" type="implements" from="packages/schema/versions/2.2.0/rqml-2.2.0.xsd#IdType" fromKind="schema" fromTitle="IdType pattern" to="REQ-ID-PATTERN"/>
+    <edge id="E-IMPL-STATUS-ENUM" type="implements" from="packages/schema/versions/2.2.0/rqml-2.2.0.xsd#StatusType" fromKind="schema" fromTitle="StatusType enumeration" to="REQ-STATUS-ENUM"/>
+    <edge id="E-IMPL-PRIORITY-ENUM" type="implements" from="packages/schema/versions/2.2.0/rqml-2.2.0.xsd#PriorityType" fromKind="schema" fromTitle="PriorityType enumeration" to="REQ-PRIORITY-ENUM"/>
+    <edge id="E-IMPL-REQTYPE-ENUM" type="implements" from="packages/schema/versions/2.2.0/rqml-2.2.0.xsd#ReqType" fromKind="schema" fromTitle="ReqType enumeration" to="REQ-REQTYPE-ENUM"/>
+    <edge id="E-IMPL-TRACETYPE-ENUM" type="implements" from="packages/schema/versions/2.2.0/rqml-2.2.0.xsd#TraceType" fromKind="schema" fromTitle="TraceType enumeration" to="REQ-TRACETYPE-ENUM"/>
+    <edge id="E-IMPL-TESTTYPE-ENUM" type="implements" from="packages/schema/versions/2.2.0/rqml-2.2.0.xsd#TestType" fromKind="schema" fromTitle="TestType enumeration" to="REQ-TESTTYPE-ENUM"/>
+    <edge id="E-IMPL-CONFIDENCE-RANGE" type="implements" from="packages/schema/versions/2.2.0/rqml-2.2.0.xsd#ConfidenceType" fromKind="schema" fromTitle="ConfidenceType range" to="REQ-CONFIDENCE-RANGE"/>
+    <edge id="E-IMPL-TRACE-EDGE" type="implements" from="packages/schema/versions/2.2.0/rqml-2.2.0.xsd#TraceEdgeType" fromKind="schema" fromTitle="TraceEdgeType (compact form)" to="REQ-TRACE-EDGE"/>
+    <edge id="E-IMPL-TRACE-LOCATORS" type="implements" from="packages/schema/versions/2.2.0/rqml-2.2.0.xsd#TraceEndpointRef" fromKind="schema" fromTitle="TraceEndpointRef union: local/doc/external by value shape" to="REQ-TRACE-LOCATORS"/>
+    <edge id="E-IMPL-TRACE-PINNING" type="implements" from="packages/core/src/trace/endpoint.ts" fromKind="code" fromTitle="Doc endpoint version/git/docId pin grammar" to="REQ-TRACE-PINNING"/>
+    <edge id="E-IMPL-SM" type="implements" from="packages/schema/versions/2.2.0/rqml-2.2.0.xsd#StateMachineType" fromKind="schema" fromTitle="Behavior section" to="REQ-SM"/>
+    <edge id="E-IMPL-XML" type="implements" from="packages/schema/versions/2.2.0/rqml-2.2.0.xsd" fromKind="schema" fromTitle="RQML 2.2.0 XSD" to="REQ-XML"/>
+    <edge id="E-IMPL-MIXED-CONTENT" type="implements" from="packages/schema/versions/2.2.0/rqml-2.2.0.xsd#TextBlockType" fromKind="schema" fromTitle="TextBlockType mixed content" to="REQ-MIXED-CONTENT"/>
+    <edge id="E-IMPL-NAMESPACE" type="implements" from="packages/schema/versions/2.2.0/rqml-2.2.0.xsd" fromKind="schema" fromTitle="RQML target namespace" to="REQ-NAMESPACE"/>
+    <edge id="E-IMPL-COMMENTS" type="implements" from="packages/schema/versions/2.2.0/rqml-2.2.0.xsd" fromKind="schema" fromTitle="RQML 2.2.0 XSD" to="REQ-COMMENTS"/>
 
     <!-- Identity and referential integrity are enforced in code
          (checkIntegrity), not by XSD keyrefs -->

@@ -113,4 +113,4 @@ The choice isn't nostalgia. It's the result of asking what kind of artifact a re
 
 - Read the broader rationale: [Why RQML](/why-rqml)
 - Start writing your first spec: [Quick start](/docs/quick-start)
-- Browse the schema: [RQML 2.1.0 XSD](/schema/rqml-2.1.0.xsd)
+- Browse the schema: [RQML 2.2.0 XSD](/schema/rqml-2.2.0.xsd)
