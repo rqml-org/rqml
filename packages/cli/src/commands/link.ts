@@ -5,6 +5,8 @@ import {
   type TraceType,
   appendTraceEdge,
   computeBaseline,
+  decodeBaselineEntry,
+  fragmentOf,
   implementsLinks,
   loadBaseline,
   parse,
@@ -236,11 +238,25 @@ function runRefresh(args: Args, edgeId: string): number {
   baseline[edgeId] = hash;
   saveBaseline(args.baseDir, baseline);
 
+  // A fragment that resolves exactly is also recorded, so a later change
+  // elsewhere in the file is reported as context rather than drift
+  // (REQ-CORE-DRIFT-SCOPE). Say so: it is the difference between a red gate and
+  // an advisory next time round.
+  const scoped = decodeBaselineEntry(hash)?.spanHash !== undefined;
+
   if (args.json) {
-    const report = { spec: path, mode: "refresh", edgeId, uri: link.uri, hash };
+    const report = {
+      spec: path,
+      mode: "refresh",
+      edgeId,
+      uri: link.uri,
+      hash,
+      scope: scoped ? "fragment" : "file",
+    };
     process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
   } else {
-    process.stdout.write(`✓ baseline refreshed for ${edgeId} (${link.uri})\n`);
+    const scope = scoped ? `, scoped to #${fragmentOf(link.uri)}` : "";
+    process.stdout.write(`✓ baseline refreshed for ${edgeId} (${link.uri}${scope})\n`);
   }
   return EXIT.OK;
 }

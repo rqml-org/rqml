@@ -16,6 +16,7 @@ import {
   computeBaseline,
   computeCoverage,
   declaredIdIndex,
+  decodeBaselineEntry,
   detectDrift,
   discoverSpecs,
   extractArtifact,
@@ -453,7 +454,11 @@ export async function callTool(
       const strictness = str(args, "strictness") ?? "standard";
       const coverageBlocks = strictness === "strict" || strictness === "certified";
       const validationFailed = !validation.valid || integrity.length > 0;
-      const driftFailed = (drift?.drifted.length ?? 0) > 0;
+      // A file that changed around an unchanged fragment is not implementation
+      // drift, so it is advisory except at certified (REQ-CORE-DRIFT-SCOPE).
+      const driftFailed =
+        (drift?.drifted.length ?? 0) > 0 ||
+        (strictness === "certified" && (drift?.contextChanged.length ?? 0) > 0);
       const coverageProblem =
         (coverage?.uncoveredGoals.length ?? 0) +
           (coverage?.unverifiedRequirements.length ?? 0) +
@@ -468,6 +473,7 @@ export async function callTool(
         strictness,
         valid: !validationFailed,
         drift: drift?.drifted ?? [],
+        contextChanged: drift?.contextChanged ?? [],
         coverage: coverage
           ? {
               uncoveredGoals: coverage.uncoveredGoals,
@@ -636,7 +642,9 @@ export async function callTool(
         const baseline = loadBaseline(baseDir) ?? {};
         baseline[edgeId] = hash;
         saveBaseline(baseDir, baseline);
-        return { ok: true, mode, edgeId, uri: link.uri, hash };
+        const scope =
+          decodeBaselineEntry(hash)?.spanHash !== undefined ? "fragment" : "file";
+        return { ok: true, mode, edgeId, uri: link.uri, hash, scope };
       }
 
       const type = str(args, "type") ?? "implements";

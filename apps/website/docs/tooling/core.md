@@ -41,7 +41,9 @@ ESM, TypeScript types included, Node 18+.
   paths), so an editor/agent hook or CI can block before non-approved code lands.
 - **Drift** — resolve the external locators of `implements` edges and report links
   whose target is **missing** or — against a recorded content-hash baseline —
-  **changed**.
+  **changed**. Where the locator names a `#fragment` with exact semantics, a
+  file that changed around unchanged evidence is separated out as
+  **context-changed** rather than reported as drift.
 - **Extract** — `extractArtifact()` returns one artifact's statement, acceptance
   criteria, and trace neighborhood; `sliceToMarkdown()` renders it for agent
   context, so a consumer reads a slice instead of the whole document.
@@ -125,14 +127,23 @@ const drift = detectDrift(document, {
   baseDir: process.cwd(),
   baseline: loadBaseline(process.cwd()),   // .rqml/baseline.json, written by `rqml link`
 });
-// → { links, drifted, diagnostics }
-//   drifted = implements links whose code is missing — or changed vs. its baseline hash
+// → { links, drifted, contextChanged, diagnostics }
+//   drifted        = implements links whose code is missing — or changed vs. its baseline hash
+//   contextChanged = the file changed, but the `#fragment` the locator names did not
 ```
 
 `detectDrift` accepts an injectable `resolve` function, so it stays deterministic
 and testable without touching the filesystem. `computeBaseline()` /
 `saveBaseline()` produce and persist the content hashes the `changed` state is
 judged against.
+
+`contextChanged` is kept out of `drifted` so existing blocking logic is
+unchanged; it is advisory unless you choose to block on it. It is populated only
+for a locator that names a fragment in a media type with exact fragment
+semantics — currently `.json`, read as a member name (`#bin`) or an RFC 6901
+pointer (`#/scripts/build`). The whole-file hash remains the detector: a
+fragment can only reclassify an alarm, never suppress one, and any fragment that
+fails to resolve leaves the alarm standing.
 
 ### Impact, extraction, and link recording
 
