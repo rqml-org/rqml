@@ -1479,6 +1479,51 @@
           </criterion>
         </acceptance>
       </req>
+      <req id="REQ-CORE-DRIFT-SCOPE" type="FR" title="Fragment scope downgrades, never replaces" status="approved" priority="should" appliesTo="core cli">
+        <statement>
+          Drift detection SHALL continue to compare the whole content of a
+          linked artifact. Where a locator names a fragment whose media type has
+          defined fragment semantics, the toolchain SHALL additionally record
+          that fragment's content, and SHALL report a changed artifact whose
+          named fragment is unchanged as a distinct, non-blocking outcome rather
+          than as drift. It SHALL report drift whenever the fragment cannot be
+          resolved, is ambiguous, or has changed, and SHALL never narrow an
+          artifact whose locator names no fragment.
+        </statement>
+        <rationale>
+          The recorded hash covers the whole file, so a version bump or an edit
+          elsewhere in the file drifts an edge that claims to be about one
+          symbol: four consecutive releases reddened the gate on the same three
+          edges, and no re-pin in a full working session caught an unintended
+          change. A gate whose red is usually noise teaches its readers — now
+          mostly agents — to re-pin without reading, which converts the
+          guarantee into a ritual. Narrowing the hash instead of adding to it
+          was rejected: a mis-resolved span yields a stable hash over the wrong
+          bytes and real drift passes silently. This layer can only downgrade an
+          alarm it positively proves irrelevant, so every uncertainty leaves the
+          alarm standing (ADR-0018). Scope follows the locator's own fragment,
+          so a prohibition such as REQ-CORE-NO-LLM — whose evidence must include
+          install scripts and every dependency channel — keeps whole-file
+          evidence by construction.
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-SCOPE-CONTEXT">
+            <given>An edge whose locator names a resolvable fragment, and an edit elsewhere in that file</given>
+            <when>rqml check runs at standard strictness</when>
+            <then>The change is reported as context-changed and the gate still passes.</then>
+          </criterion>
+          <criterion id="CRIT-SCOPE-EVIDENCE">
+            <given>The same edge, with an edit to the named fragment itself</given>
+            <when>rqml check runs</when>
+            <then>The link is reported as changed and the gate exits non-zero.</then>
+          </criterion>
+          <criterion id="CRIT-SCOPE-FAILSAFE">
+            <given>An edge whose named fragment no longer resolves, or resolves ambiguously</given>
+            <when>rqml check runs</when>
+            <then>The link is reported as changed rather than passing.</then>
+          </criterion>
+        </acceptance>
+      </req>
       <req id="REQ-CORE-STATUS-AWARE" type="FR" title="Lifecycle-aware coverage" status="approved" priority="should" appliesTo="core">
         <statement>
           Coverage SHALL distinguish artifact lifecycle status: implementation
@@ -2830,6 +2875,10 @@
     <edge id="E-VER-CORE-ADR-REFS" type="verifiedBy" from="REQ-CORE-ADR-REFS" to="packages/core/test/adr-lint.test.ts" toKind="test" status="draft" createdBy="rqml"/>
     <edge id="E-SAT-CI-GATE-GOAL-ENFORCEMENT" type="satisfies" from="REQ-CI-GATE" to="GOAL-ENFORCEMENT" status="draft" createdBy="rqml"/>
     <edge id="E-IMPL-CI-GATE" type="implements" from="apps/website/docs/ci/index.md" fromKind="doc" fromTitle="CI guide page" to="REQ-CI-GATE" status="draft" createdBy="rqml"/>
+    <edge id="E-IMPL-CORE-DRIFT-SCOPE" type="implements" from="packages/core/src/check/fragment.ts" fromKind="code" fromTitle="JSON fragment resolver and canonical hashing" to="REQ-CORE-DRIFT-SCOPE" status="draft" createdBy="rqml"/>
+    <edge id="E-IMPL-DRIFT-SCOPE-BASELINE" type="implements" from="packages/core/src/check/drift.ts" fromKind="code" fromTitle="Two-hash baseline encoding and the downgrade rule" to="REQ-CORE-DRIFT-SCOPE" status="draft" createdBy="rqml"/>
+    <edge id="E-VER-CORE-DRIFT-SCOPE" type="verifiedBy" from="REQ-CORE-DRIFT-SCOPE" to="packages/core/test/fragment-drift.test.ts" toKind="test" toTitle="Fragment scope: downgrade and fail-closed cases" status="draft" createdBy="rqml"/>
+    <edge id="E-VER-DRIFT-SCOPE-GATE" type="verifiedBy" from="REQ-CORE-DRIFT-SCOPE" to="packages/cli/test/fragment-scope.test.ts" toKind="test" toTitle="Fragment scope at the gate" status="draft" createdBy="rqml"/>
   </trace>
 
   <!-- ============================================================= -->

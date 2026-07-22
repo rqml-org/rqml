@@ -24,6 +24,16 @@ function coverageBlocks(strictness: Strictness): boolean {
 }
 
 /**
+ * A file that changed around an unchanged fragment is not implementation drift,
+ * so it is advisory everywhere except certified — where the evidence is the
+ * whole file an auditor would read, not just the span the locator names
+ * (REQ-CORE-DRIFT-SCOPE).
+ */
+function contextChangeBlocks(strictness: Strictness): boolean {
+  return strictness === "certified";
+}
+
+/**
  * Run the gate against one already-resolved spec, returning its verdict, JSON
  * report, and human block without writing to stdout (so the workspace runner
  * can aggregate). `args.baseDir` is the spec's own directory, so code links and
@@ -44,7 +54,9 @@ async function checkOne(path: string, args: Args): Promise<SpecRunResult> {
   const drift = parsed.ok ? detectDrift(parsed.document, driftOptions) : undefined;
 
   const validationFailed = !validation.valid || integrity.length > 0;
-  const driftFailed = (drift?.drifted.length ?? 0) > 0;
+  const driftFailed =
+    (drift?.drifted.length ?? 0) > 0 ||
+    (contextChangeBlocks(args.strictness) && (drift?.contextChanged.length ?? 0) > 0);
   const coverageProblemCount =
     (coverage?.uncoveredGoals.length ?? 0) +
     (coverage?.unverifiedRequirements.length ?? 0) +
@@ -70,6 +82,7 @@ async function checkOne(path: string, args: Args): Promise<SpecRunResult> {
     schemaVersion: validation.schemaVersion,
     valid: !validationFailed,
     drift: drift?.drifted ?? [],
+    contextChanged: drift?.contextChanged ?? [],
     coverage: coverage
       ? {
           uncoveredGoals: coverage.uncoveredGoals,

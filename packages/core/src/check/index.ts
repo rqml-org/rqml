@@ -13,14 +13,28 @@ export {
 export {
   BASELINE_PATH,
   computeBaseline,
+  decodeBaselineEntry,
   detectDrift,
+  encodeBaselineEntry,
   implementsLinks,
   loadBaseline,
   saveBaseline,
   type ArtifactStatus,
+  type BaselineEntry,
   type DriftBaseline,
   type DriftFinding,
   type DriftOptions,
   type DriftReport,
   type ImplementsLink,
 } from "./drift.js";
+export {
+  canonicalJson,
+  fragmentHashAt,
+  fragmentMediaType,
+  fragmentOf,
+  hasDuplicateKeys,
+  parseFragmentPointer,
+  resolveJsonFragment,
+  type FragmentHash,
+  type FragmentResolution,
+} from "./fragment.js";

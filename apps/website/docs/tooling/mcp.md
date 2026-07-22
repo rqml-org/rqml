@@ -58,6 +58,11 @@ changed artifact's baseline without touching the spec document. The maintenance
 modes are deliberately edge-scoped, so unrelated drift is never silently blessed
 along the way (see [Drift baselines](./cli.md#drift-baselines)).
 
+`rqml_check` returns `contextChanged` beside `drift`: links whose file changed
+but whose named `#fragment` did not, which is advisory rather than drift except
+at `strictness: "certified"` (see
+[Fragment scope](./cli.md#fragment-scope)).
+
 ## Connecting an agent
 
 Most MCP clients are configured with a server entry that launches the binary over

@@ -171,6 +171,47 @@ unrelated drift is never silently blessed along the way.
 
 Without a baseline, drift detection falls back to existence checks only.
 
+### Fragment scope
+
+A locator may name a fragment: `packages/cli/package.json#bin` says the `bin`
+entry is the evidence, not the whole manifest. `rqml link` records that
+fragment's content alongside the file hash, so when the file later changes,
+`check` can tell the two cases apart:
+
+| Outcome | Means | Blocks |
+|---------|-------|--------|
+| `changed-implementation` | the evidence itself changed | yes |
+| `context-changed-implementation` | the file changed, the named fragment did not | only at `certified` |
+
+That is what stops a routine `version` bump from failing the build on an edge
+that was never about the version. Refresh it when convenient to clear the
+notice; nothing is waiting on you.
+
+Three rules keep this from weakening the gate:
+
+- The whole-file hash is still the detector. Fragment scope can only ever
+  *downgrade* an alarm it has already raised.
+- **Only `.json` fragments are interpreted**, as a member name (`#bin`) or an
+  RFC 6901 pointer (`#/scripts/build`). TypeScript, JavaScript and XSD
+  fragments are used to locate the file and nothing more, so those edges behave
+  exactly as they always have.
+- Anything uncertain — a fragment that no longer resolves, a file that stops
+  being valid JSON, a member declared twice — is reported as drift, not as a
+  pass.
+
+A locator with no fragment is never narrowed. That is the point: a requirement
+like "no model SDK in the dependency tree" links the whole `package.json`, so
+`scripts`, `peerDependencies` and every other channel stay in scope by
+construction.
+
+Existing baselines keep working untouched — a bare sha256 still means whole-file
+scope — and an edge gains fragment scope the next time you `link` or
+`--refresh` it. Do that *after* everything that runs the gate is on a version
+that understands it: CI, editor hooks, and contributors' global installs. An
+older `rqml` treats the newer entry as drift rather than trusting it, which is
+the safe direction, but it will turn the gate red for everyone still on the old
+version.
+
 ## Exit codes
 
 Stable and documented, so scripts can branch on them:
