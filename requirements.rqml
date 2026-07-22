@@ -1231,6 +1231,38 @@
           </criterion>
         </acceptance>
       </req>
+      <req id="REQ-CI-GATE" type="PR" title="Continuous integration as the authoritative gate" status="draft" priority="should">
+        <statement>
+          RQML SHALL document continuous integration as the authoritative
+          enforcement point of a spec-first project — the one layer that cannot
+          be bypassed — and SHALL document how to gate a build on rqml check,
+          covering the drift baseline the gate depends on, the strictness level
+          it runs at, and the build-system configuration that makes a failing
+          gate block a merge rather than merely report one.
+        </statement>
+        <rationale>
+          Editor, agent, and pre-commit enforcement are fast but voluntary: a
+          teammate without the plugin, a --no-verify commit, an unarmed hook, or
+          a bot committing directly routes around all of them. CI is the only
+          layer nobody can skip — yet a build that merely runs the gate still
+          permits the merge until the check is marked required, and a gate whose
+          baseline was never committed reports success while detecting nothing.
+          Documenting the wiring without those two conditions would leave readers
+          with a gate that reports and never gates.
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-CI-DOC">
+            <given>The rqml.org documentation</given>
+            <when>A reader opens the CI guide</when>
+            <then>It states why CI is the authoritative enforcement layer, gives a complete build configuration that runs rqml check, and explains how to make that check block a merge.</then>
+          </criterion>
+          <criterion id="CRIT-CI-TRIAGE">
+            <given>A build failing the rqml check gate</given>
+            <when>The reader consults the CI guide</when>
+            <then>Each blocking finding class is mapped to the command or edit that resolves it.</then>
+          </criterion>
+        </acceptance>
+      </req>
     </reqPackage>
 
     <reqPackage id="PKG-QUALITY" title="Quality attributes" ownerRef="STK-MAINTAINER">
@@ -2796,6 +2828,8 @@
     <edge id="E-IMPL-RELEASE-CHANGESET" type="implements" from=".github/workflows/ci.yml" fromKind="ci" fromTitle="changeset guard step" to="REQ-RELEASE-CHANGESET" status="draft" createdBy="rqml"/>
     <edge id="E-IMPL-CORE-ADR-REFS" type="implements" from="packages/core/src/lint/adr.ts" fromKind="code" to="REQ-CORE-ADR-REFS" status="draft" createdBy="rqml"/>
     <edge id="E-VER-CORE-ADR-REFS" type="verifiedBy" from="REQ-CORE-ADR-REFS" to="packages/core/test/adr-lint.test.ts" toKind="test" status="draft" createdBy="rqml"/>
+    <edge id="E-SAT-CI-GATE-GOAL-ENFORCEMENT" type="satisfies" from="REQ-CI-GATE" to="GOAL-ENFORCEMENT" status="draft" createdBy="rqml"/>
+    <edge id="E-IMPL-CI-GATE" type="implements" from="apps/website/docs/ci/index.md" fromKind="doc" fromTitle="CI guide page" to="REQ-CI-GATE" status="draft" createdBy="rqml"/>
   </trace>
 
   <!-- ============================================================= -->

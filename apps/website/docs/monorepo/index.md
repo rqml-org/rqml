@@ -2,7 +2,7 @@
 id: monorepo
 title: Monorepo guide
 sidebar_label: Monorepo guide
-sidebar_position: 7
+sidebar_position: 8
 description: How RQML governs multiple specs in one repository — nearest-wins discovery, per-unit .rqml directories, workspace-wide checks, and the design decisions behind them.
 ---
 
