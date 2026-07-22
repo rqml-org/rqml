@@ -1,6 +1,13 @@
 import { readFileSync } from "node:fs";
 import { computeCoverage, lint, parse, resolveTrace } from "@rqml/core";
-import { type Args, EXIT, isWorkspace, parseArgs, resolveSpecPath } from "../runtime.js";
+import {
+  type Args,
+  EXIT,
+  adrDirFor,
+  isWorkspace,
+  parseArgs,
+  resolveSpecPath,
+} from "../runtime.js";
 import { type SpecRunResult, runWorkspace } from "../workspace.js";
 
 /** Summarize one already-resolved spec, returning its result without printing. */
@@ -16,7 +23,7 @@ function statusOne(path: string, _args: Args): SpecRunResult {
   }
   const doc = parsed.document;
   const coverage = computeCoverage(doc);
-  const lintDiags = lint(doc);
+  const lintDiags = lint(doc, { adrDir: adrDirFor(path) });
   const trace = resolveTrace(doc);
   const reqCount =
     doc.packages.reduce((n, p) => n + p.requirements.length, 0) +

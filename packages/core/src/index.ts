@@ -19,6 +19,12 @@ export { serialize } from "./parse/serialize.js";
 
 export { lint, type LintOptions, type Strictness } from "./lint/index.js";
 export {
+  citationsInField,
+  isRetiredRecord,
+  lintAdrReferences,
+  type AdrReferenceOptions,
+} from "./lint/adr.js";
+export {
   declaredIdIndex,
   requirementIndex,
   resolveTrace,
