@@ -110,6 +110,10 @@ export interface AdrReferenceOptions {
   severity?: DiagnosticSeverity;
 }
 
+/** The three ways an unresolved citation can legitimately be settled. */
+const REMEDY =
+  'Repoint it at the current id, mark the record superseded if the decision no longer applies, or qualify it (e.g. "ID (other-repo)") if it belongs to another document.';
+
 /** ADR files in deterministic order; `README.md` is an index, not a record. */
 function adrFiles(dir: string): string[] {
   if (!existsSync(dir) || !statSync(dir).isDirectory()) return [];
@@ -159,11 +163,7 @@ export function lintAdrReferences(
           severity,
           rule: "unresolved-adr-reference",
           line: index + 1,
-          message:
-            `${name} references "${id}", which is not declared in the spec. ` +
-            "Repoint it at the current id, mark the record superseded if the " +
-            'decision no longer applies, or qualify it (e.g. "ID (other-repo)") ' +
-            "if it belongs to another document.",
+          message: `${name} references "${id}", which is not declared in the spec. ${REMEDY}`,
         });
       }
     }
