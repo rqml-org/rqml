@@ -2,7 +2,7 @@
 id: migration
 title: Migration
 sidebar_label: Migration
-sidebar_position: 10
+sidebar_position: 9
 description: Upgrade an existing RQML document to the current schema version with rqml migrate — what changes, what is guaranteed to stay the same, and how to handle a repository with several specs.
 ---
 
