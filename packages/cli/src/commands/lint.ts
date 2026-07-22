@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { type Strictness as LintStrictness, lint, parse } from "@rqml/core";
 import { formatDiagnostic } from "../report.js";
-import { EXIT, parseArgs, resolveSpecPath } from "../runtime.js";
+import { EXIT, adrDirFor, parseArgs, resolveSpecPath } from "../runtime.js";
 
 /** Map the CLI's strictness vocabulary to @rqml/core's lint strictness ladder. */
 const LINT_STRICTNESS: Record<string, LintStrictness> = {
@@ -27,7 +27,7 @@ export async function runLint(rest: string[]): Promise<number> {
   }
 
   const strictness = LINT_STRICTNESS[args.strictness] ?? "standard";
-  const findings = lint(parsed.document, { strictness });
+  const findings = lint(parsed.document, { strictness, adrDir: adrDirFor(path) });
   const hasError = findings.some((d) => d.severity === "error");
 
   if (args.json) {

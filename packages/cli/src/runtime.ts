@@ -1,6 +1,16 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
-import { resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { resolveGoverningSpec } from "@rqml/core";
+
+/**
+ * The ADR directory that belongs to a spec: `.rqml/adr/` beside it, per the
+ * canonical layout (REQ-ADR-CONVENTION). Derived rather than configured so a
+ * project that follows the convention needs no setup, and so every command
+ * agrees on where the records live.
+ */
+export function adrDirFor(specPath: string): string {
+  return join(dirname(resolve(specPath)), ".rqml", "adr");
+}
 
 /**
  * Documented, stable process exit codes (REQ-CLI-EXIT-CODES). Loosely follows
