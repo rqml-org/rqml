@@ -1613,6 +1613,43 @@
           </criterion>
         </acceptance>
       </req>
+      <req id="REQ-CORE-ADR-REFS" type="FR" title="ADR references resolve" status="approved" priority="should" appliesTo="core cli">
+        <statement>
+          The lint SHALL report an Architecture Decision Record whose declared
+          references — the Decision ID and Related requirements header fields —
+          name an identifier that the governing spec does not declare. It SHALL
+          NOT report a record whose status is superseded or rejected, an
+          identifier immediately followed by a parenthetical qualifier, or an
+          identifier appearing only inside such a qualifier. Free prose and
+          fenced examples in the record body SHALL NOT be inspected.
+        </statement>
+        <rationale>
+          Referential integrity covers trace edges, so a renamed or retired
+          requirement silently falsifies every ADR that argues about it: the
+          rationale survives while its subject disappears. An audit across the
+          ecosystem found exactly two such references — both in still-accepted
+          records — against 28 citations that were correct. The exclusions are
+          therefore load-bearing, not conveniences: superseded records
+          deliberately preserve retired ids as accurate history, a
+          parenthetical marks a reference the author has qualified as living
+          elsewhere (REQ-HOOK-PREIMPL (rqml-claude, rqml-codex)), and body
+          prose carries historical citations and illustrative examples. A rule
+          without them reports thirty findings, none actionable, and is
+          switched off within a day.
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-ADR-REF-DANGLING">
+            <given>An accepted ADR whose Related requirements field names an id the spec does not declare</given>
+            <when>The lint runs</when>
+            <then>A finding identifies the record, the field, and the unresolved id.</then>
+          </criterion>
+          <criterion id="CRIT-ADR-REF-EXCLUSIONS">
+            <given>A superseded ADR citing retired ids, and an accepted ADR citing a parenthetically qualified cross-document id</given>
+            <when>The lint runs</when>
+            <then>Neither produces a finding.</then>
+          </criterion>
+        </acceptance>
+      </req>
       <req id="REQ-CORE-STRICTNESS" type="FR" title="Strictness-scaled severity in the engine" status="draft" priority="should" appliesTo="core">
         <statement>
           @rqml/core SHALL implement the four strictness levels — relaxed,
@@ -2757,6 +2794,8 @@
     <edge id="E-IMPL-CLI-SAFE-FLAGS" type="implements" from="packages/cli/src/commands/migrate.ts" fromKind="code" fromTitle="migrate rejects unknown flags" to="REQ-CLI-SAFE-INVOCATION" status="draft" createdBy="rqml"/>
     <edge id="E-VER-CLI-SAFE-INVOCATION" type="verifiedBy" from="REQ-CLI-SAFE-INVOCATION" to="packages/cli/test/safe-invocation.test.ts" toKind="test" status="draft" createdBy="rqml"/>
     <edge id="E-IMPL-RELEASE-CHANGESET" type="implements" from=".github/workflows/ci.yml" fromKind="ci" fromTitle="changeset guard step" to="REQ-RELEASE-CHANGESET" status="draft" createdBy="rqml"/>
+    <edge id="E-IMPL-CORE-ADR-REFS" type="implements" from="packages/core/src/lint/adr.ts" fromKind="code" to="REQ-CORE-ADR-REFS" status="draft" createdBy="rqml"/>
+    <edge id="E-VER-CORE-ADR-REFS" type="verifiedBy" from="REQ-CORE-ADR-REFS" to="packages/core/test/adr-lint.test.ts" toKind="test" status="draft" createdBy="rqml"/>
   </trace>
 
   <!-- ============================================================= -->

@@ -1,5 +1,6 @@
 import type { Diagnostic, DiagnosticSeverity } from "../model/diagnostic.js";
 import { type RqmlDocument, allRequirements } from "../model/types.js";
+import { lintAdrReferences } from "./adr.js";
 
 /**
  * How aggressively lint rules report. Strictness scales a rule's severity
@@ -11,6 +12,13 @@ export type Strictness = "lenient" | "standard" | "strict";
 export interface LintOptions {
   /** Defaults to "standard". */
   strictness?: Strictness;
+  /**
+   * Directory holding the project's ADRs (typically `<spec dir>/.rqml/adr`).
+   * Supplied only by callers that can read the filesystem; without it the ADR
+   * reference rule is skipped, so in-memory callers (an inlined document, the
+   * MCP server) keep working unchanged (REQ-CORE-ADR-REFS).
+   */
+  adrDir?: string;
 }
 
 /**
@@ -47,5 +55,14 @@ function missingAcceptance(doc: RqmlDocument, strictness: Strictness): Diagnosti
 /** Run the semantic lint rules over a document. */
 export function lint(doc: RqmlDocument, options?: LintOptions): Diagnostic[] {
   const strictness = options?.strictness ?? "standard";
-  return [...missingAcceptance(doc, strictness)];
+  const findings = [...missingAcceptance(doc, strictness)];
+
+  // Filesystem-backed rules run only when the caller located the project.
+  if (options?.adrDir !== undefined) {
+    const severity = scaleSeverity("warning", strictness);
+    if (severity !== undefined) {
+      findings.push(...lintAdrReferences(doc, { adrDir: options.adrDir, severity }));
+    }
+  }
+  return findings;
 }
