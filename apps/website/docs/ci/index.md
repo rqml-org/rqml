@@ -707,7 +707,10 @@ One warning if you link your workflow file to a requirement: editing `ci.yml` tr
 - **A bot pull request that trips `changed-implementation` is a legitimate
   finding** — the code really did change. Either give the bot a re-pin step, or
   accept that a human re-pins and merges. Do not add the bot to `bypass_actors`;
-  that exempts it from every rule, not just this one.
+  that exempts it from every rule, not just this one. A dependency bump against
+  an edge whose locator names a `#fragment` the bump did not touch reports
+  `context-changed-implementation` instead, which does not block — see
+  [Fragment scope](../tooling/cli.md#fragment-scope).
 - **Keep the `pull_request` event for forks.** It checks out the fork's head,
   which is the code being proposed, and the gate needs no secrets, so the
   restricted token costs nothing. Never switch to `pull_request_target` to "make
