@@ -1,12 +1,12 @@
 ---
 id: migration
-title: Migration
-sidebar_label: Migration
+title: Migration guide
+sidebar_label: Migration guide
 sidebar_position: 9
 description: Upgrade an existing RQML document to the current schema version with rqml migrate — what changes, what is guaranteed to stay the same, and how to handle a repository with several specs.
 ---
 
-# Migration
+# Migration guide
 
 A schema release can change how RQML documents are written. `rqml migrate` rewrites an existing spec to the current version so you never have to do it by hand.
 

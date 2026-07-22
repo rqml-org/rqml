@@ -88,6 +88,10 @@ Exit codes are stable and documented: `0` pass · `1` validation failure ·
 `2` blocking drift or coverage · `64` usage error. Because the same engine runs
 locally, in your agent's hooks, and in CI, the verdicts never disagree.
 
+A workflow that runs is not yet a gate, though — until the check is marked
+*required*, a red X does not stop a merge. The [CI guide](/docs/ci) covers that,
+the complete workflow, and what to do when the gate fails.
+
 ## Recommended tooling
 
 - **[Claude Code plugin](https://github.com/rqml-org/rqml-claude)** — turns the

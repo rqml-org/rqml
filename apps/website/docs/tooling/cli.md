@@ -27,6 +27,7 @@ rqml <command> [spec.rqml] [options]
   init [path]        Scaffold a starter spec and merge the RQML block into AGENTS.md
   validate [path]    XML well-formedness, XSD, and referential integrity
   status [path]      Spec summary: requirement count, coverage, lint findings
+  lint [path]        Semantic lint findings; severity scales with --strictness (exit 1 on error)
   check [path]       Deterministic enforcement gate (validation + coverage + drift)
   link <id> <uri>    Record an implements/verifiedBy trace edge and its drift baseline
                      (--update repoints an existing edge; --refresh <edge-id>
@@ -38,6 +39,8 @@ rqml <command> [spec.rqml] [options]
   approve <id>       Transition a requirement's status (--status, default approved)
   gate [paths...]    Block implementation of non-approved requirements (exit 2)
   skeleton <kind>    Print a schema-valid snippet (req | edge | testCase | stateMachine)
+  migrate [path]     Rewrite a 2.0.1/2.1.0 spec to the current schema version
+                     (compact trace edges, RFC-0003; --dry-run to preview)
 ```
 
 When no path is given, `rqml` resolves the **governing spec** by walking up from the
@@ -46,6 +49,10 @@ at the repository root — so commands work from anywhere inside a project unit.
 directory with several `*.rqml` files and no `requirements.rqml` is reported as
 ambiguous. In a repository with multiple specs, see the
 [Monorepo guide](/docs/monorepo).
+
+`migrate` is the one command that rewrites your spec rather than reporting on it;
+what it changes, what it leaves byte-for-byte alone, and why it never touches the
+drift baseline are covered in the [Migration guide](/docs/migration).
 
 ## Options
 
@@ -62,6 +69,7 @@ ambiguous. In a repository with multiple specs, see the
 | `--kind`, `--title` | Optional locator hints recorded on the edge by `link` (preserved on `--update` unless re-stated) |
 | `--update` | For `link`: replace the external locator of the *existing* edge — matched by `--id` or the derived id — instead of appending, and re-record its baseline entry |
 | `--refresh <edge-id>` | For `link`: re-record the drift baseline for one intentionally changed artifact; the spec file is not touched |
+| `--dry-run` | For `migrate`: report the version change, edge count, and size delta without writing anything |
 
 ## The agent loop
 
