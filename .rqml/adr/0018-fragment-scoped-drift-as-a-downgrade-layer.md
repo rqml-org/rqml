@@ -135,6 +135,16 @@ deliberate and applies only to JSON, where the parse is exact.
 - Two edges (`E-IMPL-CORE-DEPS`, `E-IMPL-CORE-NO-LLM`) are unhelped by design;
   their durable fix is to pin the evidence to an assertion test, tracked
   separately.
+- **Writing runs ahead of reading.** Fail-closed cuts both ways: an `f1:` value
+  committed before the version that understands it is installed reports drift
+  to every older reader. Verified in practice — re-pinning `E-IMPL-CLI-BINARY`
+  on this branch reddened the gate under the published 0.10.0 CLI while passing
+  under the branch build. So the rollout order is fixed: **publish, then
+  re-pin.** A repository adopting fragment scope must have every gate — CI,
+  editor hooks, contributors' global installs — on a version that can read the
+  value before any edge is refreshed. Nothing breaks silently, but a premature
+  re-pin turns the gate red for everyone else, which is the noise this ADR set
+  out to remove.
 
 ## Supersession
 

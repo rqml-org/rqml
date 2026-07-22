@@ -204,6 +204,14 @@ like "no model SDK in the dependency tree" links the whole `package.json`, so
 `scripts`, `peerDependencies` and every other channel stay in scope by
 construction.
 
+Existing baselines keep working untouched — a bare sha256 still means whole-file
+scope — and an edge gains fragment scope the next time you `link` or
+`--refresh` it. Do that *after* everything that runs the gate is on a version
+that understands it: CI, editor hooks, and contributors' global installs. An
+older `rqml` treats the newer entry as drift rather than trusting it, which is
+the safe direction, but it will turn the gate red for everyone still on the old
+version.
+
 ## Exit codes
 
 Stable and documented, so scripts can branch on them:

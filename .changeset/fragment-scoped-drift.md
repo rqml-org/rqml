@@ -30,5 +30,10 @@ every dependency channel in scope by construction.
 
 Existing baselines need no migration: a bare sha256 still means whole-file
 scope, and an edge gains fragment scope the next time it is linked or refreshed.
-`ArtifactStatus` widens by one member, `context-changed`; consumers that
-switch on it exhaustively will want a case for it.
+Refresh only once every gate — CI, editor hooks, global installs — is on this
+version: an older `@rqml/core` treats a fragment-scoped entry as drift rather
+than trusting it, which is the safe direction but turns the gate red until it
+is upgraded.
+
+`ArtifactStatus` widens by one member, `context-changed`; consumers that switch
+on it exhaustively will want a case for it.
