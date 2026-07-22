@@ -24,7 +24,7 @@ you ask for it.
 
 There is also [`@rqml/schema`](../reference/index.md) — the canonical XSDs and
 example documents that `@rqml/core` bundles, published to the stable
-`/schema/rqml-2.1.0.xsd` URL.
+`/schema/rqml-2.2.0.xsd` URL.
 
 ## Design principles
 

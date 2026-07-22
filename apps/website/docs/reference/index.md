@@ -6,7 +6,7 @@ sidebar_position: 5
 description: A–Z index of RQML elements and attributes, patterns, and versioning notes.
 ---
 
-The current RQML schema is served at `/schema/rqml-2.1.0.xsd`. Use this page as an entry point to the element/attribute reference.
+The current RQML schema is served at `/schema/rqml-2.2.0.xsd`. Use this page as an entry point to the element/attribute reference.
 
 ## Common patterns
 - **IDs**: `IdType` tokens, 2–80 chars, start with a letter; allow letters, digits, `.`, `_`, `-`. Keep stable across revisions.

@@ -106,7 +106,7 @@ const ok = v.valid && integrity.length === 0;
 ```
 
 The schema version is detected from the document's namespace
-(`xmlns="https://rqml.org/schema/2.1.0"`); pass `{ schemaVersion }` to force one.
+(`xmlns="https://rqml.org/schema/2.2.0"`); pass `{ schemaVersion }` to force one.
 The XSD text is bundled from `@rqml/schema`, so this works with no network access.
 
 ### Coverage and drift
