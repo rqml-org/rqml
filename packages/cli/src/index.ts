@@ -29,11 +29,11 @@ Usage:
 
 Commands:
   init [path]        Scaffold a starter spec and merge the RQML block into AGENTS.md
-  validate [path]    Validate XML well-formedness, XSD, and referential integrity
+  validate [path]    Document validation: XML well-formedness, XSD, referential integrity
   status [path]      Show spec, coverage, and lint summary
   lint [path]        Semantic lint findings; severity scales with --strictness (exit 1 on error)
-  check [path]       Deterministic enforcement gate (validation + coverage + drift)
-  link <id> <uri>    Record an implements/verifiedBy edge and its drift baseline
+  check [path]       Deterministic gate: document validation + trace coverage + drift
+  link <id> <uri>    Record a trace edge (any type) and its drift baseline
                      (--update repoints an existing edge; --refresh <edge-id>
                      re-records only the baseline for an intentional change)
   show <id>          Extract one artifact with its trace neighborhood

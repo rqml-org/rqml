@@ -85,7 +85,8 @@ const specAndId = {
 export const TOOLS: ToolDef[] = [
   {
     name: "rqml_validate",
-    description: "Validate an RQML document against the XSD and referential integrity.",
+    description:
+      "Document validation: check an RQML document against the XSD and its referential integrity. Not requirements validation in the ISO/IEC/IEEE 29148 sense, which a person records by approving a requirement.",
     inputSchema: specOnly,
   },
   {
@@ -97,7 +98,7 @@ export const TOOLS: ToolDef[] = [
   {
     name: "rqml_check",
     description:
-      "Run the deterministic enforcement gate (validation + coverage + drift) and return a pass/fail verdict.",
+      "Run the deterministic check — document validation, trace coverage (goal → requirement → implementation → verification), and drift on linked files — and return a pass/fail verdict.",
     inputSchema: {
       type: "object",
       properties: {
