@@ -1174,7 +1174,7 @@
           the process is only as enforced as the template is current.
         </rationale>
       </req>
-      <req id="REQ-AGENTS-TEMPLATE-ELICITATION" type="PR" title="Template names the activity and the sign that calls for an element" status="draft" priority="should">
+      <req id="REQ-AGENTS-TEMPLATE-ELICITATION" type="PR" title="Template names the activity and the sign that calls for an element" status="approved" priority="should">
         <statement>
           The published AGENTS.md template SHALL name, for each stage of the
           five-stage process, the requirements-engineering activities it carries,
@@ -1203,7 +1203,7 @@
           </criterion>
         </acceptance>
       </req>
-      <req id="REQ-AGENTS-TEMPLATE-VOCABULARY" type="PR" title="Template reports findings by the artifact they name" status="draft" priority="should">
+      <req id="REQ-AGENTS-TEMPLATE-VOCABULARY" type="PR" title="Template reports findings by the artifact they name" status="approved" priority="should">
         <statement>
           The published AGENTS.md template SHALL instruct agents to report each
           finding by the artifact it identifies — the goal no requirement
