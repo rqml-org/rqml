@@ -1174,6 +1174,63 @@
           the process is only as enforced as the template is current.
         </rationale>
       </req>
+      <req id="REQ-AGENTS-TEMPLATE-ELICITATION" type="PR" title="Template names the activity and the sign that calls for an element" status="draft" priority="should">
+        <statement>
+          The published AGENTS.md template SHALL name, for each stage of the
+          five-stage process, the requirements-engineering activities it carries,
+          and SHALL give concrete triggers for reaching beyond the requirement and
+          trace elements — the observable sign in the writing that calls for a
+          business rule, a glossary term, a state machine, a goal conflict, or a
+          misuse case — stated as conditional triggers rather than as a section
+          checklist. It SHALL state that analysis raises no finding, so that an
+          agent does not infer from a passing check that the activity was done.
+        </statement>
+        <rationale>
+          Element families that have a CLI writer and a gate read-back are used
+          heavily by agents; those without are replaced by prose in notes and
+          rationale, where check, matrix and impact cannot see it. The template's
+          previous instruction to use as much of the tagset as necessary supplied
+          no occasion for reaching, and the guidance an agent reads at the moment
+          of writing is the cheapest place to supply one. Framing the triggers
+          conditionally keeps the template from manufacturing ceremonial sections
+          in projects whose problem never raises them.
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-AGENTS-TEMPLATE-ELICITATION">
+            <given>The published AGENTS.md template</given>
+            <when>Its workflow and schema guidance are reviewed</when>
+            <then>Each stage names its requirements-engineering activities, the element triggers are stated as signs to watch for rather than sections to fill, and the absence of any analysis finding is stated.</then>
+          </criterion>
+        </acceptance>
+      </req>
+      <req id="REQ-AGENTS-TEMPLATE-VOCABULARY" type="PR" title="Template reports findings by the artifact they name" status="draft" priority="should">
+        <statement>
+          The published AGENTS.md template SHALL instruct agents to report each
+          finding by the artifact it identifies — the goal no requirement
+          satisfies, the requirement with no verification edge, the linked file
+          that changed after its edge was recorded — rather than by the state of
+          the gate, and SHALL distinguish the document validation that rqml
+          validate performs from requirements validation in the ISO/IEC/IEEE
+          29148 sense, which a person records by approving a requirement.
+        </statement>
+        <rationale>
+          The engine already names the missing artifact in every finding message;
+          the gate-colour vocabulary agents adopt is learned from the framing text
+          layered on top of it, and naming a colour invites clearing the signal
+          where naming an artifact directs the next action. The validation
+          distinction must be explicit because the rqml validate command name
+          collides with the standard's sense of the word, and an agent that
+          reports requirements as validated on a passing check claims an assurance
+          no command in the toolchain performs.
+        </rationale>
+        <acceptance>
+          <criterion id="CRIT-AGENTS-TEMPLATE-VOCABULARY">
+            <given>The published AGENTS.md template</given>
+            <when>It is reviewed for the vocabulary it puts in front of an agent</when>
+            <then>Findings are described by the artifact they name, drift is described as a suspect link to re-read, and document validation is distinguished from the approval that records requirements validation.</then>
+          </criterion>
+        </acceptance>
+      </req>
       <req id="REQ-DESIGN-PROCESS" type="PR" title="Five-stage development process" status="approved" priority="should">
         <statement>
           RQML SHALL define and document a recommended five-stage development
@@ -2879,6 +2936,10 @@
     <edge id="E-IMPL-DRIFT-SCOPE-BASELINE" type="implements" from="packages/core/src/check/drift.ts" fromKind="code" fromTitle="Two-hash baseline encoding and the downgrade rule" to="REQ-CORE-DRIFT-SCOPE" status="draft" createdBy="rqml"/>
     <edge id="E-VER-CORE-DRIFT-SCOPE" type="verifiedBy" from="REQ-CORE-DRIFT-SCOPE" to="packages/core/test/fragment-drift.test.ts" toKind="test" toTitle="Fragment scope: downgrade and fail-closed cases" status="draft" createdBy="rqml"/>
     <edge id="E-VER-DRIFT-SCOPE-GATE" type="verifiedBy" from="REQ-CORE-DRIFT-SCOPE" to="packages/cli/test/fragment-scope.test.ts" toKind="test" toTitle="Fragment scope at the gate" status="draft" createdBy="rqml"/>
+    <edge id="E-SAT-AGENTS-TEMPLATE-ELICITATION-GOAL-RE-OPERATIONALIZE" type="satisfies" from="REQ-AGENTS-TEMPLATE-ELICITATION" to="GOAL-RE-OPERATIONALIZE" status="draft" createdBy="rqml"/>
+    <edge id="E-SAT-AGENTS-TEMPLATE-VOCABULARY-GOAL-LLM-CONTEXT" type="satisfies" from="REQ-AGENTS-TEMPLATE-VOCABULARY" to="GOAL-LLM-CONTEXT" status="draft" createdBy="rqml"/>
+    <edge id="E-IMPL-AGENTS-TEMPLATE-ELICITATION" type="implements" from="packages/schema/templates/AGENTS.md" fromKind="code" to="REQ-AGENTS-TEMPLATE-ELICITATION" status="draft" createdBy="rqml"/>
+    <edge id="E-IMPL-AGENTS-TEMPLATE-VOCABULARY" type="implements" from="packages/schema/templates/AGENTS.md" fromKind="code" to="REQ-AGENTS-TEMPLATE-VOCABULARY" status="draft" createdBy="rqml"/>
   </trace>
 
   <!-- ============================================================= -->
