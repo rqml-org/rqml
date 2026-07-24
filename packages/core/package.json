@@ -1,6 +1,6 @@
 {
   "name": "@rqml/core",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "The RQML engine: parse, serialize, validate (XSD + referential integrity), lint, trace, coverage, and drift for .rqml requirements documents. The dependency-clean library every RQML surface reuses.",
   "type": "module",
   "license": "Apache-2.0",
